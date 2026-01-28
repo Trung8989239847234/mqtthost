@@ -1,112 +1,95 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.3">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
-    span.s1 {font-kerning: none}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT EMQX Cloud Tester</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .status-box { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        #log { background: #1e1e1e; color: #d4d4d4; padding: 15px; height: 350px; overflow-y: auto; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 13px; }
+        .topic-info { color: #569cd6; }
+        .msg-content { color: #ce9178; }
+        .time { color: #858585; margin-right: 8px; }
+    </style>
 </head>
 <body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html lang="vi"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;MQTT EMQX Cloud Tester&lt;/title&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/mqtt/dist/mqtt.min.js"&gt;&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.status-box { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.connected { background-color: #d4edda; color: #155724; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.disconnected { background-color: #f8d7da; color: #721c24; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>#log { background: #1e1e1e; color: #d4d4d4; padding: 15px; height: 350px; overflow-y: auto; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 13px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.topic-info { color: #569cd6; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.msg-content { color: #ce9178; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.time { color: #858585; margin-right: 8px; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="container"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="header"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;h2&gt;EMQX Cloud Connection Test&lt;/h2&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;p&gt;Host: &lt;code&gt;n21f2dda.ala.dedicated.aws.emqxcloud.com&lt;/code&gt;&lt;/p&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="status" class="status-box disconnected"&gt;Đang ngắt kết nối...&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="log"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;script&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const logEl = document.getElementById('log');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const statusEl = document.getElementById('status');</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function addLog(msg, type = 'info') {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const now = new Date().toLocaleTimeString();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const div = document.createElement('div');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>div.style.marginBottom = '5px';</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let icon = type === 'error' ? '❌ ' : '✅ ';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>div.innerHTML = `&lt;span class="time"&gt;[${now}]&lt;/span&gt;${icon}${msg}`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>logEl.appendChild(div);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>logEl.scrollTop = logEl.scrollHeight;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Cấu hình kết nối cho WebSockets (Port 8084 cho WSS)</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const options = {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>clientId: 'web_test_' + Math.random().toString(16).substr(2, 5),</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>username: 'anhtrung1',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>password: 'anhtrung1',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>clean: true,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>connectTimeout: 5000,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const host = 'wss://n21f2dda.ala.dedicated.aws.emqxcloud.com:8084/mqtt';</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>addLog('Đang khởi tạo kết nối WebSockets...');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const client = mqtt.connect(host, options);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>client.on('connect', () =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>statusEl.innerText = 'ĐÃ KẾT NỐI THÀNH CÔNG';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>statusEl.className = 'status-box connected';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>addLog('Đã kết nối tới Broker!');</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Tự động subscribe một topic để test</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const testTopic = 'emqx/test/topic';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>client.subscribe(testTopic, () =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>addLog(`Đã đăng ký (Subscribed) topic: &lt;span class="topic-info"&gt;${testTopic}&lt;/span&gt;`);</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Tự động gửi một tin nhắn test sau khi sub</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const payload = JSON.stringify({ msg: "Hello from Browser", status: "Active" });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>client.publish(testTopic, payload);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>addLog('Đã gửi (Publish) tin nhắn chào mừng.');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>client.on('message', (topic, message) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>addLog(`Nhận tin từ [&lt;span class="topic-info"&gt;${topic}&lt;/span&gt;]: &lt;span class="msg-content"&gt;${message.toString()}&lt;/span&gt;`);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>client.on('error', (err) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>addLog('Lỗi: ' + err.message, 'error');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>client.on('close', () =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>statusEl.innerText = 'MẤT KẾT NỐI';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>statusEl.className = 'status-box disconnected';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+
+<div class="container">
+    <div class="header">
+        <h2>EMQX Cloud Connection Test</h2>
+        <p>Host: <code>n21f2dda.ala.dedicated.aws.emqxcloud.com</code></p>
+    </div>
+
+    <div id="status" class="status-box disconnected">Đang ngắt kết nối...</div>
+
+    <div id="log"></div>
+</div>
+
+<script>
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+
+    function addLog(msg, type = 'info') {
+        const now = new Date().toLocaleTimeString();
+        const div = document.createElement('div');
+        div.style.marginBottom = '5px';
+        
+        let icon = type === 'error' ? '❌ ' : '✅ ';
+        div.innerHTML = `<span class="time">[${now}]</span>${icon}${msg}`;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // Cấu hình kết nối cho WebSockets (Port 8084 cho WSS)
+    const options = {
+        clientId: 'web_test_' + Math.random().toString(16).substr(2, 5),
+        username: 'anhtrung1',
+        password: 'anhtrung1',
+        clean: true,
+        connectTimeout: 5000,
+    };
+
+    const host = 'wss://n21f2dda.ala.dedicated.aws.emqxcloud.com:8084/mqtt';
+
+    addLog('Đang khởi tạo kết nối WebSockets...');
+    const client = mqtt.connect(host, options);
+
+    client.on('connect', () => {
+        statusEl.innerText = 'ĐÃ KẾT NỐI THÀNH CÔNG';
+        statusEl.className = 'status-box connected';
+        addLog('Đã kết nối tới Broker!');
+        
+        // Tự động subscribe một topic để test
+        const testTopic = 'emqx/test/topic';
+        client.subscribe(testTopic, () => {
+            addLog(`Đã đăng ký (Subscribed) topic: <span class="topic-info">${testTopic}</span>`);
+            
+            // Tự động gửi một tin nhắn test sau khi sub
+            const payload = JSON.stringify({ msg: "Hello from Browser", status: "Active" });
+            client.publish(testTopic, payload);
+            addLog('Đã gửi (Publish) tin nhắn chào mừng.');
+        });
+    });
+
+    client.on('message', (topic, message) => {
+        addLog(`Nhận tin từ [<span class="topic-info">${topic}</span>]: <span class="msg-content">${message.toString()}</span>`);
+    });
+
+    client.on('error', (err) => {
+        addLog('Lỗi: ' + err.message, 'error');
+    });
+
+    client.on('close', () => {
+        statusEl.innerText = 'MẤT KẾT NỐI';
+        statusEl.className = 'status-box disconnected';
+    });
+</script>
+
 </body>
 </html>
