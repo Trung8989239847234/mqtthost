@@ -3,114 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home Control Center</title>
+    <title>MQTT Control Panel</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f4f7f6; }
-        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; }
-        .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-        .online { background: #28a745; box-shadow: 0 0 8px #28a745; }
-        .offline { background: #dc3545; }
-        #log-container { height: 200px; overflow-y: auto; background: #212529; color: #00ff00; font-family: monospace; font-size: 12px; border-radius: 8px; }
+        :root {
+            --bg-dark: #1a1a1d;
+            --card-bg: #252529;
+            --accent-orange: #f39c12;
+            --accent-blue: #5d8aa8;
+            --text-gray: #a0a0a0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 10px;
+        }
+
+        /* Header Tabs */
+        .tabs {
+            display: flex;
+            background: #1e5631;
+            padding: 15px;
+            margin: -10px -10px 20px -10px;
+            justify-content: space-around;
+            font-weight: bold;
+        }
+
+        .tab-active { border-bottom: 3px solid white; }
+
+        /* Timer Section */
+        .timer-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .device-label {
+            grid-column: span 2;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .ao-box {
+            padding: 10px 30px;
+            font-size: 32px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        .ao3 { background-color: var(--accent-orange); color: black; }
+        .ao4 { background-color: var(--accent-blue); color: black; }
+
+        .big-number { font-size: 40px; color: var(--accent-orange); }
+
+        /* Input Controls */
+        .control-group {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .label { color: var(--text-gray); font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
+
+        .counter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 30px;
+        }
+
+        .btn-adjust {
+            background: none;
+            border: none;
+            color: var(--accent-orange);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 15px;
+        }
+
+        /* Pause Circles */
+        .pause-section {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .circle {
+            width: 70px;
+            height: 70px;
+            border: 2px solid var(--accent-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--accent-orange);
+            cursor: pointer;
+        }
+
+        .circle:active { background: rgba(243, 156, 18, 0.2); }
     </style>
 </head>
 <body>
 
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Control Dashboard</h2>
-        <div>
-            <span id="conn-status" class="status-indicator offline"></span>
-            <span id="status-text" class="ms-2">Đang kết nối...</span>
+    <div class="tabs">
+        <div class="tab-active">G GT 2</div>
+        <div>PZEEM</div>
+        <div>BB</div>
+        <div>TK9..</div>
+    </div>
+
+    <div class="timer-container">
+        <div class="device-label">
+            <div class="ao-box ao3">ao3</div>
+            <div class="big-number" id="val-ao3">11</div>
+        </div>
+
+        <div class="control-group">
+            <div class="label">Minute</div>
+            <div class="counter">
+                <button class="btn-adjust" onclick="changeVal('ao3/min', -1)">−</button>
+                <span>8<small style="font-size:14px">Min</small></span>
+                <button class="btn-adjust" onclick="changeVal('ao3/min', 1)">+</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="label">Second</div>
+            <div class="counter">
+                <button class="btn-adjust" onclick="changeVal('ao3/sec', -1)">−</button>
+                <span>12<small style="font-size:14px">Sec</small></span>
+                <button class="btn-adjust" onclick="changeVal('ao3/sec', 1)">+</button>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card p-4">
-                <h5 class="card-title">Thiết bị (ESP8266/ESP32)</h5>
-                <p class="text-muted">Gửi lệnh tới topic: <code>home/livingroom/light</code></p>
-                <div class="d-flex gap-2">
-                    <button onclick="publish('ON')" class="btn btn-success flex-fill">Bật Đèn</button>
-                    <button onclick="publish('OFF')" class="btn btn-danger flex-fill">Tắt Đèn</button>
-                </div>
+    <div class="pause-section">
+        <div class="circle" onclick="sendPause(1)">1</div>
+        <div class="circle" onclick="sendPause(15)">15</div>
+        <div class="circle" onclick="sendPause(30)">30</div>
+        <div class="circle" onclick="sendPause(60)">60</div>
+    </div>
+
+    <div class="timer-container">
+        <div class="device-label" style="justify-content: flex-end;">
+            <div class="big-number" style="color: var(--accent-blue); margin-right: 20px;">237</div>
+            <div class="ao-box ao4">ao4</div>
+        </div>
+
+        <div class="control-group">
+            <div class="label">Minute</div>
+            <div class="counter">
+                <button class="btn-adjust" onclick="changeVal('ao4/min', -1)" style="color:var(--accent-blue)">−</button>
+                <span>7<small style="font-size:14px">Min</small></span>
+                <button class="btn-adjust" onclick="changeVal('ao4/min', 1)" style="color:var(--accent-blue)">+</button>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card p-4">
-                <h5 class="card-title">Dữ liệu cảm biến</h5>
-                <div class="d-flex justify-content-around text-center">
-                    <div>
-                        <h3 id="temp-val">--</h3>
-                        <small class="text-muted">Nhiệt độ (°C)</small>
-                    </div>
-                    <div>
-                        <h3 id="humi-val">--</h3>
-                        <small class="text-muted">Độ ẩm (%)</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card p-3">
-                <h6>Hệ thống Log</h6>
-                <div id="log-container" class="p-2"></div>
+        <div class="control-group">
+            <div class="label">Second</div>
+            <div class="counter">
+                <button class="btn-adjust" onclick="changeVal('ao4/sec', -1)" style="color:var(--accent-blue)">−</button>
+                <span>5<small style="font-size:14px">Sec</small></span>
+                <button class="btn-adjust" onclick="changeVal('ao4/sec', 1)" style="color:var(--accent-blue)">+</button>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    // Cấu hình tài khoản EMQX Cloud của bạn
-    const broker = 'wss://n21f2dda.ala.dedicated.aws.emqxcloud.com:8084/mqtt';
-    const options = {
-        username: 'anhtrung1',
-        password: 'anhtrung1',
-        clientId: 'web_dashboard_' + Math.random().toString(16).substr(2, 5)
-    };
+    <script>
+        // Cấu hình MQTT
+        const broker = 'wss://n21f2dda.ala.dedicated.aws.emqxcloud.com:8084/mqtt';
+        const options = { username: 'anhtrung1', password: 'anhtrung1' };
+        const client = mqtt.connect(broker, options);
 
-    const client = mqtt.connect(broker, options);
+        client.on('connect', () => {
+            console.log("Connected to EMQX");
+            client.subscribe('device/status/#');
+        });
 
-    client.on('connect', () => {
-        document.getElementById('conn-status').className = 'status-indicator online';
-        document.getElementById('status-text').innerText = 'Trực tuyến (EMQX Cloud)';
-        addLog("Đã kết nối thành công!");
-        
-        // Subscribe nhận dữ liệu từ ESP/Home Assistant
-        client.subscribe('home/sensor/data');
-    });
+        // Hàm gửi thay đổi giá trị
+        function changeVal(path, delta) {
+            const topic = `cmd/${path}`;
+            const msg = delta > 0 ? "UP" : "DOWN";
+            client.publish(topic, msg);
+            console.log(`Sent: ${msg} to ${topic}`);
+        }
 
-    client.on('message', (topic, payload) => {
-        const message = payload.toString();
-        addLog(`Nhận tin từ [${topic}]: ${message}`);
-        
-        // Giả sử nhận JSON: {"temp": 30, "humi": 70}
-        try {
-            const data = JSON.parse(message);
-            if(data.temp) document.getElementById('temp-val').innerText = data.temp;
-            if(data.humi) document.getElementById('humi-val').innerText = data.humi;
-        } catch(e) {}
-    });
+        // Hàm gửi lệnh Pause
+        function sendPause(time) {
+            client.publish('cmd/pause', time.toString());
+            alert("Đã gửi lệnh Pause: " + time + " phút");
+        }
 
-    function publish(command) {
-        client.publish('home/livingroom/light', command);
-        addLog(`Đã gửi lệnh: ${command}`);
-    }
-
-    function addLog(msg) {
-        const log = document.getElementById('log-container');
-        const time = new Date().toLocaleTimeString();
-        log.innerHTML += `<div>[${time}] ${msg}</div>`;
-        log.scrollTop = log.scrollHeight;
-    }
-
-    client.on('error', (err) => {
-        addLog("Lỗi kết nối: " + err);
-    });
-</script>
-
+        // Nhận dữ liệu cập nhật từ Server
+        client.on('message', (topic, payload) => {
+            if(topic === 'device/status/ao3') {
+                document.getElementById('val-ao3').innerText = payload.toString();
+            }
+        });
+    </script>
 </body>
 </html>
