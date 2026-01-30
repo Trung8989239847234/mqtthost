@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 MQTT Dashboard</title>
+    <title>TIMER 02 - Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -18,18 +18,19 @@
             border: 1px solid #444; 
         }
         
-        h2 { margin-top: 0; color: #fff; font-weight: 600; letter-spacing: 1px; margin-bottom: 20px; }
-        
+        h2 { margin-top: 0; color: #00bcd4; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; }
+        .sub-title { color: #aaa; font-size: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
+
         .timer-box { 
             background: #000; 
-            color: #00ff00; 
+            color: #00bcd4; /* Màu xanh cyan cho Timer 02 */
             font-family: 'Courier New', monospace; 
             font-size: 48px; 
             padding: 15px; 
             border-radius: 8px; 
             margin: 20px 0; 
             border: 1px solid #333; 
-            text-shadow: 0 0 5px #00ff00; 
+            text-shadow: 0 0 10px rgba(0, 188, 212, 0.5); 
         }
         
         .status-badge { 
@@ -65,11 +66,11 @@
             box-sizing: border-box; 
             outline: none; 
         }
-        input:focus { border-color: #007bff; }
+        input:focus { border-color: #00bcd4; }
 
         button { 
-            background-color: #007bff; 
-            color: white; 
+            background-color: #00bcd4; /* Màu chủ đạo Timer 02 */
+            color: #000; 
             border: none; 
             padding: 12px; 
             width: 100%; 
@@ -80,18 +81,16 @@
             transition: 0.2s; 
             margin-top: 10px; 
         }
-        button:hover { background-color: #0056b3; }
+        button:hover { background-color: #00acc1; }
         button:active { transform: scale(0.98); }
 
-        /* MAINTENANCE GRID CSS */
         .maintenance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-m { background: #444; font-size: 13px; padding: 10px 0; margin: 0; color: #ddd; }
         .btn-m:hover { background: #555; }
         .btn-manual { color: #ffc107; }
-        .btn-cancel { background: #dc3545; margin-top: 5px; }
+        .btn-cancel { background: #dc3545; margin-top: 5px; color: white;}
         .btn-cancel:hover { background: #c82333; }
 
-        /* LOG TERMINAL STYLE */
         .log-title { font-size: 10px; color: #555; text-align: left; margin-top: 20px; text-transform: uppercase; }
         .log-box { 
             margin-top: 5px; 
@@ -104,15 +103,10 @@
             text-align: left; 
             font-family: 'Courier New', monospace; 
             font-size: 11px; 
-            color: #00ff00; 
+            color: #00bcd4; 
         }
         .log-entry { margin-bottom: 4px; border-bottom: 1px dashed #222; padding-bottom: 2px; }
         
-        .log-box::-webkit-scrollbar { width: 5px; }
-        .log-box::-webkit-scrollbar-track { background: #000; }
-        .log-box::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
-        
-        /* CONNECTION STATUS */
         #connStatus { font-size: 10px; color: #666; margin-bottom: 5px; }
         .conn-ok { color: #28a745 !important; }
         .conn-err { color: #dc3545 !important; }
@@ -122,8 +116,9 @@
 <body>
 
   <div class="card">
-    <h2>ESP32 TIMER PRO</h2>
-    <div id="connStatus">Đang kết nối MQTT...</div>
+    <h2>DEVICE: TIMER 02</h2>
+    <div class="sub-title">EMQX CLOUD CONTROL</div>
+    <div id="connStatus">Đang kết nối MQTT (WSS)...</div>
     
     <div id="statusBadge" class="status-badge status-off">ĐANG TẮT</div>
     
@@ -160,7 +155,7 @@
     
     <button class="btn-cancel" onclick="sendMaint(0)">HỦY BẢO TRÌ (CHẠY LẠI)</button>
 
-    <div class="log-title">> SYSTEM LOGS_</div>
+    <div class="log-title">> SYSTEM LOGS (TIMER 02)_</div>
     <div id="logDisplay" class="log-box">
        <div class="log-entry">Waiting for data...</div>
     </div>
@@ -169,38 +164,36 @@
 <script>
     // --- CẤU HÌNH MQTT ---
     const mqtt_host = "n21f2dda.ala.dedicated.aws.emqxcloud.com";
-    const mqtt_port = 8084; // Cổng WSS (WebSockets Secure) cho trình duyệt
+    const mqtt_port = 8084; // Cổng WSS
     const mqtt_path = "/mqtt";
     const mqtt_user = "anhtrung1";
     const mqtt_pass = "anhtrung1";
     
-    // --- TOPICS ---
-    const TOPIC_STATUS    = "esp32/timer/status";
-    const TOPIC_SET_MIN   = "esp32/timer/set/min";
-    const TOPIC_SET_SEC   = "esp32/timer/set/sec";
-    const TOPIC_CMD_SAVE  = "esp32/timer/cmd/save";
-    const TOPIC_CMD_MAINT = "esp32/timer/cmd/maint";
-
-    // Tạo Client ID ngẫu nhiên để không trùng
-    const clientId = "web_dashboard_" + Math.random().toString(16).substr(2, 8);
+    // --- TOPICS CHO TIMER 02 ---
+    const DEVICE_ID = "timer02"; // <--- QUAN TRỌNG
     
-    // Khởi tạo Client Paho
+    const TOPIC_STATUS    = "esp32/" + DEVICE_ID + "/status";
+    const TOPIC_SET_MIN   = "esp32/" + DEVICE_ID + "/set/min";
+    const TOPIC_SET_SEC   = "esp32/" + DEVICE_ID + "/set/sec";
+    const TOPIC_CMD_SAVE  = "esp32/" + DEVICE_ID + "/cmd/save";
+    const TOPIC_CMD_MAINT = "esp32/" + DEVICE_ID + "/cmd/maint";
+
+    // Client ID ngẫu nhiên
+    const clientId = "web_" + DEVICE_ID + "_" + Math.random().toString(16).substr(2, 8);
+    
     const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, mqtt_path, clientId);
 
-    // Xử lý sự kiện
     client.onConnectionLost = onConnectionLost;
     client.onMessageArrived = onMessageArrived;
 
-    // Tùy chọn kết nối
     const options = {
-        useSSL: true, // Bắt buộc với EMQX Cloud WSS
+        useSSL: true,
         userName: mqtt_user,
         password: mqtt_pass,
         onSuccess: onConnect,
         onFailure: onFailure
     };
 
-    // Kết nối ngay khi mở web
     connectMQTT();
 
     function connectMQTT() {
@@ -209,13 +202,12 @@
     }
 
     function onConnect() {
-        console.log("MQTT Connected");
-        document.getElementById("connStatus").innerHTML = "● MQTT ONLINE";
+        console.log("MQTT Connected to " + DEVICE_ID);
+        document.getElementById("connStatus").innerHTML = "● MQTT ONLINE (" + DEVICE_ID + ")";
         document.getElementById("connStatus").className = "conn-ok";
         
-        // Đăng ký nhận tin từ ESP32
         client.subscribe(TOPIC_STATUS);
-        addLogSystem("Web Dashboard đã kết nối!");
+        addLogSystem("Web đã kết nối tới " + DEVICE_ID + "!");
     }
 
     function onFailure(message) {
@@ -234,7 +226,6 @@
         }
     }
 
-    // --- XỬ LÝ DỮ LIỆU NHẬN ĐƯỢC ---
     function onMessageArrived(message) {
         if (message.destinationName === TOPIC_STATUS) {
             try {
@@ -246,13 +237,10 @@
         }
     }
 
-    // --- CẬP NHẬT GIAO DIỆN ---
     function updateUI(data) {
-        // 1. Cập nhật đồng hồ
         document.getElementById("timerDisplay").innerHTML = data.time_rem;
-
-        // 2. Cập nhật Badge Trạng thái
         const badge = document.getElementById("statusBadge");
+        
         if (data.maint > 0) {
             badge.innerHTML = "🔧 ĐANG BẢO TRÌ (MODE " + data.maint + ")";
             badge.className = "status-badge status-maint";
@@ -267,25 +255,17 @@
             badge.className = "status-badge status-off";
         }
 
-        // 3. Cập nhật Log (Giả lập log dựa trên thay đổi trạng thái để tiết kiệm băng thông)
-        // Trong thực tế, ESP32 có thể gửi log qua 1 topic riêng, ở đây ta hiển thị trạng thái nhận được
-        // addLogSystem("Status Update: " + data.status + " | Time: " + data.time_rem);
-        
-        // 4. Đồng bộ Input (chỉ khi không đang focus để tránh nhảy số khi đang nhập)
         if(document.activeElement.id !== "offMin" && document.activeElement.id !== "onSec") {
              if(data.set_min !== undefined) document.getElementById("offMin").value = data.set_min;
              if(data.set_sec !== undefined) document.getElementById("onSec").value = data.set_sec;
         }
     }
 
-    // --- CÁC HÀM GỬI LỆNH ---
-    
     function sendMQTT(topic, payload) {
         if(client.isConnected()) {
             message = new Paho.MQTT.Message(payload.toString());
             message.destinationName = topic;
             client.send(message);
-            console.log("Sent:", topic, payload);
         } else {
             alert("Mất kết nối MQTT! Vui lòng đợi...");
         }
@@ -294,33 +274,25 @@
     function sendSave() {
         const m = document.getElementById("offMin").value;
         const s = document.getElementById("onSec").value;
-        
-        // Gửi 3 lệnh liên tiếp để đảm bảo đồng bộ
         sendMQTT(TOPIC_SET_MIN, m);
         sendMQTT(TOPIC_SET_SEC, s);
-        setTimeout(() => { sendMQTT(TOPIC_CMD_SAVE, "1"); }, 200); // Delay xíu để save
-        
-        addLogSystem("Đã gửi lệnh LƯU CÀI ĐẶT: " + m + "p / " + s + "s");
+        setTimeout(() => { sendMQTT(TOPIC_CMD_SAVE, "1"); }, 200);
+        addLogSystem("Lệnh: LƯU CÀI ĐẶT (" + m + "p/" + s + "s)");
     }
 
     function sendMaint(mode) {
         sendMQTT(TOPIC_CMD_MAINT, mode.toString());
-        if(mode === 0) addLogSystem("Đã gửi: HỦY BẢO TRÌ");
-        else addLogSystem("Đã gửi: BẬT BẢO TRÌ Mode " + mode);
+        if(mode === 0) addLogSystem("Lệnh: HỦY BẢO TRÌ");
+        else addLogSystem("Lệnh: BẬT BẢO TRÌ Mode " + mode);
     }
 
-    // --- HÀM LOG GIAO DIỆN ---
     function addLogSystem(msg) {
         const now = new Date();
         const timeStr = "[" + now.toTimeString().split(' ')[0] + "] ";
         const logBox = document.getElementById("logDisplay");
         const newLog = '<div class="log-entry">' + timeStr + msg + '</div>';
         logBox.innerHTML = newLog + logBox.innerHTML;
-        
-        // Giới hạn số dòng log
-        if(logBox.children.length > 20) {
-            logBox.removeChild(logBox.lastChild);
-        }
+        if(logBox.children.length > 20) logBox.removeChild(logBox.lastChild);
     }
 
 </script>
