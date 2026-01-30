@@ -3,108 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MQTT Smart Home Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <title>ESP32 MQTT Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
-        body { background-color: #0a1128; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: #121d3d; border-radius: 20px; padding: 30px; text-align: center; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .gauge { font-size: 48px; font-weight: bold; margin: 20px 0; color: #3b82f6; }
-        .controls { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 15px; border-radius: 15px; margin-top: 20px; }
-        button { background: #1e293b; color: white; border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer; font-size: 20px; transition: 0.3s; }
-        button:hover { background: #3b82f6; }
-        #status { font-size: 12px; margin-top: 10px; color: #64748b; }
-        .log-container { margin-top: 20px; width: 300px; height: 150px; background: #000; padding: 10px; font-size: 11px; overflow-y: auto; border-radius: 10px; color: #10b981; text-align: left; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        
+        .card { 
+            background: #2d2d2d; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            width: 350px; 
+            text-align: center; 
+            border: 1px solid #444; 
+        }
+        
+        h2 { margin-top: 0; color: #fff; font-weight: 600; letter-spacing: 1px; margin-bottom: 20px; }
+        
+        .timer-box { 
+            background: #000; 
+            color: #00ff00; 
+            font-family: 'Courier New', monospace; 
+            font-size: 48px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            border: 1px solid #333; 
+            text-shadow: 0 0 5px #00ff00; 
+        }
+        
+        .status-badge { 
+            padding: 8px 20px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            color: white; 
+            display: inline-block; 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+            width: 80%; 
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .status-on { background-color: #28a745; box-shadow: 0 0 15px #28a745; }
+        .status-off { background-color: #444; color: #aaa; border: 1px solid #666; }
+        .status-wait { background-color: #ffc107; color: #000; }
+        .status-maint { background-color: #dc3545; color: white; animation: blink 1s infinite; }
+        
+        @keyframes blink { 50% { opacity: 0.7; } }
+
+        .input-group { display: flex; justify-content: space-between; margin-bottom: 15px; text-align: left; }
+        .input-wrapper { width: 48%; }
+        .input-wrapper label { font-size: 12px; color: #aaa; font-weight: bold; display: block; margin-bottom: 5px; }
+        
+        input[type="number"] { 
+            width: 100%; padding: 10px; 
+            background: #1a1a1a; 
+            border: 1px solid #444; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            color: white; 
+            box-sizing: border-box; 
+            outline: none; 
+        }
+        input:focus { border-color: #007bff; }
+
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            width: 100%; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            margin-top: 10px; 
+        }
+        button:hover { background-color: #0056b3; }
+        button:active { transform: scale(0.98); }
+
+        /* MAINTENANCE GRID CSS */
+        .maintenance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-m { background: #444; font-size: 13px; padding: 10px 0; margin: 0; color: #ddd; }
+        .btn-m:hover { background: #555; }
+        .btn-manual { color: #ffc107; }
+        .btn-cancel { background: #dc3545; margin-top: 5px; }
+        .btn-cancel:hover { background: #c82333; }
+
+        /* LOG TERMINAL STYLE */
+        .log-title { font-size: 10px; color: #555; text-align: left; margin-top: 20px; text-transform: uppercase; }
+        .log-box { 
+            margin-top: 5px; 
+            background: #000; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            padding: 10px; 
+            height: 120px; 
+            overflow-y: auto; 
+            text-align: left; 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            color: #00ff00; 
+        }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px dashed #222; padding-bottom: 2px; }
+        
+        .log-box::-webkit-scrollbar { width: 5px; }
+        .log-box::-webkit-scrollbar-track { background: #000; }
+        .log-box::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
+        
+        /* CONNECTION STATUS */
+        #connStatus { font-size: 10px; color: #666; margin-bottom: 5px; }
+        .conn-ok { color: #28a745 !important; }
+        .conn-err { color: #dc3545 !important; }
+
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div style="color: #94a3b8; font-size: 14px;">CURRENT</div>
-        <div class="gauge" id="temp-display">--.-°C</div>
-        <div style="font-size: 12px; color: #475569;">Topic: /home/living-room/temp</div>
+  <div class="card">
+    <h2>ESP32 TIMER PRO</h2>
+    <div id="connStatus">Đang kết nối MQTT...</div>
+    
+    <div id="statusBadge" class="status-badge status-off">ĐANG TẮT</div>
+    
+    <div id="timerDisplay" class="timer-box">--:--</div>
+    
+    <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
 
-        <hr style="border: 0.5px solid #1e293b; margin: 30px 0;">
-
-        <div style="font-weight: bold;">Target Temperature</div>
-        <div class="controls">
-            <button onclick="changeSetpoint(-1)">−</button>
-            <div>
-                <div id="setpoint-display" style="font-size: 24px; font-weight: bold;">22</div>
-                <div style="font-size: 10px; color: #64748b;">SETPOINT</div>
-            </div>
-            <button onclick="changeSetpoint(1)">+</button>
-        </div>
-        <div id="status">Đang kết nối...</div>
+    <div class="input-group">
+      <div class="input-wrapper">
+        <label>NGHỈ (Phút)</label>
+        <input type="number" id="offMin" value="1">
+      </div>
+      <div class="input-wrapper">
+        <label>CHẠY (Giây)</label>
+        <input type="number" id="onSec" value="5">
+      </div>
     </div>
 
-    <div class="log-container" id="mqtt-log">
-        [System]: Khởi tạo console...<br>
+    <button onclick="sendSave()">LƯU CÀI ĐẶT</button>
+
+    <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
+    <div style="text-align: left; font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: 10px;">
+        🔧 CHẾ ĐỘ BẢO TRÌ (Tạm dừng)
     </div>
+    
+    <div class="maintenance-grid">
+      <button class="btn-m" onclick="sendMaint(1)">7 Phút</button>
+      <button class="btn-m" onclick="sendMaint(2)">15 Phút</button>
+      <button class="btn-m" onclick="sendMaint(3)">30 Phút</button>
+      <button class="btn-m" onclick="sendMaint(4)">50 Phút</button>
+      <button class="btn-m" onclick="sendMaint(5)">80 Phút</button>
+      <button class="btn-m btn-manual" onclick="sendMaint(6)">∞ Thủ công</button>
+    </div>
+    
+    <button class="btn-cancel" onclick="sendMaint(0)">HỦY BẢO TRÌ (CHẠY LẠI)</button>
 
-    <script>
-        // Cấu hình MQTT
-        const MQTT_CONFIG = {
-            host: "trung-2601.ddns.net",
-            port: 8084, // Cổng WebSocket SSL (WSS) của EMQX Cloud
-            user: "haymd2a",
-            pass: "all.ddnskey.com",
-            clientId: "web_client_" + Math.random().toString(16).substr(2, 8),
-            topicSub: "/home/living-room/temp",
-            topicPub: "/home/living-room/set"
-        };
+    <div class="log-title">> SYSTEM LOGS_</div>
+    <div id="logDisplay" class="log-box">
+       <div class="log-entry">Waiting for data...</div>
+    </div>
+  </div>
 
-        let setpoint = 22;
-        let client = new Paho.MQTT.Client(MQTT_CONFIG.host, Number(MQTT_CONFIG.port), MQTT_CONFIG.clientId);
+<script>
+    // --- CẤU HÌNH MQTT ---
+    const mqtt_host = "n21f2dda.ala.dedicated.aws.emqxcloud.com";
+    const mqtt_port = 8084; // Cổng WSS (WebSockets Secure) cho trình duyệt
+    const mqtt_path = "/mqtt";
+    const mqtt_user = "anhtrung1";
+    const mqtt_pass = "anhtrung1";
+    
+    // --- TOPICS ---
+    const TOPIC_STATUS    = "esp32/timer/status";
+    const TOPIC_SET_MIN   = "esp32/timer/set/min";
+    const TOPIC_SET_SEC   = "esp32/timer/set/sec";
+    const TOPIC_CMD_SAVE  = "esp32/timer/cmd/save";
+    const TOPIC_CMD_MAINT = "esp32/timer/cmd/maint";
 
-        // Hàm Log ra màn hình
-        function writeLog(msg) {
-            const log = document.getElementById('mqtt-log');
-            log.innerHTML += `> ${msg}<br>`;
-            log.scrollTop = log.scrollHeight;
+    // Tạo Client ID ngẫu nhiên để không trùng
+    const clientId = "web_dashboard_" + Math.random().toString(16).substr(2, 8);
+    
+    // Khởi tạo Client Paho
+    const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, mqtt_path, clientId);
+
+    // Xử lý sự kiện
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+
+    // Tùy chọn kết nối
+    const options = {
+        useSSL: true, // Bắt buộc với EMQX Cloud WSS
+        userName: mqtt_user,
+        password: mqtt_pass,
+        onSuccess: onConnect,
+        onFailure: onFailure
+    };
+
+    // Kết nối ngay khi mở web
+    connectMQTT();
+
+    function connectMQTT() {
+        document.getElementById("connStatus").innerHTML = "Đang kết nối tới EMQX...";
+        client.connect(options);
+    }
+
+    function onConnect() {
+        console.log("MQTT Connected");
+        document.getElementById("connStatus").innerHTML = "● MQTT ONLINE";
+        document.getElementById("connStatus").className = "conn-ok";
+        
+        // Đăng ký nhận tin từ ESP32
+        client.subscribe(TOPIC_STATUS);
+        addLogSystem("Web Dashboard đã kết nối!");
+    }
+
+    function onFailure(message) {
+        console.log("Connection Failed: " + message.errorMessage);
+        document.getElementById("connStatus").innerHTML = "● MẤT KẾT NỐI (Thử lại sau 5s...)";
+        document.getElementById("connStatus").className = "conn-err";
+        setTimeout(connectMQTT, 5000);
+    }
+
+    function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.log("Connection Lost: " + responseObject.errorMessage);
+            document.getElementById("connStatus").innerHTML = "● MẤT KẾT NỐI";
+            document.getElementById("connStatus").className = "conn-err";
+            setTimeout(connectMQTT, 5000);
+        }
+    }
+
+    // --- XỬ LÝ DỮ LIỆU NHẬN ĐƯỢC ---
+    function onMessageArrived(message) {
+        if (message.destinationName === TOPIC_STATUS) {
+            try {
+                const data = JSON.parse(message.payloadString);
+                updateUI(data);
+            } catch (e) {
+                console.error("Lỗi JSON:", e);
+            }
+        }
+    }
+
+    // --- CẬP NHẬT GIAO DIỆN ---
+    function updateUI(data) {
+        // 1. Cập nhật đồng hồ
+        document.getElementById("timerDisplay").innerHTML = data.time_rem;
+
+        // 2. Cập nhật Badge Trạng thái
+        const badge = document.getElementById("statusBadge");
+        if (data.maint > 0) {
+            badge.innerHTML = "🔧 ĐANG BẢO TRÌ (MODE " + data.maint + ")";
+            badge.className = "status-badge status-maint";
+        } else if (data.status === "RUNNING" || data.status === "ON RUN" || data.status === "DANG CHAY (ON)") {
+            badge.innerHTML = "RUNNING (ON)";
+            badge.className = "status-badge status-on";
+        } else if (data.status === "CHO RESET") {
+            badge.innerHTML = "WAITING RESET...";
+            badge.className = "status-badge status-wait";
+        } else {
+            badge.innerHTML = "SLEEPING (OFF)";
+            badge.className = "status-badge status-off";
         }
 
-        // Kết nối
-        client.connect({
-            useSSL: true,
-            userName: MQTT_CONFIG.user,
-            password: MQTT_CONFIG.pass,
-            onSuccess: () => {
-                writeLog("Kết nối thành công!");
-                document.getElementById('status').innerText = "Đã kết nối";
-                document.getElementById('status').style.color = "#10b981";
-                client.subscribe(MQTT_CONFIG.topicSub);
-                writeLog("Đã Sub: " + MQTT_CONFIG.topicSub);
-            },
-            onFailure: (err) => {
-                writeLog("Lỗi kết nối: " + err.errorMessage);
-                document.getElementById('status').innerText = "Lỗi kết nối";
-            }
-        });
+        // 3. Cập nhật Log (Giả lập log dựa trên thay đổi trạng thái để tiết kiệm băng thông)
+        // Trong thực tế, ESP32 có thể gửi log qua 1 topic riêng, ở đây ta hiển thị trạng thái nhận được
+        // addLogSystem("Status Update: " + data.status + " | Time: " + data.time_rem);
+        
+        // 4. Đồng bộ Input (chỉ khi không đang focus để tránh nhảy số khi đang nhập)
+        if(document.activeElement.id !== "offMin" && document.activeElement.id !== "onSec") {
+             if(data.set_min !== undefined) document.getElementById("offMin").value = data.set_min;
+             if(data.set_sec !== undefined) document.getElementById("onSec").value = data.set_sec;
+        }
+    }
 
-        // Xử lý tin nhắn đến
-        client.onMessageArrived = (message) => {
-            writeLog(`Nhận: ${message.payloadString} từ ${message.destinationName}`);
-            if (message.destinationName === MQTT_CONFIG.topicSub) {
-                document.getElementById('temp-display').innerText = message.payloadString + "°C";
-            }
-        };
-
-        // Hàm thay đổi Setpoint và Publish
-        function changeSetpoint(val) {
-            setpoint += val;
-            document.getElementById('setpoint-display').innerText = setpoint;
-            
-            let message = new Paho.MQTT.Message(setpoint.toString());
-            message.destinationName = MQTT_CONFIG.topicPub;
+    // --- CÁC HÀM GỬI LỆNH ---
+    
+    function sendMQTT(topic, payload) {
+        if(client.isConnected()) {
+            message = new Paho.MQTT.Message(payload.toString());
+            message.destinationName = topic;
             client.send(message);
-            writeLog(`Gửi setpoint: ${setpoint} tới ${MQTT_CONFIG.topicPub}`);
+            console.log("Sent:", topic, payload);
+        } else {
+            alert("Mất kết nối MQTT! Vui lòng đợi...");
         }
+    }
 
-        client.onConnectionLost = (responseObject) => {
-            if (responseObject.errorCode !== 0) {
-                writeLog("Mất kết nối: " + responseObject.errorMessage);
-            }
-        };
-    </script>
+    function sendSave() {
+        const m = document.getElementById("offMin").value;
+        const s = document.getElementById("onSec").value;
+        
+        // Gửi 3 lệnh liên tiếp để đảm bảo đồng bộ
+        sendMQTT(TOPIC_SET_MIN, m);
+        sendMQTT(TOPIC_SET_SEC, s);
+        setTimeout(() => { sendMQTT(TOPIC_CMD_SAVE, "1"); }, 200); // Delay xíu để save
+        
+        addLogSystem("Đã gửi lệnh LƯU CÀI ĐẶT: " + m + "p / " + s + "s");
+    }
+
+    function sendMaint(mode) {
+        sendMQTT(TOPIC_CMD_MAINT, mode.toString());
+        if(mode === 0) addLogSystem("Đã gửi: HỦY BẢO TRÌ");
+        else addLogSystem("Đã gửi: BẬT BẢO TRÌ Mode " + mode);
+    }
+
+    // --- HÀM LOG GIAO DIỆN ---
+    function addLogSystem(msg) {
+        const now = new Date();
+        const timeStr = "[" + now.toTimeString().split(' ')[0] + "] ";
+        const logBox = document.getElementById("logDisplay");
+        const newLog = '<div class="log-entry">' + timeStr + msg + '</div>';
+        logBox.innerHTML = newLog + logBox.innerHTML;
+        
+        // Giới hạn số dòng log
+        if(logBox.children.length > 20) {
+            logBox.removeChild(logBox.lastChild);
+        }
+    }
+
+</script>
+
 </body>
 </html>
