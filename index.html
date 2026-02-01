@@ -151,9 +151,19 @@
       <div class="input-group">
         <label>Trạng thái Blynk</label>
         <select id="cfg_b_en">
-            <option value="1">Bật (Enable)</option>
             <option value="0">Tắt (Disable)</option>
+            <option value="1">Bật (Enable)</option>
         </select>
+      </div>
+
+      <div class="input-group">
+        <label>Blynk Server</label>
+        <input type="text" id="cfg_b_host" value="blynk.hqn.vn">
+      </div>
+      
+      <div class="input-group">
+        <label>Blynk Port</label>
+        <input type="number" id="cfg_b_port" value="8080">
       </div>
 
       <div class="input-group">
@@ -336,7 +346,7 @@
       else addLog("CMD: Bật Bảo Trì Mode " + mode);
   }
   
-  // --- MỚI: Gửi lệnh Lưu Cấu Hình Hệ Thống (Tab Settings) ---
+  // --- Gửi lệnh Lưu Cấu Hình Hệ Thống (Tab Settings) ---
   function saveSystemConfigMQTT() {
       if(!confirm("CẢNH BÁO: Thiết bị sẽ khởi động lại và kết nối với thông số mới. Bạn có chắc không?")) return;
       
@@ -351,6 +361,10 @@
       
       payload.devid = document.getElementById('cfg_devid').value;
       payload.b_en = document.getElementById('cfg_b_en').value;
+      
+      // ĐÃ BỔ SUNG: Host và Port
+      payload.b_host = document.getElementById('cfg_b_host').value;
+      payload.b_port = document.getElementById('cfg_b_port').value;
       payload.b_token = document.getElementById('cfg_b_token').value;
       
       payload.m_host = document.getElementById('cfg_m_host').value;
