@@ -1,391 +1,249 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <title>ESP32 Pro Timer MQTT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta charset="UTF-8">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-  <style>
-    /* --- GIAO DIỆN DARK MODE --- */
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #1c1c1e; padding: 20px; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); width: 360px; text-align: center; border: 1px solid #333; }
-    
-    /* NAV TABS */
-    .nav-tabs { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-    .nav-item { cursor: pointer; padding: 8px 16px; color: #888; font-weight: 600; font-size: 14px; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
-    .nav-item.active { background: #333; color: #fff; }
-    
-    .tab-content { display: none; }
-    .tab-content.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    h2 { font-size: 18px; font-weight: 600; color: #e5e5e5; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-
-    .timer-box { background: #000; color: #00ff00; font-family: 'Courier New', monospace; font-size: 56px; padding: 20px 0; border-radius: 12px; margin: 15px 0; border: 1px solid #333; text-shadow: 0 0 10px rgba(0, 255, 0, 0.4); font-weight: bold; }
-    
-    .status-badge { padding: 6px 15px; border-radius: 50px; font-weight: 600; font-size: 12px; display: inline-block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .status-on { background-color: rgba(40, 167, 69, 0.2); color: #4cd964; border: 1px solid #28a745; }
-    .status-off { background-color: rgba(255, 255, 255, 0.1); color: #aaa; border: 1px solid #666; }
-    .status-wait { background-color: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
-    .status-maint { background-color: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #dc3545; animation: blink 1s infinite; }
-    @keyframes blink { 50% { opacity: 0.5; } }
-
-    .control-row { background-color: #2c2c2e; border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #3a3a3c; }
-    .label-section { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px; color: #e5e5e5; text-align: left; }
-    .icon { font-size: 20px; }
-    .sub-text { font-size: 12px; color: #8e8e93; display: block; font-weight: normal;}
-    
-    .stepper { display: flex; align-items: center; background-color: #3a3a3c; border-radius: 8px; padding: 2px; }
-    .btn-step { background: none; border: none; color: #fff; font-size: 20px; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .btn-step:active { opacity: 0.5; transform: scale(0.9); }
-    .btn-step:hover { color: #0a84ff; }
-    .stepper input { background: transparent; border: none; color: #fff; font-size: 16px; width: 50px; text-align: center; font-weight: bold; outline: none; -moz-appearance: textfield; }
-    .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-    .btn-primary { background-color: #0a84ff; color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 5px; box-shadow: 0 2px 10px rgba(10, 132, 255, 0.3); }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-danger { background-color: #dc3545; box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3); }
-    
-    .maintenance-title { color: #8e8e93; font-size: 11px; font-weight: bold; text-align: left; margin: 25px 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px; }
-    .maintenance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .btn-m { background: #2c2c2e; color: #fff; border: 1px solid #3a3a3c; font-size: 12px; padding: 10px 0; border-radius: 8px; cursor: pointer; }
-    .btn-m:hover { background: #3a3a3c; }
-    .btn-manual { color: #ffd60a; border-color: rgba(255, 214, 10, 0.3); }
-    .btn-cancel { background: rgba(255, 69, 58, 0.1); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.3); margin-top: 10px; width: 100%; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-
-    .input-group { margin-bottom: 12px; text-align: left; }
-    .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
-    .input-group input, .input-group select { width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; color: white; padding: 10px; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-    .input-group input:focus { border-color: #0a84ff; outline: none; }
-    
-    .log-box { margin-top: 25px; background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; height: 100px; overflow-y: auto; text-align: left; font-family: 'Courier New', monospace; font-size: 10px; color: #00ff00; opacity: 0.8; }
-    .log-entry { margin-bottom: 2px; border-bottom: 1px dashed #222; }
-    
-    #passModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; justify-content:center; align-items:center; }
-    .modal-content { background:#1c1c1e; padding:20px; border-radius:15px; width:250px; text-align:center; border:1px solid #444; }
-
-    #conn-status { font-size: 10px; color:#666; margin-bottom:5px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Control - 0907888149</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 400px; background: #1c1c1e; padding: 20px; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
+        h2 { text-align: center; color: #0a84ff; margin-top: 0; }
+        .status-box { background: #000; color: #00ff00; font-family: monospace; font-size: 40px; text-align: center; padding: 20px; border: 1px solid #333; border-radius: 10px; margin: 15px 0; font-weight: bold; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .bg-conn { background: #dc3545; color: white; } /* Disconnected red */
+        .bg-conn.active { background: #28a745; } /* Connected green */
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; background: #2c2c2e; border: 1px solid #3a3a3c; color: white; border-radius: 8px; box-sizing: border-box; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-primary { background: #0a84ff; color: white; }
+        .btn-primary:active { transform: scale(0.98); opacity: 0.8; }
+        .btn-connect { background: #333; color: #aaa; border: 1px solid #555; }
+        
+        .row { display: flex; gap: 10px; margin-top: 10px; }
+        .col { flex: 1; }
+        
+        .hidden-config { display: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+        .toggle-cfg { text-align: center; font-size: 11px; color: #555; cursor: pointer; margin-top: 10px; }
+    </style>
 </head>
 <body>
 
-  <div id="passModal">
-    <div class="modal-content">
-      <h3>Bảo mật</h3>
-      <p style="font-size:12px; color:#aaa;">Nhập mật khẩu để vào Cài đặt</p>
-      <input type="password" id="accessPass" style="width:90%; padding:8px; margin-bottom:10px; border-radius:5px; border:none;" placeholder="Mật khẩu là 1234">
-      <button class="btn-primary" onclick="checkPass()">Truy cập</button>
-      <button class="btn-cancel" onclick="closeModal()">Hủy</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="nav-tabs">
-      <div class="nav-item active" onclick="switchTab('home')" id="tab-home">Trang Chủ</div>
-      <div class="nav-item" onclick="reqSettings()" id="tab-settings">Cài Đặt</div>
+<div class="container">
+    <div style="text-align:center">
+        <span id="connBadge" class="badge bg-conn">Mất kết nối MQTT</span>
+        <h2>Điều Khiển Timer</h2>
     </div>
 
-    <div id="home" class="tab-content active">
-      <div id="statusBadge" class="status-badge status-off">CONNECTING...</div>
-      <h2>ESP32 TIMER PRO</h2>
-      <div id="conn-status">Connecting to MQTT...</div>
-      <div id="timerDisplay" class="timer-box">--:--</div>
+    <div id="displayTimer" class="status-box">--:--</div>
+    <div style="text-align:center; font-size:14px; color:#aaa" id="statusText">Đang chờ dữ liệu...</div>
 
-      <div class="control-row">
-        <div class="label-section">
-          <div class="icon">🏃</div>
-          <div><div>CHẠY (On)</div><span class="sub-text">Thời gian bật Relay</span></div>
+    <div class="row">
+        <div class="col">
+            <div class="input-group">
+                <label>Thời gian Nghỉ (Phút)</label>
+                <input type="number" id="inpMin" value="1">
+            </div>
         </div>
-        <div class="stepper">
-          <button class="btn-step" onclick="adjustValue('onSec', -1)">−</button>
-          <input type="number" id="onSec" value="5">
-          <button class="btn-step" onclick="adjustValue('onSec', 1)">+</button>
+        <div class="col">
+            <div class="input-group">
+                <label>Thời gian Chạy (Giây)</label>
+                <input type="number" id="inpSec" value="5">
+            </div>
         </div>
-      </div>
-
-      <div class="control-row">
-        <div class="label-section">
-          <div class="icon">💤</div>
-          <div><div>NGHỈ (Off)</div><span class="sub-text">Thời gian tắt Relay</span></div>
-        </div>
-        <div class="stepper">
-          <button class="btn-step" onclick="adjustValue('offMin', -1)">−</button>
-          <input type="number" id="offMin" value="1">
-          <button class="btn-step" onclick="adjustValue('offMin', 1)">+</button>
-        </div>
-      </div>
-
-      <button class="btn-primary" onclick="sendSave()">LƯU THỜI GIAN</button>
-      
-      <div class="maintenance-title">🔧 Chế độ bảo trì</div>
-      <div class="maintenance-grid">
-        <button class="btn-m" onclick="sendMaint(1)">7 Phút</button>
-        <button class="btn-m" onclick="sendMaint(2)">15 Phút</button>
-        <button class="btn-m" onclick="sendMaint(3)">30 Phút</button>
-        <button class="btn-m" onclick="sendMaint(4)">50 Phút</button>
-        <button class="btn-m" onclick="sendMaint(5)">80 Phút</button>
-        <button class="btn-m btn-manual" onclick="sendMaint(6)">∞ Thủ công</button>
-      </div>
-      <button class="btn-cancel" onclick="sendMaint(0)">HỦY BẢO TRÌ</button>
-      <div class="log-box" id="logDisplay"><div class="log-entry">> System ready...</div></div>
     </div>
 
-    <div id="settings" class="tab-content">
-      <h2>Cấu hình Hệ thống</h2>
-      <div style="text-align:left; color:#0a84ff; font-size:12px; margin-bottom:10px;">Nhập thông tin mới để thay đổi</div>
-      
-      <div class="input-group">
-        <label>Device ID (Tên thiết bị)</label>
-        <input type="text" id="cfg_devid" value="timer02">
-      </div>
+    <button class="btn btn-primary" onclick="sendSave()">CẬP NHẬT CẤU HÌNH</button>
 
-      <div class="input-group">
-        <label>WiFi SSID (Tên Wifi)</label>
-        <input type="text" id="cfg_ssid" placeholder="Nhập tên WiFi mới...">
-      </div>
-      <div class="input-group">
-        <label>WiFi Password</label>
-        <input type="text" id="cfg_pass" placeholder="Nhập mật khẩu WiFi...">
-      </div>
-      
-      <div class="input-group">
-        <label>Trạng thái Blynk</label>
-        <select id="cfg_b_en">
-            <option value="0">Tắt (Disable)</option>
-            <option value="1">Bật (Enable)</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Blynk Server</label>
-        <input type="text" id="cfg_b_host" value="blynk.hqn.vn">
-      </div>
-      
-      <div class="input-group">
-        <label>Blynk Port</label>
-        <input type="number" id="cfg_b_port" value="8080">
-      </div>
-
-      <div class="input-group">
-        <label>Blynk Token</label>
-        <input type="text" id="cfg_b_token" value="gxShmU6_ZvZOKY2UZRew9PwkipWM_9uJ">
-      </div>
-
-      <hr style="border-color:#333; margin: 15px 0;">
-
-      <div class="input-group">
-        <label>MQTT Server</label>
-        <input type="text" id="cfg_m_host" value="n21f2dda.ala.dedicated.aws.emqxcloud.com">
-      </div>
-      <div class="input-group">
-        <label>MQTT Port</label>
-        <input type="number" id="cfg_m_port" value="1883">
-      </div>
-      <div class="input-group">
-        <label>MQTT User</label>
-        <input type="text" id="cfg_m_user" value="anhtrung1">
-      </div>
-      <div class="input-group">
-        <label>MQTT Pass</label>
-        <input type="text" id="cfg_m_pass" value="anhtrung1">
-      </div>
-      
-      <button class="btn-primary" onclick="saveSystemConfigMQTT()">LƯU & KHỞI ĐỘNG LẠI</button>
-      
-      <br><br>
-      <div style="border-top: 1px solid #333; padding-top: 15px;">
-        <div style="font-size:12px; color:#aaa; margin-bottom:5px;">OTA Update</div>
-        <div style="font-size:11px; color:#666; font-style:italic;">Tính năng Update Firmware (.bin) chỉ hoạt động khi bạn kết nối trực tiếp với WiFi của mạch.</div>
-      </div>
+    <hr style="border-color:#333; margin: 20px 0;">
+    
+    <div class="input-group">
+        <label>Chọn chế độ bảo trì</label>
+        <div class="row" style="margin-top:0">
+            <button class="btn" style="background:#2c2c2e; color:#fff; font-size:12px" onclick="sendMaint(1)">7p</button>
+            <button class="btn" style="background:#2c2c2e; color:#fff; font-size:12px" onclick="sendMaint(3)">30p</button>
+            <button class="btn" style="background:#2c2c2e; color:#fff; font-size:12px" onclick="sendMaint(0); sendSave()">Hủy</button>
+        </div>
     </div>
 
-  </div>
+    <div class="toggle-cfg" onclick="toggleConfig()">▼ Cài đặt MQTT (Nhấn để mở)</div>
+    
+    <div id="configArea" class="hidden-config">
+        <div class="input-group"><label>MQTT Host</label><input type="text" id="mqttHost" value="n21f2dda.ala.dedicated.aws.emqxcloud.com"></div>
+        <div class="input-group"><label>MQTT Port (WSS/SSL)</label><input type="number" id="mqttPort" value="8084"></div>
+        <div class="input-group"><label>Username</label><input type="text" id="mqttUser" value="anhtrung1"></div>
+        <div class="input-group"><label>Password</label><input type="password" id="mqttPass" value="anhtrung1"></div>
+        <div class="row">
+            <div class="col"><div class="input-group"><label>SĐT Khách</label><input type="text" id="cfgPhone" value="0907888149"></div></div>
+            <div class="col"><div class="input-group"><label>Device ID</label><input type="text" id="cfgDevId" value="timer02"></div></div>
+        </div>
+        <button class="btn btn-connect" onclick="doConnect()">Kết nối lại MQTT</button>
+    </div>
+</div>
 
 <script>
-  // --- 1. CẤU HÌNH MQTT ---
-  const mqtt_host = "n21f2dda.ala.dedicated.aws.emqxcloud.com";
-  const mqtt_port = 8084; // WSS Port
-  const mqtt_path = "/mqtt";
-  const mqtt_user = "anhtrung1";
-  const mqtt_pass = "anhtrung1";
-  
-  // Bạn cần đảm bảo DEVICE_ID này trùng với biến config_device_id trong ESP32
-  // Nếu bạn đổi Device ID trong Tab Cài đặt, lần sau bạn phải sửa dòng này trong file HTML
-  const DEVICE_ID = "timer02"; 
-  
-  // Topic
-  const TOPIC_STATUS    = "esp32/" + DEVICE_ID + "/status";
-  const TOPIC_SET_MIN   = "esp32/" + DEVICE_ID + "/set/min";
-  const TOPIC_SET_SEC   = "esp32/" + DEVICE_ID + "/set/sec";
-  const TOPIC_CMD_SAVE  = "esp32/" + DEVICE_ID + "/cmd/save";
-  const TOPIC_CMD_MAINT = "esp32/" + DEVICE_ID + "/cmd/maint";
-  
-  // Topic mới để gửi cấu hình
-  const TOPIC_CMD_SYSCONFIG = "esp32/" + DEVICE_ID + "/cmd/sysconfig";
+    // Biến toàn cục MQTT
+    var client;
+    var isConnected = false;
 
-  // --- LOGIC GIAO DIỆN TAB ---
-  function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    document.getElementById('tab-' + tabId).classList.add('active');
-  }
+    // Hàm khởi tạo và kết nối
+    function doConnect() {
+        var host = document.getElementById("mqttHost").value;
+        var port = Number(document.getElementById("mqttPort").value);
+        var user = document.getElementById("mqttUser").value;
+        var pass = document.getElementById("mqttPass").value;
+        var clientId = "web_" + parseInt(Math.random() * 100000, 10);
 
-  function reqSettings() { document.getElementById('passModal').style.display = 'flex'; }
-  function closeModal() { document.getElementById('passModal').style.display = 'none'; }
-  function checkPass() {
-    var p = document.getElementById('accessPass').value;
-    if(p === "1234") { // Mật khẩu truy cập Tab Cài đặt
-        closeModal(); switchTab('settings');
-    } else { alert("Sai mật khẩu!"); }
-  }
+        console.log("Connecting to " + host + ":" + port);
+        
+        // Ngắt kết nối cũ nếu có
+        if(isConnected) {
+            try { client.disconnect(); } catch(e){}
+        }
 
-  function adjustValue(id, delta) {
-    var input = document.getElementById(id);
-    var currentVal = parseInt(input.value) || 0;
-    var newVal = currentVal + delta;
-    if (newVal < 0) newVal = 0;
-    if (id === 'onSec' && newVal < 1) newVal = 1;
-    input.value = newVal;
-  }
+        client = new Paho.MQTT.Client(host, port, clientId);
 
-  // --- LOGIC KẾT NỐI MQTT ---
-  const clientId = "web_" + DEVICE_ID + "_" + Math.random().toString(16).substr(2, 8);
-  const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, mqtt_path, clientId);
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
 
-  client.onConnectionLost = onConnectionLost;
-  client.onMessageArrived = onMessageArrived;
-
-  connectMQTT();
-
-  function connectMQTT() {
-    document.getElementById("conn-status").innerHTML = "Connecting to EMQX Cloud...";
-    const options = {
-      useSSL: true,
-      userName: mqtt_user,
-      password: mqtt_pass,
-      onSuccess: onConnect,
-      onFailure: onFailure
-    };
-    client.connect(options);
-  }
-
-  function onConnect() {
-    console.log("MQTT Connected");
-    document.getElementById("conn-status").innerHTML = "● CONNECTED (AWS EMQX)";
-    document.getElementById("conn-status").style.color = "#00ff00";
-    client.subscribe(TOPIC_STATUS);
-    addLog("Web: Connected to " + DEVICE_ID);
-  }
-
-  function onFailure(message) {
-    console.log("Connect failed: " + message.errorMessage);
-    document.getElementById("conn-status").innerHTML = "● Error: " + message.errorMessage;
-    document.getElementById("conn-status").style.color = "red";
-    setTimeout(connectMQTT, 5000); 
-  }
-
-  function onConnectionLost(responseObject) {
-    if (responseObject.errorCode !== 0) {
-      console.log("Lost connection: " + responseObject.errorMessage);
-      document.getElementById("conn-status").innerHTML = "● Connection Lost";
-      document.getElementById("conn-status").style.color = "red";
-      setTimeout(connectMQTT, 5000);
+        var options = {
+            useSSL: true, // Server EMQX Cloud thường bắt buộc SSL trên port 8084
+            userName: user,
+            password: pass,
+            onSuccess: onConnect,
+            onFailure: onFailure,
+            keepAliveInterval: 30
+        };
+        
+        document.getElementById("connBadge").innerText = "Đang kết nối...";
+        client.connect(options);
     }
-  }
 
-  function onMessageArrived(message) {
-    if (message.destinationName === TOPIC_STATUS) {
-       try {
-         const data = JSON.parse(message.payloadString);
-         document.getElementById("timerDisplay").innerHTML = data.time_rem;
-         
-         const badge = document.getElementById("statusBadge");
-         if(data.maint > 0) { 
-            badge.innerHTML = "🔧 ĐANG BẢO TRÌ (M" + data.maint + ")"; badge.className = "status-badge status-maint"; 
-         } else if(data.status.includes("RUNNING") || data.status === "ON RUN") { 
-            badge.innerHTML = "RUNNING (ON)"; badge.className = "status-badge status-on"; 
-         } else if (data.status.includes("RESET") || data.status.includes("CHO")) { 
-            badge.innerHTML = "WAITING RESET..."; badge.className = "status-badge status-wait"; 
-         } else { 
-            badge.innerHTML = "SLEEPING (OFF)"; badge.className = "status-badge status-off"; 
-         }
+    function onConnect() {
+        console.log("MQTT Connected");
+        isConnected = true;
+        var badge = document.getElementById("connBadge");
+        badge.innerText = "Đã kết nối";
+        badge.classList.add("active");
 
-         if(document.activeElement.id !== "offMin" && document.activeElement.id !== "onSec") {
-             if(data.set_min !== undefined) document.getElementById("offMin").value = data.set_min;
-             if(data.set_sec !== undefined) document.getElementById("onSec").value = data.set_sec;
-         }
-
-       } catch (e) { console.log("JSON Error", e); }
+        // Subscribe vào Topic Status của thiết bị
+        // Cấu trúc: khachhang/[SDT]/[DEVID]/status
+        var phone = document.getElementById("cfgPhone").value;
+        var devId = document.getElementById("cfgDevId").value;
+        var topic = "khachhang/" + phone + "/" + devId + "/status";
+        
+        console.log("Subscribing to: " + topic);
+        client.subscribe(topic);
     }
-  }
 
-  function sendMQTT(topic, payload) {
-      if(client.isConnected()) {
-        message = new Paho.MQTT.Message(payload.toString());
-        message.destinationName = topic;
+    function onFailure(message) {
+        console.log("Connection failed: " + message.errorMessage);
+        var badge = document.getElementById("connBadge");
+        badge.innerText = "Lỗi kết nối!";
+        badge.classList.remove("active");
+        isConnected = false;
+        alert("Không thể kết nối Server MQTT. Kiểm tra lại Port (8083 hoặc 8084)!");
+    }
+
+    function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.log("Connection lost: " + responseObject.errorMessage);
+            var badge = document.getElementById("connBadge");
+            badge.innerText = "Mất kết nối";
+            badge.classList.remove("active");
+            isConnected = false;
+        }
+    }
+
+    // Xử lý tin nhắn nhận được từ ESP32
+    function onMessageArrived(message) {
+        // Topic nhận được: khachhang/0907888149/timer02/status
+        // Payload: {"status":"RUNNING","time_rem":"01:20","maint":0,"set_min":1,"set_sec":5}
+        try {
+            console.log("Msg: " + message.payloadString);
+            var data = JSON.parse(message.payloadString);
+
+            // Cập nhật giao diện
+            document.getElementById("displayTimer").innerText = data.time_rem;
+            document.getElementById("statusText").innerText = "Trạng thái: " + data.status;
+
+            // Nếu người dùng không đang nhập liệu thì cập nhật ô input cho đồng bộ
+            if(document.activeElement.id !== "inpMin") document.getElementById("inpMin").value = data.set_min;
+            if(document.activeElement.id !== "inpSec") document.getElementById("inpSec").value = data.set_sec;
+
+            // Đổi màu status box
+            var box = document.getElementById("displayTimer");
+            if(data.status === "RUNNING" || data.status === "ON RUN") {
+                box.style.color = "#4cd964"; // Xanh lá
+                box.style.borderColor = "#28a745";
+            } else if (data.status === "BAO TRI") {
+                box.style.color = "#ff6b6b"; // Đỏ
+                box.style.borderColor = "#dc3545";
+            } else {
+                box.style.color = "#aaa"; // Xám
+                box.style.borderColor = "#333";
+            }
+
+        } catch(e) {
+            console.log("Lỗi parse JSON: " + e);
+        }
+    }
+
+    // Hàm gửi lệnh lưu thời gian
+    function sendSave() {
+        if(!isConnected) { alert("Chưa kết nối MQTT!"); return; }
+        
+        var phone = document.getElementById("cfgPhone").value;
+        var devId = document.getElementById("cfgDevId").value;
+        var min = document.getElementById("inpMin").value;
+        var sec = document.getElementById("inpSec").value;
+
+        // Gửi Set Min
+        var msgMin = new Paho.MQTT.Message(min.toString());
+        msgMin.destinationName = "khachhang/" + phone + "/" + devId + "/set/min";
+        client.send(msgMin);
+
+        // Gửi Set Sec
+        var msgSec = new Paho.MQTT.Message(sec.toString());
+        msgSec.destinationName = "khachhang/" + phone + "/" + devId + "/set/sec";
+        client.send(msgSec);
+
+        // Gửi lệnh Lưu (1)
+        setTimeout(function(){
+            var msgSave = new Paho.MQTT.Message("1");
+            msgSave.destinationName = "khachhang/" + phone + "/" + devId + "/cmd/save";
+            client.send(msgSave);
+        }, 200); // Delay nhỏ để ESP32 kịp nhận min/sec trước
+    }
+
+    // Hàm gửi lệnh bảo trì
+    function sendMaint(mode) {
+        if(!isConnected) { alert("Chưa kết nối MQTT!"); return; }
+        var phone = document.getElementById("cfgPhone").value;
+        var devId = document.getElementById("cfgDevId").value;
+        
+        var message = new Paho.MQTT.Message(mode.toString());
+        message.destinationName = "khachhang/" + phone + "/" + devId + "/cmd/maint";
         client.send(message);
-      } else { alert("Chưa kết nối tới Server MQTT!"); }
-  }
+    }
 
-  // Gửi lệnh Lưu Thời Gian (Tab Home)
-  function sendSave() {
-      const m = document.getElementById("offMin").value;
-      const s = document.getElementById("onSec").value;
-      sendMQTT(TOPIC_SET_MIN, m);
-      sendMQTT(TOPIC_SET_SEC, s);
-      setTimeout(() => {
-          sendMQTT(TOPIC_CMD_SAVE, "1");
-          addLog("CMD: Lưu cài đặt (" + m + "m " + s + "s)");
-      }, 200);
-  }
+    function toggleConfig() {
+        var x = document.getElementById("configArea");
+        if (x.style.display === "block") {
+            x.style.display = "none";
+        } else {
+            x.style.display = "block";
+        }
+    }
 
-  function sendMaint(mode) {
-      sendMQTT(TOPIC_CMD_MAINT, mode.toString());
-      if(mode === 0) addLog("CMD: Hủy Bảo Trì");
-      else addLog("CMD: Bật Bảo Trì Mode " + mode);
-  }
-  
-  // --- Gửi lệnh Lưu Cấu Hình Hệ Thống (Tab Settings) ---
-  function saveSystemConfigMQTT() {
-      if(!confirm("CẢNH BÁO: Thiết bị sẽ khởi động lại và kết nối với thông số mới. Bạn có chắc không?")) return;
-      
-      // Thu thập dữ liệu từ form
-      var payload = {};
-      
-      var val_ssid = document.getElementById('cfg_ssid').value;
-      if(val_ssid.trim() !== "") payload.ssid = val_ssid;
-      
-      var val_pass = document.getElementById('cfg_pass').value;
-      if(val_pass.trim() !== "") payload.pass = val_pass;
-      
-      payload.devid = document.getElementById('cfg_devid').value;
-      payload.b_en = document.getElementById('cfg_b_en').value;
-      
-      // ĐÃ BỔ SUNG: Host và Port
-      payload.b_host = document.getElementById('cfg_b_host').value;
-      payload.b_port = document.getElementById('cfg_b_port').value;
-      payload.b_token = document.getElementById('cfg_b_token').value;
-      
-      payload.m_host = document.getElementById('cfg_m_host').value;
-      payload.m_port = document.getElementById('cfg_m_port').value;
-      payload.m_user = document.getElementById('cfg_m_user').value;
-      payload.m_pass = document.getElementById('cfg_m_pass').value;
-      
-      // Gửi đi
-      var jsonStr = JSON.stringify(payload);
-      sendMQTT(TOPIC_CMD_SYSCONFIG, jsonStr);
-      
-      alert("Đã gửi lệnh cấu hình! Thiết bị sẽ khởi động lại sau 2 giây. Vui lòng tải lại trang này nếu bạn đổi Device ID.");
-      addLog("CMD: Gửi Cấu hình Hệ thống & Reboot");
-  }
-
-  function addLog(msg) {
-    const now = new Date();
-    const timeStr = now.toTimeString().split(' ')[0];
-    const logBox = document.getElementById("logDisplay");
-    logBox.innerHTML = `<div class="log-entry">[${timeStr}] ${msg}</div>` + logBox.innerHTML;
-  }
+    // Tự động kết nối khi mở trang
+    window.onload = function() {
+        doConnect();
+    }
 </script>
+
 </body>
 </html>
