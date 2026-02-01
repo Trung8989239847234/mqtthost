@@ -1,301 +1,158 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIMER 02 - Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        
-        .card { 
-            background: #2d2d2d; 
-            padding: 30px; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-            width: 350px; 
-            text-align: center; 
-            border: 1px solid #444; 
-        }
-        
-        h2 { margin-top: 0; color: #00bcd4; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; }
-        .sub-title { color: #aaa; font-size: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
-
-        .timer-box { 
-            background: #000; 
-            color: #00bcd4; /* Màu xanh cyan cho Timer 02 */
-            font-family: 'Courier New', monospace; 
-            font-size: 48px; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin: 20px 0; 
-            border: 1px solid #333; 
-            text-shadow: 0 0 10px rgba(0, 188, 212, 0.5); 
-        }
-        
-        .status-badge { 
-            padding: 8px 20px; 
-            border-radius: 20px; 
-            font-weight: bold; 
-            color: white; 
-            display: inline-block; 
-            margin-bottom: 15px; 
-            font-size: 14px; 
-            width: 80%; 
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-        .status-on { background-color: #28a745; box-shadow: 0 0 15px #28a745; }
-        .status-off { background-color: #444; color: #aaa; border: 1px solid #666; }
-        .status-wait { background-color: #ffc107; color: #000; }
-        .status-maint { background-color: #dc3545; color: white; animation: blink 1s infinite; }
-        
-        @keyframes blink { 50% { opacity: 0.7; } }
-
-        .input-group { display: flex; justify-content: space-between; margin-bottom: 15px; text-align: left; }
-        .input-wrapper { width: 48%; }
-        .input-wrapper label { font-size: 12px; color: #aaa; font-weight: bold; display: block; margin-bottom: 5px; }
-        
-        input[type="number"] { 
-            width: 100%; padding: 10px; 
-            background: #1a1a1a; 
-            border: 1px solid #444; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            color: white; 
-            box-sizing: border-box; 
-            outline: none; 
-        }
-        input:focus { border-color: #00bcd4; }
-
-        button { 
-            background-color: #00bcd4; /* Màu chủ đạo Timer 02 */
-            color: #000; 
-            border: none; 
-            padding: 12px; 
-            width: 100%; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            margin-top: 10px; 
-        }
-        button:hover { background-color: #00acc1; }
-        button:active { transform: scale(0.98); }
-
-        .maintenance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .btn-m { background: #444; font-size: 13px; padding: 10px 0; margin: 0; color: #ddd; }
-        .btn-m:hover { background: #555; }
-        .btn-manual { color: #ffc107; }
-        .btn-cancel { background: #dc3545; margin-top: 5px; color: white;}
-        .btn-cancel:hover { background: #c82333; }
-
-        .log-title { font-size: 10px; color: #555; text-align: left; margin-top: 20px; text-transform: uppercase; }
-        .log-box { 
-            margin-top: 5px; 
-            background: #000; 
-            border: 1px solid #333; 
-            border-radius: 8px; 
-            padding: 10px; 
-            height: 120px; 
-            overflow-y: auto; 
-            text-align: left; 
-            font-family: 'Courier New', monospace; 
-            font-size: 11px; 
-            color: #00bcd4; 
-        }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px dashed #222; padding-bottom: 2px; }
-        
-        #connStatus { font-size: 10px; color: #666; margin-bottom: 5px; }
-        .conn-ok { color: #28a745 !important; }
-        .conn-err { color: #dc3545 !important; }
-
-    </style>
+  <title>ESP32 MQTT Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+  <style>
+    /* --- CSS GỐC TỪ CODE ESP32 --- */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #fff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    .card { background: #1c1c1e; padding: 20px; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; border: 1px solid #333; margin-bottom: 20px; }
+    .nav-tabs { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .nav-item { cursor: pointer; padding: 8px 16px; color: #888; font-weight: 600; font-size: 14px; text-transform: uppercase; border-radius: 8px; transition: 0.3s; }
+    .nav-item.active { background: #333; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    h2 { font-size: 18px; font-weight: 600; color: #e5e5e5; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .timer-box { background: #000; color: #00ff00; font-family: 'Courier New', monospace; font-size: 56px; padding: 20px 0; border-radius: 12px; margin: 15px 0; border: 1px solid #333; text-shadow: 0 0 10px rgba(0, 255, 0, 0.4); font-weight: bold; }
+    .status-badge { padding: 6px 15px; border-radius: 50px; font-weight: 600; font-size: 12px; display: inline-block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-on { background-color: rgba(40, 167, 69, 0.2); color: #4cd964; border: 1px solid #28a745; }
+    .status-off { background-color: rgba(255, 255, 255, 0.1); color: #aaa; border: 1px solid #666; }
+    .status-wait { background-color: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
+    .status-maint { background-color: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #dc3545; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0.5; } }
+    .control-row { background-color: #2c2c2e; border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #3a3a3c; }
+    .label-section { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px; color: #e5e5e5; text-align: left; }
+    .icon { font-size: 20px; }
+    .sub-text { font-size: 12px; color: #8e8e93; display: block; font-weight: normal;}
+    .stepper { display: flex; align-items: center; background-color: #3a3a3c; border-radius: 8px; padding: 2px; }
+    .btn-step { background: none; border: none; color: #fff; font-size: 20px; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .btn-step:active { opacity: 0.5; transform: scale(0.9); }
+    .btn-step:hover { color: #0a84ff; }
+    .stepper input { background: transparent; border: none; color: #fff; font-size: 16px; width: 50px; text-align: center; font-weight: bold; outline: none; -moz-appearance: textfield; }
+    .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .btn-primary { background-color: #0a84ff; color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 5px; box-shadow: 0 2px 10px rgba(10, 132, 255, 0.3); }
+    .btn-primary:active { transform: scale(0.98); }
+    .maintenance-title { color: #8e8e93; font-size: 11px; font-weight: bold; text-align: left; margin: 25px 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .maintenance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .btn-m { background: #2c2c2e; color: #fff; border: 1px solid #3a3a3c; font-size: 12px; padding: 10px 0; border-radius: 8px; cursor: pointer; }
+    .btn-m:hover { background: #3a3a3c; }
+    .btn-manual { color: #ffd60a; border-color: rgba(255, 214, 10, 0.3); }
+    .btn-cancel { background: rgba(255, 69, 58, 0.1); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.3); margin-top: 10px; width: 100%; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .input-group { margin-bottom: 12px; text-align: left; }
+    .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+    .input-group input, .input-group select { width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; color: white; padding: 10px; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+    .input-group input:focus { border-color: #0a84ff; outline: none; }
+    
+    /* CSS MỚI CHO DASHBOARD */
+    .connection-status { margin-bottom: 15px; font-size: 12px; padding: 5px 10px; border-radius: 4px; background: #333; display: inline-block;}
+    .status-dot { height: 8px; width: 8px; background-color: #bbb; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .connected .status-dot { background-color: #4cd964; box-shadow: 0 0 5px #4cd964; }
+    .disconnected .status-dot { background-color: #ff453a; }
+    .log-area { font-family: monospace; font-size: 10px; color: #00ff00; height: 100px; overflow-y: scroll; background: #000; padding: 5px; border: 1px solid #333; border-radius: 5px; text-align: left; margin-top: 20px;}
+    .btn-connect { background: #28a745; margin-bottom: 10px; }
+    .btn-disconnect { background: #dc3545; display: none; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>DEVICE: TIMER 02</h2>
-    <div class="sub-title">EMQX CLOUD CONTROL</div>
-    <div id="connStatus">Đang kết nối MQTT (WSS)...</div>
+  <div class="card" id="config-card">
+    <h2>📡 KẾT NỐI SERVER MQTT</h2>
+    <div style="font-size: 11px; color: #aaa; margin-bottom: 15px;">
+      Lưu ý: Dùng trình duyệt web phải kết nối qua Port <b>WebSocket (WSS)</b>, không dùng Port 1883.
+    </div>
     
-    <div id="statusBadge" class="status-badge status-off">ĐANG TẮT</div>
-    
-    <div id="timerDisplay" class="timer-box">--:--</div>
-    
-    <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
-
     <div class="input-group">
-      <div class="input-wrapper">
-        <label>NGHỈ (Phút)</label>
-        <input type="number" id="offMin" value="1">
+      <label>Host (EMQX Server)</label>
+      <input type="text" id="mqtt_host" value="n21f2dda.ala.dedicated.aws.emqxcloud.com">
+    </div>
+    <div class="input-group">
+      <label>Port (WebSocket SSL - Thường là 8084 hoặc 8083)</label>
+      <input type="number" id="mqtt_port" value="8084">
+    </div>
+    <div class="input-group">
+      <label>Path (Đường dẫn - Thường là /mqtt)</label>
+      <input type="text" id="mqtt_path" value="/mqtt">
+    </div>
+    <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="mqtt_user" value="anhtrung1">
+    </div>
+    <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="mqtt_pass" value="anhtrung1">
+    </div>
+    <div class="input-group">
+        <label>Device ID (Phải khớp với code nạp vào mạch)</label>
+        <input type="text" id="device_id" value="timer02" style="border-color: #0a84ff; font-weight: bold;">
+    </div>
+    <button class="btn-primary btn-connect" onclick="connectMQTT()" id="btnConnect">KẾT NỐI</button>
+    <button class="btn-primary btn-disconnect" onclick="disconnectMQTT()" id="btnDisconnect">NGẮT KẾT NỐI</button>
+    <div id="connectionMsg" style="font-size: 12px; margin-top: 5px; color: #aaa;">Chưa kết nối</div>
+  </div>
+
+  <div class="card" id="control-card" style="opacity: 0.5; pointer-events: none;">
+    <div class="nav-tabs">
+      <div class="nav-item active">BẢNG ĐIỀU KHIỂN TỪ XA</div>
+    </div>
+
+    <div id="home" class="tab-content active">
+      <div class="connection-status disconnected" id="statusIndicator">
+        <span class="status-dot"></span> <span id="statusText">Disconnected</span>
       </div>
-      <div class="input-wrapper">
-        <label>CHẠY (Giây)</label>
-        <input type="number" id="onSec" value="5">
+
+      <div id="statusBadge" class="status-badge status-off">WAITING...</div>
+      <h2>ESP32 TIMER PRO</h2>
+      <div id="timerDisplay" class="timer-box">--:--</div>
+
+      <div class="control-row">
+        <div class="label-section">
+          <div class="icon">🏃</div>
+          <div><div>CHẠY (On)</div><span class="sub-text">Thời gian bật Relay</span></div>
+        </div>
+        <div class="stepper">
+          <button class="btn-step" onclick="publishCmd('set/sec', parseInt(document.getElementById('onSec').value) - 1)">−</button>
+          <input type="number" id="onSec" value="5" onchange="publishCmd('set/sec', this.value)">
+          <button class="btn-step" onclick="publishCmd('set/sec', parseInt(document.getElementById('onSec').value) + 1)">+</button>
+        </div>
       </div>
-    </div>
 
-    <button onclick="sendSave()">LƯU CÀI ĐẶT</button>
+      <div class="control-row">
+        <div class="label-section">
+          <div class="icon">💤</div>
+          <div><div>NGHỈ (Off)</div><span class="sub-text">Thời gian tắt Relay</span></div>
+        </div>
+        <div class="stepper">
+          <button class="btn-step" onclick="publishCmd('set/min', parseInt(document.getElementById('offMin').value) - 1)">−</button>
+          <input type="number" id="offMin" value="1" onchange="publishCmd('set/min', this.value)">
+          <button class="btn-step" onclick="publishCmd('set/min', parseInt(document.getElementById('offMin').value) + 1)">+</button>
+        </div>
+      </div>
 
-    <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
-    <div style="text-align: left; font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: 10px;">
-        🔧 CHẾ ĐỘ BẢO TRÌ (Tạm dừng)
-    </div>
-    
-    <div class="maintenance-grid">
-      <button class="btn-m" onclick="sendMaint(1)">7 Phút</button>
-      <button class="btn-m" onclick="sendMaint(2)">15 Phút</button>
-      <button class="btn-m" onclick="sendMaint(3)">30 Phút</button>
-      <button class="btn-m" onclick="sendMaint(4)">50 Phút</button>
-      <button class="btn-m" onclick="sendMaint(5)">80 Phút</button>
-      <button class="btn-m btn-manual" onclick="sendMaint(6)">∞ Thủ công</button>
-    </div>
-    
-    <button class="btn-cancel" onclick="sendMaint(0)">HỦY BẢO TRÌ (CHẠY LẠI)</button>
-
-    <div class="log-title">> SYSTEM LOGS (TIMER 02)_</div>
-    <div id="logDisplay" class="log-box">
-       <div class="log-entry">Waiting for data...</div>
+      <button class="btn-primary" onclick="publishSave()">LƯU CÀI ĐẶT</button>
+      
+      <div class="maintenance-title">🔧 Chế độ bảo trì</div>
+      <div class="maintenance-grid">
+        <button class="btn-m" onclick="publishMaint(1)">7 Phút</button>
+        <button class="btn-m" onclick="publishMaint(2)">15 Phút</button>
+        <button class="btn-m" onclick="publishMaint(3)">30 Phút</button>
+        <button class="btn-m" onclick="publishMaint(4)">50 Phút</button>
+        <button class="btn-m" onclick="publishMaint(5)">80 Phút</button>
+        <button class="btn-m btn-manual" onclick="publishMaint(6)">∞ Thủ công</button>
+      </div>
+      <button class="btn-cancel" onclick="publishMaint(0)">HỦY BẢO TRÌ</button>
+      
+      <div class="log-area" id="mqttLog">System Ready...</div>
     </div>
   </div>
 
 <script>
-    // --- CẤU HÌNH MQTT ---
-    const mqtt_host = "n21f2dda.ala.dedicated.aws.emqxcloud.com";
-    const mqtt_port = 8084; // Cổng WSS
-    const mqtt_path = "/mqtt";
-    const mqtt_user = "anhtrung1";
-    const mqtt_pass = "anhtrung1";
-    
-    // --- TOPICS CHO TIMER 02 ---
-    const DEVICE_ID = "timer02"; // <--- QUAN TRỌNG
-    
-    const TOPIC_STATUS    = "esp32/" + DEVICE_ID + "/status";
-    const TOPIC_SET_MIN   = "esp32/" + DEVICE_ID + "/set/min";
-    const TOPIC_SET_SEC   = "esp32/" + DEVICE_ID + "/set/sec";
-    const TOPIC_CMD_SAVE  = "esp32/" + DEVICE_ID + "/cmd/save";
-    const TOPIC_CMD_MAINT = "esp32/" + DEVICE_ID + "/cmd/maint";
-
-    // Client ID ngẫu nhiên
-    const clientId = "web_" + DEVICE_ID + "_" + Math.random().toString(16).substr(2, 8);
-    
-    const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, mqtt_path, clientId);
-
-    client.onConnectionLost = onConnectionLost;
-    client.onMessageArrived = onMessageArrived;
-
-    const options = {
-        useSSL: true,
-        userName: mqtt_user,
-        password: mqtt_pass,
-        onSuccess: onConnect,
-        onFailure: onFailure
-    };
-
-    connectMQTT();
-
-    function connectMQTT() {
-        document.getElementById("connStatus").innerHTML = "Đang kết nối tới EMQX...";
-        client.connect(options);
-    }
-
-    function onConnect() {
-        console.log("MQTT Connected to " + DEVICE_ID);
-        document.getElementById("connStatus").innerHTML = "● MQTT ONLINE (" + DEVICE_ID + ")";
-        document.getElementById("connStatus").className = "conn-ok";
-        
-        client.subscribe(TOPIC_STATUS);
-        addLogSystem("Web đã kết nối tới " + DEVICE_ID + "!");
-    }
-
-    function onFailure(message) {
-        console.log("Connection Failed: " + message.errorMessage);
-        document.getElementById("connStatus").innerHTML = "● MẤT KẾT NỐI (Thử lại sau 5s...)";
-        document.getElementById("connStatus").className = "conn-err";
-        setTimeout(connectMQTT, 5000);
-    }
-
-    function onConnectionLost(responseObject) {
-        if (responseObject.errorCode !== 0) {
-            console.log("Connection Lost: " + responseObject.errorMessage);
-            document.getElementById("connStatus").innerHTML = "● MẤT KẾT NỐI";
-            document.getElementById("connStatus").className = "conn-err";
-            setTimeout(connectMQTT, 5000);
-        }
-    }
-
-    function onMessageArrived(message) {
-        if (message.destinationName === TOPIC_STATUS) {
-            try {
-                const data = JSON.parse(message.payloadString);
-                updateUI(data);
-            } catch (e) {
-                console.error("Lỗi JSON:", e);
-            }
-        }
-    }
-
-    function updateUI(data) {
-        document.getElementById("timerDisplay").innerHTML = data.time_rem;
-        const badge = document.getElementById("statusBadge");
-        
-        if (data.maint > 0) {
-            badge.innerHTML = "🔧 ĐANG BẢO TRÌ (MODE " + data.maint + ")";
-            badge.className = "status-badge status-maint";
-        } else if (data.status === "RUNNING" || data.status === "ON RUN" || data.status === "DANG CHAY (ON)") {
-            badge.innerHTML = "RUNNING (ON)";
-            badge.className = "status-badge status-on";
-        } else if (data.status === "CHO RESET") {
-            badge.innerHTML = "WAITING RESET...";
-            badge.className = "status-badge status-wait";
-        } else {
-            badge.innerHTML = "SLEEPING (OFF)";
-            badge.className = "status-badge status-off";
-        }
-
-        if(document.activeElement.id !== "offMin" && document.activeElement.id !== "onSec") {
-             if(data.set_min !== undefined) document.getElementById("offMin").value = data.set_min;
-             if(data.set_sec !== undefined) document.getElementById("onSec").value = data.set_sec;
-        }
-    }
-
-    function sendMQTT(topic, payload) {
-        if(client.isConnected()) {
-            message = new Paho.MQTT.Message(payload.toString());
-            message.destinationName = topic;
-            client.send(message);
-        } else {
-            alert("Mất kết nối MQTT! Vui lòng đợi...");
-        }
-    }
-
-    function sendSave() {
-        const m = document.getElementById("offMin").value;
-        const s = document.getElementById("onSec").value;
-        sendMQTT(TOPIC_SET_MIN, m);
-        sendMQTT(TOPIC_SET_SEC, s);
-        setTimeout(() => { sendMQTT(TOPIC_CMD_SAVE, "1"); }, 200);
-        addLogSystem("Lệnh: LƯU CÀI ĐẶT (" + m + "p/" + s + "s)");
-    }
-
-    function sendMaint(mode) {
-        sendMQTT(TOPIC_CMD_MAINT, mode.toString());
-        if(mode === 0) addLogSystem("Lệnh: HỦY BẢO TRÌ");
-        else addLogSystem("Lệnh: BẬT BẢO TRÌ Mode " + mode);
-    }
-
-    function addLogSystem(msg) {
-        const now = new Date();
-        const timeStr = "[" + now.toTimeString().split(' ')[0] + "] ";
-        const logBox = document.getElementById("logDisplay");
-        const newLog = '<div class="log-entry">' + timeStr + msg + '</div>';
-        logBox.innerHTML = newLog + logBox.innerHTML;
-        if(logBox.children.length > 20) logBox.removeChild(logBox.lastChild);
-    }
-
-</script>
-
-</body>
-</html>
+  var client;
+  var deviceId = "timer02";
+  var topicStatus = ""; 
+  
+  function log(msg) {
+    var logArea = document.getElementById("mqttLog");
+    var d = new Date
