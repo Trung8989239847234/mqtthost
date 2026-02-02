@@ -135,11 +135,6 @@
       <div style="text-align:left; color:#0a84ff; font-size:12px; margin-bottom:10px;">Nhập thông tin mới để thay đổi</div>
       
       <div class="input-group">
-        <label>SĐT Khách hàng</label>
-        <input type="text" id="cfg_phone" value="0907888149">
-      </div>
-
-      <div class="input-group">
         <label>Device ID (Tên thiết bị)</label>
         <input type="text" id="cfg_devid" value="timer02">
       </div>
@@ -156,19 +151,9 @@
       <div class="input-group">
         <label>Trạng thái Blynk</label>
         <select id="cfg_b_en">
-            <option value="0">Tắt (Disable)</option>
             <option value="1">Bật (Enable)</option>
+            <option value="0">Tắt (Disable)</option>
         </select>
-      </div>
-
-      <div class="input-group">
-        <label>Blynk Server</label>
-        <input type="text" id="cfg_b_host" value="blynk.hqn.vn">
-      </div>
-      
-      <div class="input-group">
-        <label>Blynk Port</label>
-        <input type="number" id="cfg_b_port" value="8080">
       </div>
 
       <div class="input-group">
@@ -192,7 +177,7 @@
       </div>
       <div class="input-group">
         <label>MQTT Pass</label>
-        <input type="password" id="cfg_m_pass" value="anhtrung1">
+        <input type="text" id="cfg_m_pass" value="anhtrung1">
       </div>
       
       <button class="btn-primary" onclick="saveSystemConfigMQTT()">LƯU & KHỞI ĐỘNG LẠI</button>
@@ -209,20 +194,24 @@
 <script>
   // --- 1. CẤU HÌNH MQTT ---
   const mqtt_host = "n21f2dda.ala.dedicated.aws.emqxcloud.com";
-  const mqtt_port = 8084; // Cổng WSS (SSL)
+  const mqtt_port = 8084; // WSS Port
   const mqtt_path = "/mqtt";
   const mqtt_user = "anhtrung1";
   const mqtt_pass = "anhtrung1";
   
-  // Thông tin mặc định
-  const DEFAULT_PHONE = "0907888149";
-  const DEFAULT_DEVID = "timer02";
+  // Bạn cần đảm bảo DEVICE_ID này trùng với biến config_device_id trong ESP32
+  // Nếu bạn đổi Device ID trong Tab Cài đặt, lần sau bạn phải sửa dòng này trong file HTML
+  const DEVICE_ID = "timer02"; 
   
-  // Tạo base topic theo cấu trúc: khachhang/[sdt]/[devid]/...
-  var current_phone = document.getElementById("cfg_phone").value || DEFAULT_PHONE;
-  var current_devid = document.getElementById("cfg_devid").value || DEFAULT_DEVID;
+  // Topic
+  const TOPIC_STATUS    = "esp32/" + DEVICE_ID + "/status";
+  const TOPIC_SET_MIN   = "esp32/" + DEVICE_ID + "/set/min";
+  const TOPIC_SET_SEC   = "esp32/" + DEVICE_ID + "/set/sec";
+  const TOPIC_CMD_SAVE  = "esp32/" + DEVICE_ID + "/cmd/save";
+  const TOPIC_CMD_MAINT = "esp32/" + DEVICE_ID + "/cmd/maint";
   
-  var TOPIC_BASE = "khachhang/" + current_phone + "/" + current_devid + "/";
+  // Topic mới để gửi cấu hình
+  const TOPIC_CMD_SYSCONFIG = "esp32/" + DEVICE_ID + "/cmd/sysconfig";
 
   // --- LOGIC GIAO DIỆN TAB ---
   function switchTab(tabId) {
@@ -236,7 +225,7 @@
   function closeModal() { document.getElementById('passModal').style.display = 'none'; }
   function checkPass() {
     var p = document.getElementById('accessPass').value;
-    if(p === "1234") { 
+    if(p === "1234") { // Mật khẩu truy cập Tab Cài đặt
         closeModal(); switchTab('settings');
     } else { alert("Sai mật khẩu!"); }
   }
@@ -251,7 +240,7 @@
   }
 
   // --- LOGIC KẾT NỐI MQTT ---
-  const clientId = "web_" + current_devid + "_" + Math.random().toString(16).substr(2, 8);
+  const clientId = "web_" + DEVICE_ID + "_" + Math.random().toString(16).substr(2, 8);
   const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, mqtt_path, clientId);
 
   client.onConnectionLost = onConnectionLost;
@@ -273,13 +262,10 @@
 
   function onConnect() {
     console.log("MQTT Connected");
-    document.getElementById("conn-status").innerHTML = "● CONNECTED (" + current_phone + "/" + current_devid + ")";
+    document.getElementById("conn-status").innerHTML = "● CONNECTED (AWS EMQX)";
     document.getElementById("conn-status").style.color = "#00ff00";
-    
-    // Subscribe đúng Topic Status
-    var topic_sub = TOPIC_BASE + "status";
-    client.subscribe(topic_sub);
-    addLog("Web: Connected. Sub: " + topic_sub);
+    client.subscribe(TOPIC_STATUS);
+    addLog("Web: Connected to " + DEVICE_ID);
   }
 
   function onFailure(message) {
@@ -299,8 +285,7 @@
   }
 
   function onMessageArrived(message) {
-    // Topic nhận được: khachhang/0907888149/timer02/status
-    if (message.destinationName.endsWith("/status")) {
+    if (message.destinationName === TOPIC_STATUS) {
        try {
          const data = JSON.parse(message.payloadString);
          document.getElementById("timerDisplay").innerHTML = data.time_rem;
@@ -325,15 +310,10 @@
     }
   }
 
-  function sendMQTT(subtopic, payload) {
-      // Cập nhật lại Base Topic phòng trường hợp người dùng đổi ô Input
-      current_phone = document.getElementById("cfg_phone").value;
-      current_devid = document.getElementById("cfg_devid").value;
-      TOPIC_BASE = "khachhang/" + current_phone + "/" + current_devid + "/";
-
+  function sendMQTT(topic, payload) {
       if(client.isConnected()) {
         message = new Paho.MQTT.Message(payload.toString());
-        message.destinationName = TOPIC_BASE + subtopic;
+        message.destinationName = topic;
         client.send(message);
       } else { alert("Chưa kết nối tới Server MQTT!"); }
   }
@@ -342,24 +322,25 @@
   function sendSave() {
       const m = document.getElementById("offMin").value;
       const s = document.getElementById("onSec").value;
-      sendMQTT("set/min", m);
-      sendMQTT("set/sec", s);
+      sendMQTT(TOPIC_SET_MIN, m);
+      sendMQTT(TOPIC_SET_SEC, s);
       setTimeout(() => {
-          sendMQTT("cmd/save", "1");
+          sendMQTT(TOPIC_CMD_SAVE, "1");
           addLog("CMD: Lưu cài đặt (" + m + "m " + s + "s)");
       }, 200);
   }
 
   function sendMaint(mode) {
-      sendMQTT("cmd/maint", mode.toString());
+      sendMQTT(TOPIC_CMD_MAINT, mode.toString());
       if(mode === 0) addLog("CMD: Hủy Bảo Trì");
       else addLog("CMD: Bật Bảo Trì Mode " + mode);
   }
   
-  // --- Gửi lệnh Lưu Cấu Hình Hệ Thống (Tab Settings) ---
+  // --- MỚI: Gửi lệnh Lưu Cấu Hình Hệ Thống (Tab Settings) ---
   function saveSystemConfigMQTT() {
       if(!confirm("CẢNH BÁO: Thiết bị sẽ khởi động lại và kết nối với thông số mới. Bạn có chắc không?")) return;
       
+      // Thu thập dữ liệu từ form
       var payload = {};
       
       var val_ssid = document.getElementById('cfg_ssid').value;
@@ -369,11 +350,7 @@
       if(val_pass.trim() !== "") payload.pass = val_pass;
       
       payload.devid = document.getElementById('cfg_devid').value;
-      payload.phone = document.getElementById('cfg_phone').value; // Gửi SĐT mới
       payload.b_en = document.getElementById('cfg_b_en').value;
-      
-      payload.b_host = document.getElementById('cfg_b_host').value;
-      payload.b_port = document.getElementById('cfg_b_port').value;
       payload.b_token = document.getElementById('cfg_b_token').value;
       
       payload.m_host = document.getElementById('cfg_m_host').value;
@@ -381,11 +358,11 @@
       payload.m_user = document.getElementById('cfg_m_user').value;
       payload.m_pass = document.getElementById('cfg_m_pass').value;
       
-      // Gửi đi topic: .../cmd/sysconfig
+      // Gửi đi
       var jsonStr = JSON.stringify(payload);
-      sendMQTT("cmd/sysconfig", jsonStr);
+      sendMQTT(TOPIC_CMD_SYSCONFIG, jsonStr);
       
-      alert("Đã gửi lệnh cấu hình! Thiết bị sẽ khởi động lại.");
+      alert("Đã gửi lệnh cấu hình! Thiết bị sẽ khởi động lại sau 2 giây. Vui lòng tải lại trang này nếu bạn đổi Device ID.");
       addLog("CMD: Gửi Cấu hình Hệ thống & Reboot");
   }
 
