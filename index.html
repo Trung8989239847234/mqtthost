@@ -204,6 +204,73 @@
     .simple-sensors .unit{font-size:13px;font-weight:800;opacity:.75;margin-left:4px}
 @media (max-width: 420px){ .simple-sensors{font-size:24px} }
 
+    /* === [MỚI] STATUS DOT + SETTINGS COLLAPSE + LOCK === */
+    .simple-sensors{
+      transition: opacity .25s ease;
+      gap:16px;
+    }
+    .simple-sensors.stale{ opacity:.45; }
+    .status-dot{
+      width:9px;height:9px;border-radius:999px;
+      display:inline-block;
+      margin-right:10px;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.15);
+      vertical-align:middle;
+      transform: translateY(-1px);
+    }
+    .status-ok{ background:#34c759; box-shadow:0 0 10px rgba(52,199,89,.35), 0 0 0 1px rgba(255,255,255,0.15); }
+    .status-warn{ background:#ffcc00; box-shadow:0 0 10px rgba(255,204,0,.30), 0 0 0 1px rgba(255,255,255,0.15); }
+    .status-bad{ background:#ff3b30; box-shadow:0 0 10px rgba(255,59,48,.30), 0 0 0 1px rgba(255,255,255,0.15); }
+
+    .settings-bar{
+      margin:10px 0 6px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .btn-ghost{
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      color:#e5e5e5;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      font-size:13px;
+      cursor:pointer;
+      transition:.15s;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn-ghost:active{opacity:.65;transform:scale(.98)}
+    .btn-ghost .chev{opacity:.75;transition:transform .2s ease}
+    .btn-ghost.open .chev{transform:rotate(180deg)}
+    .btn-ghost.locked{border-color:rgba(255,59,48,.35);}
+
+    .settings-panel{
+      overflow:hidden;
+      max-height:0;
+      opacity:0;
+      transform:translateY(-4px);
+      transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
+    }
+    .settings-panel.open{
+      max-height:2600px; /* đủ lớn cho toàn bộ phần cài đặt */
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    /* Khi khóa: làm mờ toàn bộ phần cài đặt */
+    .settings-panel.is-locked{ opacity:.55; }
+    .settings-panel.is-locked button,
+    .settings-panel.is-locked input{
+      pointer-events:none;
+    }
+
   </style>
 </head>
 
@@ -235,13 +302,25 @@
       <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
 
       <!-- [MỚI] AMPS / TEMP (đơn giản) -->
-      <div class="simple-sensors">
+      <div class="simple-sensors" id="simpleSensors">
+        <span id="statusDot" class="status-dot status-bad" title="MQTT / Telemetry"></span>
         <div><span id="ampsValue">--</span><span class="unit">A</span></div>
         <div><span id="tempValue">--</span><span class="unit">°C</span></div>
       </div>
 
 
-      <div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH (PRESETS)</div>
+
+      <div class="settings-bar">
+        <button type="button" id="btnToggleSettings" class="btn-ghost" onclick="toggleSettings()">
+          ⚙️ CÀI ĐẶT <span class="chev" id="settingsChevron">▾</span>
+        </button>
+        <button type="button" id="btnLock" class="btn-ghost" onclick="toggleLock()" title="Khóa / Mở khóa thao tác">
+          🔓
+        </button>
+      </div>
+
+      <div id="settingsPanel" class="settings-panel">
+<div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH (PRESETS)</div>
       <div class="presets-container">
         <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
         <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
@@ -288,6 +367,10 @@
       <div class="log-box" id="logDisplay">
         <div class="log-entry">Log: ready.</div>
       </div>
+      </div>
+
+    </div>
+
     </div>
 
     <div id="schedule" class="tab-content">
@@ -386,6 +469,10 @@
 /* ========= STATE ========= */
 let client = null;
 let lastUserInteraction = 0;
+let mqttConnState = 'disconnected';
+let lastTelemetryTs = 0;
+const STALE_MS = 10000; // 10s không có telemetry => coi như stale
+let uiLocked = false;
 
 const state = {
   time_rem: "--:--", rem_s: null, off_min: null, on_sec: null,
@@ -400,6 +487,61 @@ function showToast(msg) {
   x.innerText = msg;
   x.className = "show";
   setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+
+function updateStatusDot(){
+  const dot = document.getElementById("statusDot");
+  if(!dot) return;
+
+  const now = Date.now();
+  const stale = (!lastTelemetryTs) || (now - lastTelemetryTs > STALE_MS);
+
+  dot.classList.remove("status-ok","status-warn","status-bad");
+
+  if(mqttConnState === "connected"){
+    dot.classList.add(stale ? "status-warn" : "status-ok");
+  } else if(mqttConnState === "reconnecting"){
+    dot.classList.add("status-warn");
+  } else {
+    dot.classList.add("status-bad");
+  }
+}
+
+function setControlsDisabled(disabled){
+  const panel = document.getElementById("settingsPanel");
+  if(!panel) return;
+
+  // chỉ khóa trong panel, không ảnh hưởng nút toggle/lock
+  panel.classList.toggle("is-locked", disabled);
+
+  panel.querySelectorAll("button, input").forEach(el=>{
+    el.disabled = disabled;
+  });
+}
+
+function toggleLock(){
+  uiLocked = !uiLocked;
+  const btn = document.getElementById("btnLock");
+  if(btn) {
+    btn.textContent = uiLocked ? "🔒" : "🔓";
+    btn.classList.toggle("locked", uiLocked);
+  }
+  setControlsDisabled(uiLocked);
+  showToast(uiLocked ? "Đã khóa thao tác" : "Đã mở khóa");
+}
+
+function toggleSettings(){
+  const panel = document.getElementById("settingsPanel");
+  const btn = document.getElementById("btnToggleSettings");
+  if(!panel || !btn) return;
+
+  const open = !panel.classList.contains("open");
+  panel.classList.toggle("open", open);
+  btn.classList.toggle("open", open);
+
+  // Khi mở panel mà đang locked thì vẫn giữ trạng thái lock
+  if(uiLocked) setControlsDisabled(true);
 }
 
 function addLog(msg){
@@ -572,6 +714,8 @@ function mqttConnect(){
   });
 
   client.on("connect", () => {
+    mqttConnState = "connected";
+    updateStatusDot();
     addLog("MQTT Connected!");
     document.getElementById("connBadge").textContent = "MQTT: CONNECTED";
     showToast("Đã kết nối Server!", "show"); // Toast báo kết nối
@@ -589,8 +733,16 @@ function mqttConnect(){
     });
   });
 
-  client.on("reconnect", () => document.getElementById("connBadge").textContent = "MQTT: RECONNECTING...");
-  client.on("close", () => document.getElementById("connBadge").textContent = "MQTT: DISCONNECTED");
+  client.on("reconnect", () => {
+    mqttConnState = "reconnecting";
+    updateStatusDot();
+    document.getElementById("connBadge").textContent = "MQTT: RECONNECTING...";
+  });
+  client.on("close", () => {
+    mqttConnState = "disconnected";
+    updateStatusDot();
+    document.getElementById("connBadge").textContent = "MQTT: DISCONNECTED";
+  });
   client.on("error", (e) => addLog("MQTT Err: " + e.message));
 
   client.on("message", (topic, payload) => {
@@ -624,6 +776,8 @@ function mqttConnect(){
            // Nếu đang mở tab Schedule thì vẽ lại bảng
            if(document.getElementById('schedule').classList.contains('active')) renderPauseTable();
         }
+        lastTelemetryTs = Date.now();
+        updateStatusDot();
         renderHome();
       }catch(e){}
     }
@@ -660,6 +814,8 @@ function rpcCall(method, params){
 
 /* ========= ACTIONS ========= */
 function adjustValue(id,d){
+  if(uiLocked){ showToast('Đang khóa thao tác'); return; }
+
   const i=document.getElementById(id); let c=parseInt(i.value)||0; let n=c+d;
   if(n<0) n=0; if(id==='onSec' && n<1) n=1; i.value=n;
   lastUserInteraction=Date.now();
@@ -668,17 +824,23 @@ document.getElementById('offMin').addEventListener('input',()=>lastUserInteracti
 document.getElementById('onSec').addEventListener('input',()=>lastUserInteraction=Date.now());
 
 function applyPreset(m,s){
+  if(uiLocked){ showToast('Đang khóa thao tác'); return; }
+
   document.getElementById('offMin').value = m; document.getElementById('onSec').value = s;
   saveSettings(); lastUserInteraction = Date.now() + 2000;
 }
 function saveSettings(){
+  if(uiLocked){ showToast('Đang khóa thao tác'); return; }
+
   const m = parseInt(document.getElementById("offMin").value||"0",10);
   const s = parseInt(document.getElementById("onSec").value||"0",10);
   rpcCall("setOffMin", m); rpcCall("setOnSec", s); rpcCall("save", 1);
   showToast("Đã gửi cài đặt...", "show"); // Toast
   lastUserInteraction=0;
 }
-function setMaint(mode){ 
+function setMaint(mode){
+  if(uiLocked){ showToast('Đang khóa thao tác'); return; }
+ 
     rpcCall("setMaintenance", mode);
     showToast("Gửi lệnh bảo trì...", "show"); // Toast
 }
@@ -719,18 +881,24 @@ function renderHome(){
   timerBox.style.setProperty("--accentGlow", ag);
   timerBox.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.1), 0 0 28px " + ag;
 
+  // [MỚI] Sensor UI (amps / temp) + stale detect
+  const sensorsBox = document.getElementById("simpleSensors");
+  const stale = (!lastTelemetryTs) || (Date.now() - lastTelemetryTs > STALE_MS);
 
-  // [MỚI] Sensor UI (amps / temp)
+  if(sensorsBox) sensorsBox.classList.toggle("stale", stale);
+
   const aEl = document.getElementById("ampsValue");
   if(aEl){
     const v = parseFloat(state.amps);
-    aEl.textContent = Number.isFinite(v) ? v.toFixed(2) : "--";
+    aEl.textContent = (!stale && Number.isFinite(v)) ? v.toFixed(2) : "--";
   }
   const tEl = document.getElementById("tempValue");
   if(tEl){
     const v = parseFloat(state.temp);
-    tEl.textContent = Number.isFinite(v) ? v.toFixed(2) : "--";
+    tEl.textContent = (!stale && Number.isFinite(v)) ? v.toFixed(2) : "--";
   }
+  updateStatusDot();
+
 
   if(Date.now()-lastUserInteraction>5000){
     if(state.off_min!==null) document.getElementById("offMin").value=state.off_min;
@@ -810,6 +978,14 @@ loadUiSettings();
 updateTopicInfo();
 renderHome();
 setTimeout(mqttConnect, 350);
+  // [MỚI] default: ẩn phần cài đặt để màn hình gọn
+  // (mở bằng nút ⚙️ CÀI ĐẶT)
+  // lock mặc định: OFF
+  (function(){
+    const panel = document.getElementById('settingsPanel');
+    if(panel) panel.classList.remove('open');
+    updateStatusDot();
+  })();
 </script>
 </body>
 </html>
