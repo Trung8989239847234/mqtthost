@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ESP32 TIMER PRO (EMQX)</title>
 
-  <!-- MQTT over WebSocket (browser) -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
-    /* === Giữ nguyên style giống webserver của bạn === */
+    /* === Giữ nguyên style === */
     :root { --accent:#00ff00; --accentGlow: rgba(0,255,0,0.55); }
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -130,7 +129,6 @@
       <div id="tab-settings" class="nav-item" onclick="switchTab('settings')">CÀI ĐẶT</div>
     </div>
 
-    <!-- HOME -->
     <div id="home" class="tab-content active">
       <div id="statusBadge" class="status-badge status-off">SLEEPING (OFF)</div>
       <div class="badge-conn" id="connBadge">MQTT: DISCONNECTED</div>
@@ -189,7 +187,6 @@
       </div>
     </div>
 
-    <!-- SCHEDULE -->
     <div id="schedule" class="tab-content">
       <h2>Hẹn giờ nghỉ</h2>
       <div class="card2">
@@ -212,7 +209,6 @@
 
         <div class="btn-row">
           <button class="btn-m" onclick="addPauseRow()">+ Thêm mốc</button>
-          <button class="btn-m" onclick="loadPauseFromDevice()">Tải</button>
           <button class="btn-save" onclick="savePause()">Lưu</button>
         </div>
 
@@ -222,7 +218,6 @@
       </div>
     </div>
 
-    <!-- SETTINGS -->
     <div id="settings" class="tab-content">
       <h2>Cấu hình Hệ thống</h2>
 
@@ -290,6 +285,7 @@
 let client = null;
 let lastUserInteraction = 0;
 
+// State local để giữ dữ liệu
 const state = {
   time_rem: "--:--",
   rem_s: null,
@@ -300,7 +296,7 @@ const state = {
   pause_active: 0,
   relay_run: false,
   wait5s: false,
-  pause_json: "[]"
+  pause_json: [] // Chứa mảng object
 };
 
 function addLog(msg){
@@ -311,7 +307,6 @@ function addLog(msg){
   div.className="log-entry";
   div.textContent = `[${t}] ${msg}`;
   box.prepend(div);
-  // giữ tối đa ~80 dòng
   while(box.children.length>80) box.removeChild(box.lastChild);
 }
 
@@ -322,14 +317,9 @@ function switchTab(t){
   document.getElementById(t).classList.add('active');
   document.getElementById('tab-'+t).classList.add('active');
 }
-let scheduleLoaded=false;
 function openSchedule(){
   switchTab('schedule');
-  // Tự load ngay khi vào tab HẸN GIỜ
-  loadPauseFromDevice();
-  // Nếu firmware trả response chậm, retry nhẹ 1 lần
-  setTimeout(()=>{ loadPauseFromDevice(); }, 1200);
-  scheduleLoaded=true;
+  loadPauseFromTelemetry(); // Tải từ state đã lưu
 }
 
 /* ========= Password toggle ========= */
@@ -374,9 +364,7 @@ function loadUiSettings(){
 }
 
 /* ========= Topics ========= */
-function baseTopic(){
-  return "devices/" + getCfg().devid;
-}
+function baseTopic(){ return "devices/" + getCfg().devid; }
 function topicTelemetry(){ return baseTopic() + "/telemetry"; }
 function topicRpcReqPlus(){ return baseTopic() + "/rpc/request/+"; }
 function topicRpcRespPlus(){ return baseTopic() + "/rpc/response/+"; }
@@ -385,8 +373,7 @@ function updateTopicInfo(){
   const info = [
     `PUB Telemetry: ${topicTelemetry()}`,
     `SUB RPC request: ${topicRpcReqPlus()}`,
-    `PUB RPC response: ${baseTopic() + "/rpc/response/{reqId}"}`,
-    `RPC payload: {"method":"setOnSec","params":5} (ví dụ)`
+    `PUB RPC response: ${baseTopic() + "/rpc/response/{reqId}"}`
   ].join("<br>");
   document.getElementById("topicInfo").innerHTML = info;
 }
@@ -396,14 +383,10 @@ function mqttConnect(){
   const cfg = getCfg();
   if(!cfg.host){ alert("Thiếu EMQX Host"); return; }
 
-  // Browser chỉ dùng ws/wss, KHÔNG dùng 1883 TCP trực tiếp.
   const proto = cfg.wss ? "wss" : "ws";
   const url = `${proto}://${cfg.host}:${cfg.wsPort}${cfg.wsPath.startsWith('/')?cfg.wsPath:'/'+cfg.wsPath}`;
 
-  if(client){
-    try{ client.end(true); }catch(e){}
-    client = null;
-  }
+  if(client){ try{ client.end(true); }catch(e){} client = null; }
 
   addLog("MQTT connecting: " + url);
   document.getElementById("connBadge").textContent = "MQTT: CONNECTING...";
@@ -424,14 +407,14 @@ function mqttConnect(){
 
     client.subscribe([topicTelemetry(), topicRpcRespPlus()], (err) => {
       if(err) addLog("SUB error: " + err.message);
-      else addLog("Subscribed telemetry + rpc/response");
-    // Đồng bộ giá trị hiện tại của mạch ngay khi web vừa kết nối:
-    // Gửi RPC setOffMin / setOnSec với params = {} để firmware trả về defaultValue (runOffMin/runOnSec).
-    try{
-      rpcCall("setOffMin", {});  // nhận response.off_min
-      rpcCall("setOnSec", {});   // nhận response.on_sec
-    }catch(e){}
-
+      else {
+        addLog("Subscribed telemetry + rpc/response");
+        // Gửi RPC giả để đồng bộ time
+        rpcCall("setOffMin", {}); 
+        rpcCall("setOnSec", {});
+		// [QUAN TRỌNG] Gọi lệnh mới để lấy Lịch trình ngay lập tức
+        rpcCall("getPauseJson", {});
+      }
     });
   });
 
@@ -449,27 +432,50 @@ function mqttConnect(){
 
   client.on("message", (topic, payload) => {
     const txt = payload.toString();
+    
+    // --- TELEMETRY ---
     if(topic === topicTelemetry()){
       try{
         const obj = JSON.parse(txt);
-        Object.keys(obj).forEach(k => state[k] = obj[k]);
-        // đồng bộ một số field quen thuộc
+        
+        // Cập nhật state
         if(obj.time_rem !== undefined) state.time_rem = obj.time_rem;
-        renderHome();
-        // schedule cần dữ liệu pause_json
+        if(obj.rem_s !== undefined) state.rem_s = obj.rem_s;
+        if(obj.on_sec !== undefined) state.on_sec = obj.on_sec;
+        if(obj.off_min !== undefined) state.off_min = obj.off_min;
+        if(obj.status !== undefined) state.status = obj.status;
+        if(obj.maint_mode !== undefined) state.maint_mode = obj.maint_mode;
+        if(obj.pause_active !== undefined) state.pause_active = obj.pause_active;
+        if(obj.relay_run !== undefined) state.relay_run = obj.relay_run;
+
+        // XỬ LÝ LỊCH TRÌNH (FIX BUG LOAD)
         if(obj.pause_json !== undefined) {
-          state.pause_json = obj.pause_json;
-          if(scheduleLoaded) renderPauseFromJson(state.pause_json);
+           let raw = obj.pause_json;
+           // Nếu MQTT nhận về là chuỗi string, thì parse tiếp
+           if (typeof raw === 'string') {
+               try { raw = JSON.parse(raw); } catch(e){}
+           }
+           // Nếu giờ nó là mảng, gán vào state
+           if(Array.isArray(raw)) state.pause_json = raw;
+           else state.pause_json = [];
+           
+           // Nếu đang ở tab schedule thì render luôn
+           if(document.getElementById('schedule').classList.contains('active')) {
+             renderPauseTable();
+           }
         }
+
+        renderHome();
       }catch(e){}
       return;
     }
-    // rpc response wildcard
+
+    // --- RPC RESPONSE ---
     if(topic.startsWith(baseTopic()+"/rpc/response/")){
       addLog("RPC response: " + txt);
       try{
         const r = JSON.parse(txt);
-        // nếu response có off_min/on_sec thì sync lại input
+        // Sync lại UI từ response
         if(r.off_min !== undefined) document.getElementById("offMin").value = r.off_min;
         if(r.on_sec !== undefined) document.getElementById("onSec").value = r.on_sec;
         if(r.saved_off_min !== undefined) document.getElementById("offMin").value = r.saved_off_min;
@@ -481,17 +487,13 @@ function mqttConnect(){
 }
 
 function mqttDisconnect(){
-  if(client){
-    try{ client.end(true); }catch(e){}
-    client = null;
-  }
+  if(client){ try{ client.end(true); }catch(e){} client = null; }
   document.getElementById("connBadge").textContent = "MQTT: DISCONNECTED";
   addLog("MQTT disconnected");
 }
 
 function mqttPublish(topic, msgObj){
   if(!client || !client.connected){
-    addLog("MQTT not connected");
     alert("MQTT chưa kết nối!");
     return false;
   }
@@ -505,7 +507,7 @@ function rpcCall(method, params){
   const reqId = Date.now().toString();
   const t = baseTopic() + "/rpc/request/" + reqId;
   const ok = mqttPublish(t, { method, params });
-  if(ok) addLog(`RPC -> ${method} (${reqId})`);
+  if(ok) addLog(`RPC -> ${method}`);
   return reqId;
 }
 
@@ -532,11 +534,9 @@ function applyPreset(m,s){
 function saveSettings(){
   const m = parseInt(document.getElementById("offMin").value||"0",10);
   const s = parseInt(document.getElementById("onSec").value||"0",10);
-
   rpcCall("setOffMin", m);
   rpcCall("setOnSec", s);
   rpcCall("save", 1);
-
   const g=document.getElementById("saveMsg");
   g.style.display="block"; setTimeout(()=>g.style.display="none", 2000);
   lastUserInteraction=0;
@@ -548,11 +548,9 @@ function setMaint(mode){
 
 /* ========= HOME render ========= */
 function renderHome(){
-  // timer
   const timerText = (state.time_rem && String(state.time_rem).length>0) ? String(state.time_rem) : "--:--";
   document.getElementById("timerDisplay").textContent = timerText;
 
-  // badge logic giống webserver
   const b = document.getElementById("statusBadge");
   const pb = document.getElementById("progressBar");
   const timerBox = document.getElementById("timerDisplay");
@@ -563,8 +561,6 @@ function renderHome(){
   const pause = (Number(state.pause_active)||0) > 0;
   const maint = Number(state.maint_mode)||0;
   const relay = !!state.relay_run;
-
-  // wait5s: firmware có trạng thái "CHO RESET" -> mình suy ra nếu status == "CHO RESET"
   const wait5s = (String(state.status||"").toUpperCase().includes("CHO RESET")) || (String(state.status||"").toUpperCase().includes("WAIT"));
 
   if(pause){
@@ -579,7 +575,6 @@ function renderHome(){
     b.innerHTML="RUNNING (ON)"; b.className="status-badge status-on";
     pb.style.backgroundColor="#28a745";
     accentColor="#28a745"; accentGlow="rgba(40, 167, 69, 0.55)";
-    // % ON dựa theo on_sec (nếu có) và rem_s
     const total = Number(state.on_sec)||0;
     const cur = Number(state.rem_s)||0;
     if(total>0 && cur>=0) pb.style.width = (cur/total*100) + "%";
@@ -592,7 +587,6 @@ function renderHome(){
     b.innerHTML="SLEEPING (OFF)"; b.className="status-badge status-off";
     pb.style.backgroundColor="#6c757d";
     accentColor="#6c757d"; accentGlow="rgba(108, 117, 125, 0.55)";
-    // % OFF dựa theo off_min và rem_s
     const total = (Number(state.off_min)||0) * 60;
     const cur = Number(state.rem_s)||0;
     if(total>0 && cur>=0) pb.style.width = (cur/total*100) + "%";
@@ -602,27 +596,29 @@ function renderHome(){
   timerBox.style.setProperty("--accentGlow", accentGlow);
   timerBox.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.1), 0 0 28px " + accentGlow;
 
-  // sync inputs nếu user không đang chỉnh
   if(Date.now()-lastUserInteraction>5000){
-    if(state.off_min !== null && state.off_min !== undefined) document.getElementById("offMin").value = state.off_min;
-    if(state.on_sec !== null && state.on_sec !== undefined) document.getElementById("onSec").value = state.on_sec;
+    if(state.off_min !== null) document.getElementById("offMin").value = state.off_min;
+    if(state.on_sec !== null) document.getElementById("onSec").value = state.on_sec;
   }
 }
 
-/* ========= SCHEDULE logic (copy theo webserver, chỉ đổi phần load/save) ========= */
-let pauseRanges=[];
-
+/* ========= SCHEDULE Logic (FIXED) ========= */
+// Chú ý: Ta dùng trực tiếp state.pause_json để render
 function renderPauseTable(){
   const tb=document.getElementById('pauseTbody');
   if(!tb) return;
   tb.innerHTML="";
+  
+  // Sử dụng dữ liệu từ state
+  let pauseRanges = state.pause_json;
   if(!Array.isArray(pauseRanges)) pauseRanges=[];
+
   if(pauseRanges.length===0){
     tb.innerHTML='<tr><td colspan="4" style="color:#8e8e93;padding:15px">Chưa có mốc. Bấm <b>+ Thêm mốc</b></td></tr>';
     return;
   }
 
-  const labels=["CN","T2","T3","T4","T5","T6","T7"]; // 0=CN, 1=T2...
+  const labels=["CN","T2","T3","T4","T5","T6","T7"];
   pauseRanges.forEach(function(r, idx){
     const s=(r&&r.s)?String(r.s):"12:00";
     const e=(r&&r.e)?String(r.e):"13:00";
@@ -657,79 +653,58 @@ function renderPauseTable(){
 function onPauseCellChange(el){
   const idx=parseInt(el.getAttribute('data-idx')||"0",10);
   const k=el.getAttribute('data-k');
-  if(!pauseRanges[idx]) pauseRanges[idx]={s:"12:00",e:"13:00",on:1,w:127};
-  pauseRanges[idx][k]=el.value;
+  if(!state.pause_json[idx]) state.pause_json[idx]={s:"12:00",e:"13:00",on:1,w:127};
+  state.pause_json[idx][k]=el.value;
 }
 function onPauseToggle(el){
   const idx=parseInt(el.getAttribute('data-idx')||"0",10);
-  if(!pauseRanges[idx]) pauseRanges[idx]={s:"12:00",e:"13:00",on:1,w:127};
-  pauseRanges[idx].on = el.checked ? 1 : 0;
+  if(!state.pause_json[idx]) state.pause_json[idx]={s:"12:00",e:"13:00",on:1,w:127};
+  state.pause_json[idx].on = el.checked ? 1 : 0;
 }
 function toggleDay(idx, bit, el){
-  if(!pauseRanges[idx]) return;
-  let w = (pauseRanges[idx].w !== undefined) ? pauseRanges[idx].w : 127;
+  if(!state.pause_json[idx]) return;
+  let w = (state.pause_json[idx].w !== undefined) ? state.pause_json[idx].w : 127;
   const mask = 1 << bit;
   if(w & mask){ w &= ~mask; if(el) el.classList.remove('active'); }
   else { w |= mask; if(el) el.classList.add('active'); }
-  pauseRanges[idx].w = w;
+  state.pause_json[idx].w = w;
 }
+
 function addPauseRow(){
-  if(!Array.isArray(pauseRanges)) pauseRanges=[];
-  pauseRanges.push({s:"11:00", e:"05:00", on:1, w:127});
+  if(!Array.isArray(state.pause_json)) state.pause_json=[];
+  state.pause_json.push({s:"11:00", e:"05:00", on:1, w:127});
   renderPauseTable();
 }
 function deletePauseRow(idx){
-  if(!Array.isArray(pauseRanges)) return;
-  pauseRanges.splice(idx,1);
+  if(!Array.isArray(state.pause_json)) return;
+  state.pause_json.splice(idx,1);
   renderPauseTable();
 }
 
-function renderPauseFromJson(j){
-  try{
-    const arr = JSON.parse(j || "[]");
-    if(Array.isArray(arr)) pauseRanges = arr;
-    else pauseRanges = [];
-  }catch(e){ pauseRanges=[]; }
+function loadPauseFromTelemetry(){
+  // Chỉ render lại từ state đã nhận qua MQTT
   renderPauseTable();
-}
-
-function loadPauseFromDevice(){
-  // Thử yêu cầu mạch trả lịch (nếu firmware có hỗ trợ method này)
-  try{ rpcCall("getPauseJson", 1); }catch(e){}
-
-  // Firmware hiện tại thường chỉ publish pause_json khi nó vừa connect EMQX,
-  // và publish không retain. Nếu web connect sau thì có thể chưa nhận được pause_json.
-  if(!state.pause_json || String(state.pause_json).trim()==="" ){
-    pauseRanges = [];
-    renderPauseTable();
-    addLog("Chưa nhận pause_json từ mạch. Gợi ý: reboot mạch hoặc sửa firmware để publish pause_json retain / thêm RPC getPauseJson.");
-    return;
-  }
-  renderPauseFromJson(state.pause_json);
-  addLog("Schedule loaded from latest telemetry (pause_json)");
+  addLog("Loaded schedule from telemetry state");
 }
 
 function savePause(){
-  if(!Array.isArray(pauseRanges)) pauseRanges=[];
-  const j = JSON.stringify(pauseRanges || []);
-  if(j.length > 1000){
-    alert("JSON quá dài (>1000). Hãy giảm số mốc!");
+  // FIX SAVE: Gửi trực tiếp Array Object, để Firmware tự serialize
+  const payload = state.pause_json || [];
+  if(JSON.stringify(payload).length > 1000){
+    alert("Dữ liệu quá dài! Hãy xóa bớt mốc giờ.");
     return;
   }
-  // rpcSetPauseJson chấp nhận params là string hoặc object {json: "..."}
-  rpcCall("setPauseJson", { json: j });
-  addLog("Schedule saved via RPC setPauseJson (len=" + j.length + ")");
-  alert("Đã gửi lịch nghỉ (RPC).");
+  rpcCall("setPauseJson", payload);
+  addLog("Gửi lệnh Save Schedule (RPC)");
+  alert("Đã gửi lịch nghỉ lên thiết bị.");
 }
 
 /* ========= Boot ========= */
 loadUiSettings();
 updateTopicInfo();
 renderHome();
-
-// Auto connect on load
 setTimeout(mqttConnect, 350);
-</script>
 
+</script>
 </body>
 </html>
