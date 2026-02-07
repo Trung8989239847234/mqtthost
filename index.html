@@ -188,42 +188,21 @@
     .btn-save:hover{filter:brightness(1.06)}
     .badge-conn{display:inline-block;font-size:11px;color:#cfd2d8;margin-top:6px;opacity:.9}
 
-    /* === [MỚI] SENSOR CARDS (AMPS / TEMP) === */
-    .sensor-card{
-      margin-top:12px;
-      background:rgba(0,0,0,0.22);
-      border-radius:16px;
-      padding:14px 14px;
+    /* === [MỚI] HIỂN THỊ AMPS / TEMP (ĐƠN GIẢN) === */
+    .simple-sensors{
+      margin:10px 0 6px;
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      border:1px solid rgba(255,255,255,0.12);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-    }
-    .sensor-left{display:flex;align-items:center;gap:12px;text-align:left}
-    .sensor-icon{font-size:22px;line-height:1}
-    .sensor-title{font-weight:900;letter-spacing:.4px;text-transform:uppercase;font-size:16px;line-height:1.05}
-    .sensor-sub{font-size:12px;color:#8e8e93;margin-top:2px}
-    .sensor-right{display:flex;align-items:baseline;gap:8px}
-    .sensor-value{
+      justify-content:center;
+      align-items:baseline;
+      gap:18px;
       font-family:'Courier New',monospace;
       font-weight:900;
-      font-size:28px;
-      letter-spacing:.5px;
-      min-width:92px;
-      text-align:right;
+      font-size:22px;
+      color:#e5e5e5;
+      letter-spacing:.3px;
     }
-    .sensor-unit{font-weight:900;font-size:16px;opacity:.95}
-
-    .sensor-amps{border-color:rgba(255,214,10,0.35)}
-    .sensor-amps .sensor-title{color:#ffd60a}
-    .sensor-amps .sensor-value{color:#ffd60a;text-shadow:0 0 14px rgba(255,214,10,0.28)}
-    .sensor-amps .sensor-icon{filter:drop-shadow(0 0 10px rgba(255,214,10,0.22))}
-
-    .sensor-temp{border-color:rgba(255,159,10,0.35)}
-    .sensor-temp .sensor-title{color:#ff9f0a}
-    .sensor-temp .sensor-value{color:#ff9f0a;text-shadow:0 0 14px rgba(255,159,10,0.25)}
-    .sensor-temp .sensor-icon{filter:drop-shadow(0 0 10px rgba(255,159,10,0.22))}
+    .simple-sensors .unit{font-size:13px;font-weight:800;opacity:.75;margin-left:4px}
+@media (max-width: 420px){ .simple-sensors{font-size:24px} }
 
   </style>
 </head>
@@ -255,33 +234,10 @@
       <div id="timerDisplay" class="timer-box">--:--</div>
       <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
 
-      <!-- [MỚI] HIỂN THỊ DÒNG ĐIỆN & NHIỆT ĐỘ (MQTT: amps / temp) -->
-      <div class="sensor-card sensor-amps">
-        <div class="sensor-left">
-          <div class="sensor-icon">⚡</div>
-          <div>
-            <div class="sensor-title">DÒNG ĐIỆN</div>
-            <div class="sensor-sub">Cảm biến SCT-013</div>
-          </div>
-        </div>
-        <div class="sensor-right">
-          <div id="ampsValue" class="sensor-value">--</div>
-          <div class="sensor-unit">A</div>
-        </div>
-      </div>
-
-      <div class="sensor-card sensor-temp">
-        <div class="sensor-left">
-          <div class="sensor-icon">🌡️</div>
-          <div>
-            <div class="sensor-title">NHIỆT ĐỘ</div>
-            <div class="sensor-sub">Cảm biến DS18B20</div>
-          </div>
-        </div>
-        <div class="sensor-right">
-          <div id="tempValue" class="sensor-value">--</div>
-          <div class="sensor-unit">°C</div>
-        </div>
+      <!-- [MỚI] AMPS / TEMP (đơn giản) -->
+      <div class="simple-sensors">
+        <div><span id="ampsValue">--</span><span class="unit">A</span></div>
+        <div><span id="tempValue">--</span><span class="unit">°C</span></div>
       </div>
 
 
