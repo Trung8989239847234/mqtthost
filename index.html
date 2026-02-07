@@ -2,19 +2,26 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ESP32 TIMER PRO (EMQX)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>ESP32 TIMER PRO</title>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1e3c72">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%2328a745' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%2328a745' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z'/%3E%3C/svg%3E">
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
-    /* === Giữ nguyên style === */
     :root { --accent:#00ff00; --accentGlow: rgba(0,255,0,0.55); }
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);
       color:#fff; display:flex; justify-content:center; align-items:center;
-      min-height:100vh; margin:0;
+      min-height:100vh; margin:0; user-select:none; -webkit-user-select:none;
     }
     .card{
       background:rgba(30,30,30,0.75);
@@ -23,7 +30,10 @@
       box-shadow:0 8px 32px 0 rgba(0,0,0,0.37);
       width:360px; text-align:center;
       border:1px solid rgba(255,255,255,0.1);
+      transition: border-color 0.3s;
     }
+    /* Hiệu ứng viền đỏ khi mất kết nối thiết bị */
+    .card.device-offline { border: 1px solid #ff453a; box-shadow: 0 0 15px rgba(255, 69, 58, 0.4); }
 
     .nav-tabs{display:flex;justify-content:space-around;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px}
     .nav-item{cursor:pointer;padding:8px 16px;color:#aaa;font-weight:600;font-size:14px;text-transform:uppercase;border-radius:8px;transition:.3s}
@@ -52,6 +62,9 @@
     .status-off{background:rgba(255,255,255,0.15);color:#ccc;border:1px solid #666}
     .status-wait{background:linear-gradient(90deg,#f12711,#f5af19);color:#fff;border:none}
     .status-maint{background:linear-gradient(90deg,#ED213A,#93291E);color:#fff;border:none;animation:blink 1s infinite}
+    /* Badge mới cho mất kết nối */
+    .status-lost{background:#ff453a;color:#fff;border:none;animation:blink 1s infinite}
+
     @keyframes blink{50%{opacity:.7}}
 
     .control-row{background-color:rgba(255,255,255,0.05);border-radius:12px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.05)}
@@ -122,7 +135,7 @@
 </head>
 
 <body>
-  <div class="card">
+  <div class="card" id="mainCard">
     <div class="nav-tabs">
       <div id="tab-home" class="nav-item active" onclick="switchTab('home')">TRANG CHỦ</div>
       <div id="tab-schedule" class="nav-item" onclick="openSchedule()">HẸN GIỜ</div>
@@ -130,7 +143,7 @@
     </div>
 
     <div id="home" class="tab-content active">
-      <div id="statusBadge" class="status-badge status-off">SLEEPING (OFF)</div>
+      <div id="statusBadge" class="status-badge status-off">WAITING...</div>
       <div class="badge-conn" id="connBadge">MQTT: DISCONNECTED</div>
 
       <h2>ESP32 TIMER PRO</h2>
@@ -151,7 +164,7 @@
         </div>
         <div class="stepper">
           <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
-          <input type="number" id="onSec" value="" placeholder="--">
+          <input type="number" id="onSec" value="" placeholder="--" min="0">
           <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
         </div>
       </div>
@@ -163,7 +176,7 @@
         </div>
         <div class="stepper">
           <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
-          <input type="number" id="offMin" value="" placeholder="--">
+          <input type="number" id="offMin" value="" placeholder="--" min="0">
           <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
         </div>
       </div>
@@ -183,7 +196,7 @@
       <button class="btn-cancel" onclick="setMaint(0)">HỦY BẢO TRÌ</button>
 
       <div class="log-box" id="logDisplay">
-        <div class="log-entry">Log: ready.</div>
+        <div class="log-entry">App Ready. Add to Home Screen for best experience.</div>
       </div>
     </div>
 
@@ -209,7 +222,7 @@
 
         <div class="btn-row">
           <button class="btn-m" onclick="addPauseRow()">+ Thêm mốc</button>
-          <button class="btn-save" onclick="savePause()">Lưu</button>
+          <button class="btn-save" onclick="savePause()">Lưu Lịch</button>
         </div>
 
         <div style="margin-top:8px;text-align:left;font-size:11px;color:#8e8e93">
@@ -284,19 +297,13 @@
 /* ========= STATE ========= */
 let client = null;
 let lastUserInteraction = 0;
+let lastTelemetryTime = 0; // Thời gian nhận tin cuối
+let heartbeatInterval = null;
 
-// State local để giữ dữ liệu
 const state = {
-  time_rem: "--:--",
-  rem_s: null,
-  off_min: null,
-  on_sec: null,
-  status: "SLEEPING",
-  maint_mode: 0,
-  pause_active: 0,
-  relay_run: false,
-  wait5s: false,
-  pause_json: [] // Chứa mảng object
+  time_rem: "--:--", rem_s: null, off_min: null, on_sec: null,
+  status: "SLEEPING", maint_mode: 0, pause_active: 0, relay_run: false, wait5s: false,
+  pause_json: []
 };
 
 function addLog(msg){
@@ -310,7 +317,7 @@ function addLog(msg){
   while(box.children.length>80) box.removeChild(box.lastChild);
 }
 
-/* ========= UI tabs ========= */
+/* ========= UI TABS ========= */
 function switchTab(t){
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -319,18 +326,17 @@ function switchTab(t){
 }
 function openSchedule(){
   switchTab('schedule');
-  loadPauseFromTelemetry(); // Tải từ state đã lưu
+  renderPauseTable();
 }
 
-/* ========= Password toggle ========= */
 function togglePass(id){
   const x = document.getElementById(id);
   x.type = (x.type === "password") ? "text" : "password";
 }
 
-/* ========= Settings persistence (browser) ========= */
+/* ========= SETTINGS (Browser LocalStorage) ========= */
 function getCfg(){
-  const cfg = {
+  return {
     devid: (document.getElementById('cfg_devid').value || "timer02").trim(),
     host: (document.getElementById('cfg_emqx_host').value || "").trim(),
     wsPort: parseInt(document.getElementById('cfg_emqx_ws_port').value || "8084", 10),
@@ -339,13 +345,11 @@ function getCfg(){
     user: (document.getElementById('cfg_emqx_user').value || "").trim(),
     pass: (document.getElementById('cfg_emqx_pass').value || "")
   };
-  return cfg;
 }
 function saveUiSettings(){
-  const cfg = getCfg();
-  localStorage.setItem("emqx_ui_cfg", JSON.stringify(cfg));
-  addLog("Saved UI settings (localStorage)");
-  alert("Đã lưu cấu hình trên trình duyệt!");
+  localStorage.setItem("emqx_ui_cfg", JSON.stringify(getCfg()));
+  addLog("Saved UI settings");
+  alert("Đã lưu cấu hình trình duyệt!");
   updateTopicInfo();
 }
 function loadUiSettings(){
@@ -363,32 +367,28 @@ function loadUiSettings(){
   }catch(e){}
 }
 
-/* ========= Topics ========= */
+/* ========= TOPICS ========= */
 function baseTopic(){ return "devices/" + getCfg().devid; }
 function topicTelemetry(){ return baseTopic() + "/telemetry"; }
 function topicRpcReqPlus(){ return baseTopic() + "/rpc/request/+"; }
 function topicRpcRespPlus(){ return baseTopic() + "/rpc/response/+"; }
 
 function updateTopicInfo(){
-  const info = [
-    `PUB Telemetry: ${topicTelemetry()}`,
-    `SUB RPC request: ${topicRpcReqPlus()}`,
-    `PUB RPC response: ${baseTopic() + "/rpc/response/{reqId}"}`
-  ].join("<br>");
-  document.getElementById("topicInfo").innerHTML = info;
+  const info = [`PUB Telemetry: ${topicTelemetry()}`, `PUB RPC: ${baseTopic() + "/rpc/response/{reqId}"}`].join(" | ");
+  document.getElementById("topicInfo").textContent = info;
 }
 
-/* ========= MQTT Connect (Browser) ========= */
+/* ========= MQTT CONNECTION ========= */
 function mqttConnect(){
   const cfg = getCfg();
   if(!cfg.host){ alert("Thiếu EMQX Host"); return; }
-
+  
   const proto = cfg.wss ? "wss" : "ws";
   const url = `${proto}://${cfg.host}:${cfg.wsPort}${cfg.wsPath.startsWith('/')?cfg.wsPath:'/'+cfg.wsPath}`;
 
   if(client){ try{ client.end(true); }catch(e){} client = null; }
 
-  addLog("MQTT connecting: " + url);
+  addLog("Connecting: " + url);
   document.getElementById("connBadge").textContent = "MQTT: CONNECTING...";
 
   client = mqtt.connect(url, {
@@ -401,44 +401,43 @@ function mqttConnect(){
   });
 
   client.on("connect", () => {
-    addLog("MQTT connected");
+    addLog("MQTT Connected!");
     document.getElementById("connBadge").textContent = "MQTT: CONNECTED";
     updateTopicInfo();
+    
+    // Reset timer
+    lastTelemetryTime = Date.now(); 
+    startHeartbeatMonitor();
 
     client.subscribe([topicTelemetry(), topicRpcRespPlus()], (err) => {
-      if(err) addLog("SUB error: " + err.message);
-      else {
-        addLog("Subscribed telemetry + rpc/response");
-        // Gửi RPC giả để đồng bộ time
+      if(!err) {
+        addLog("Syncing data...");
         rpcCall("setOffMin", {}); 
         rpcCall("setOnSec", {});
-		// [QUAN TRỌNG] Gọi lệnh mới để lấy Lịch trình ngay lập tức
-        rpcCall("getPauseJson", {});
+        rpcCall("getPauseJson", {}); 
       }
     });
   });
 
-  client.on("reconnect", () => {
-    document.getElementById("connBadge").textContent = "MQTT: RECONNECTING...";
-  });
-
+  client.on("reconnect", () => document.getElementById("connBadge").textContent = "MQTT: RECONNECTING...");
+  
   client.on("close", () => {
     document.getElementById("connBadge").textContent = "MQTT: DISCONNECTED";
+    stopHeartbeatMonitor();
+    updateOfflineUI(true); // Force show offline
   });
-
-  client.on("error", (e) => {
-    addLog("MQTT error: " + (e && e.message ? e.message : e));
-  });
+  
+  client.on("error", (e) => addLog("MQTT Err: " + e.message));
 
   client.on("message", (topic, payload) => {
     const txt = payload.toString();
-    
-    // --- TELEMETRY ---
+
+    // 1. Nhận Telemetry
     if(topic === topicTelemetry()){
+      lastTelemetryTime = Date.now(); // Cập nhật thời gian nhận tin cuối
       try{
         const obj = JSON.parse(txt);
-        
-        // Cập nhật state
+        // Sync đơn giản
         if(obj.time_rem !== undefined) state.time_rem = obj.time_rem;
         if(obj.rem_s !== undefined) state.rem_s = obj.rem_s;
         if(obj.on_sec !== undefined) state.on_sec = obj.on_sec;
@@ -448,40 +447,25 @@ function mqttConnect(){
         if(obj.pause_active !== undefined) state.pause_active = obj.pause_active;
         if(obj.relay_run !== undefined) state.relay_run = obj.relay_run;
 
-        // XỬ LÝ LỊCH TRÌNH (FIX BUG LOAD)
+        // SYNC LỊCH TRÌNH
         if(obj.pause_json !== undefined) {
            let raw = obj.pause_json;
-           // Nếu MQTT nhận về là chuỗi string, thì parse tiếp
-           if (typeof raw === 'string') {
-               try { raw = JSON.parse(raw); } catch(e){}
-           }
-           // Nếu giờ nó là mảng, gán vào state
-           if(Array.isArray(raw)) state.pause_json = raw;
-           else state.pause_json = [];
-           
-           // Nếu đang ở tab schedule thì render luôn
-           if(document.getElementById('schedule').classList.contains('active')) {
-             renderPauseTable();
-           }
+           if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e){} }
+           if(Array.isArray(raw)) state.pause_json = raw; else state.pause_json = [];
+           if(document.getElementById('schedule').classList.contains('active')) renderPauseTable();
         }
-
         renderHome();
       }catch(e){}
-      return;
     }
-
-    // --- RPC RESPONSE ---
-    if(topic.startsWith(baseTopic()+"/rpc/response/")){
-      addLog("RPC response: " + txt);
+    // 2. Nhận RPC Response
+    else if(topic.startsWith(baseTopic()+"/rpc/response/")){
       try{
         const r = JSON.parse(txt);
-        // Sync lại UI từ response
         if(r.off_min !== undefined) document.getElementById("offMin").value = r.off_min;
         if(r.on_sec !== undefined) document.getElementById("onSec").value = r.on_sec;
         if(r.saved_off_min !== undefined) document.getElementById("offMin").value = r.saved_off_min;
         if(r.saved_on_sec !== undefined) document.getElementById("onSec").value = r.saved_on_sec;
       }catch(e){}
-      return;
     }
   });
 }
@@ -489,51 +473,74 @@ function mqttConnect(){
 function mqttDisconnect(){
   if(client){ try{ client.end(true); }catch(e){} client = null; }
   document.getElementById("connBadge").textContent = "MQTT: DISCONNECTED";
-  addLog("MQTT disconnected");
+  stopHeartbeatMonitor();
 }
 
-function mqttPublish(topic, msgObj){
-  if(!client || !client.connected){
-    alert("MQTT chưa kết nối!");
-    return false;
+/* ========= HEARTBEAT MONITOR (Tính năng 2) ========= */
+function startHeartbeatMonitor(){
+  if(heartbeatInterval) clearInterval(heartbeatInterval);
+  heartbeatInterval = setInterval(() => {
+    // Nếu quá 12s không nhận được tin -> Coi là mất kết nối thiết bị
+    const diff = Date.now() - lastTelemetryTime;
+    if(diff > 12000) {
+       updateOfflineUI(true);
+    } else {
+       // Nếu đang hiện offline mà có tin lại -> renderHome sẽ tự xóa
+       document.getElementById("mainCard").classList.remove("device-offline");
+    }
+  }, 2000);
+}
+
+function stopHeartbeatMonitor(){
+  if(heartbeatInterval) clearInterval(heartbeatInterval);
+}
+
+function updateOfflineUI(isOffline){
+  const b = document.getElementById("statusBadge");
+  const card = document.getElementById("mainCard");
+  const timerBox = document.getElementById("timerDisplay");
+  
+  if(isOffline){
+    b.innerHTML = "⚠️ MẤT KẾT NỐI TB";
+    b.className = "status-badge status-lost";
+    card.classList.add("device-offline");
+    timerBox.style.setProperty("--accent", "#ff453a");
+    timerBox.style.setProperty("--accentGlow", "rgba(255, 69, 58, 0.55)");
+    timerBox.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.1), 0 0 28px rgba(255, 69, 58, 0.55)";
   }
-  const payload = JSON.stringify(msgObj);
-  client.publish(topic, payload, {qos:0, retain:false});
+}
+
+/* ========= RPC ========= */
+function mqttPublish(topic, msgObj){
+  if(!client || !client.connected){ alert("Mất kết nối MQTT!"); return false; }
+  client.publish(topic, JSON.stringify(msgObj), {qos:0, retain:false});
   return true;
 }
-
-/* ========= RPC helper ========= */
 function rpcCall(method, params){
   const reqId = Date.now().toString();
   const t = baseTopic() + "/rpc/request/" + reqId;
   const ok = mqttPublish(t, { method, params });
-  if(ok) addLog(`RPC -> ${method}`);
   return reqId;
 }
 
-/* ========= HOME actions ========= */
+/* ========= HOME ACTIONS ========= */
 function adjustValue(id,d){
-  const i=document.getElementById(id);
-  let c=parseInt(i.value)||0;
-  let n=c+d;
-  if(n<0) n=0;
-  if(id==='onSec' && n<1) n=1;
-  i.value=n;
+  const i=document.getElementById(id); let c=parseInt(i.value)||0; let n=c+d;
+  if(n<0) n=0; if(id==='onSec' && n<1) n=1; i.value=n;
   lastUserInteraction=Date.now();
 }
 document.getElementById('offMin').addEventListener('input',()=>lastUserInteraction=Date.now());
 document.getElementById('onSec').addEventListener('input',()=>lastUserInteraction=Date.now());
 
 function applyPreset(m,s){
-  document.getElementById('offMin').value = m;
-  document.getElementById('onSec').value = s;
-  saveSettings();
-  lastUserInteraction = Date.now() + 2000;
+  document.getElementById('offMin').value = m; document.getElementById('onSec').value = s;
+  saveSettings(); lastUserInteraction = Date.now() + 2000;
 }
-
 function saveSettings(){
-  const m = parseInt(document.getElementById("offMin").value||"0",10);
-  const s = parseInt(document.getElementById("onSec").value||"0",10);
+  let m = parseInt(document.getElementById("offMin").value||"0",10);
+  let s = parseInt(document.getElementById("onSec").value||"0",10);
+  if(m<0) m=0; if(s<0) s=0; // Validate
+  
   rpcCall("setOffMin", m);
   rpcCall("setOnSec", s);
   rpcCall("save", 1);
@@ -541,170 +548,121 @@ function saveSettings(){
   g.style.display="block"; setTimeout(()=>g.style.display="none", 2000);
   lastUserInteraction=0;
 }
+function setMaint(mode){ rpcCall("setMaintenance", mode); }
 
-function setMaint(mode){
-  rpcCall("setMaintenance", mode);
-}
-
-/* ========= HOME render ========= */
+/* ========= RENDER HOME ========= */
 function renderHome(){
-  const timerText = (state.time_rem && String(state.time_rem).length>0) ? String(state.time_rem) : "--:--";
-  document.getElementById("timerDisplay").textContent = timerText;
+  // Xóa cảnh báo offline nếu có dữ liệu mới
+  document.getElementById("mainCard").classList.remove("device-offline");
 
+  document.getElementById("timerDisplay").textContent = (state.time_rem && state.time_rem.length>0) ? state.time_rem : "--:--";
   const b = document.getElementById("statusBadge");
   const pb = document.getElementById("progressBar");
   const timerBox = document.getElementById("timerDisplay");
 
-  let accentColor="#28a745";
-  let accentGlow="rgba(40, 167, 69, 0.55)";
-
-  const pause = (Number(state.pause_active)||0) > 0;
+  let ac="#28a745", ag="rgba(40,167,69,0.55)";
+  const pause = (Number(state.pause_active)||0)>0;
   const maint = Number(state.maint_mode)||0;
   const relay = !!state.relay_run;
-  const wait5s = (String(state.status||"").toUpperCase().includes("CHO RESET")) || (String(state.status||"").toUpperCase().includes("WAIT"));
+  const wait5s = (String(state.status).toUpperCase().includes("WAIT") || String(state.status).toUpperCase().includes("CHO RESET"));
 
   if(pause){
     b.innerHTML="⏸ ĐANG NGHỈ"; b.className="status-badge status-off";
-    pb.style.width="100%"; pb.style.backgroundColor="#6c757d";
-    accentColor="#6c757d"; accentGlow="rgba(108, 117, 125, 0.55)";
+    pb.style.width="100%"; pb.style.backgroundColor="#6c757d"; ac="#6c757d"; ag="rgba(108,117,125,0.55)";
   } else if(maint>0){
     b.innerHTML="🔧 ĐANG BẢO TRÌ"; b.className="status-badge status-maint";
-    pb.style.width="100%"; pb.style.backgroundColor="#dc3545";
-    accentColor="#dc3545"; accentGlow="rgba(220, 53, 69, 0.55)";
+    pb.style.width="100%"; pb.style.backgroundColor="#dc3545"; ac="#dc3545"; ag="rgba(220,53,69,0.55)";
   } else if(relay){
-    b.innerHTML="RUNNING (ON)"; b.className="status-badge status-on";
-    pb.style.backgroundColor="#28a745";
-    accentColor="#28a745"; accentGlow="rgba(40, 167, 69, 0.55)";
-    const total = Number(state.on_sec)||0;
-    const cur = Number(state.rem_s)||0;
-    if(total>0 && cur>=0) pb.style.width = (cur/total*100) + "%";
+    b.innerHTML="RUNNING (ON)"; b.className="status-badge status-on"; pb.style.backgroundColor="#28a745";
+    const t=Number(state.on_sec)||0, c=Number(state.rem_s)||0;
+    if(t>0 && c>=0) pb.style.width=(c/t*100)+"%";
   } else if(wait5s){
     b.innerHTML="WAITING RESET."; b.className="status-badge status-wait";
-    pb.style.backgroundColor="#ffc107";
-    accentColor="#ffc107"; accentGlow="rgba(255, 193, 7, 0.55)";
-    pb.style.width="100%";
+    pb.style.backgroundColor="#ffc107"; ac="#ffc107"; ag="rgba(255,193,7,0.55)"; pb.style.width="100%";
   } else {
-    b.innerHTML="SLEEPING (OFF)"; b.className="status-badge status-off";
-    pb.style.backgroundColor="#6c757d";
-    accentColor="#6c757d"; accentGlow="rgba(108, 117, 125, 0.55)";
-    const total = (Number(state.off_min)||0) * 60;
-    const cur = Number(state.rem_s)||0;
-    if(total>0 && cur>=0) pb.style.width = (cur/total*100) + "%";
+    b.innerHTML="SLEEPING (OFF)"; b.className="status-badge status-off"; pb.style.backgroundColor="#6c757d";
+    ac="#6c757d"; ag="rgba(108,117,125,0.55)";
+    const t=(Number(state.off_min)||0)*60, c=Number(state.rem_s)||0;
+    if(t>0 && c>=0) pb.style.width=(c/t*100)+"%";
   }
-
-  timerBox.style.setProperty("--accent", accentColor);
-  timerBox.style.setProperty("--accentGlow", accentGlow);
-  timerBox.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.1), 0 0 28px " + accentGlow;
+  timerBox.style.setProperty("--accent", ac);
+  timerBox.style.setProperty("--accentGlow", ag);
+  timerBox.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.1), 0 0 28px " + ag;
 
   if(Date.now()-lastUserInteraction>5000){
-    if(state.off_min !== null) document.getElementById("offMin").value = state.off_min;
-    if(state.on_sec !== null) document.getElementById("onSec").value = state.on_sec;
+    if(state.off_min!==null) document.getElementById("offMin").value=state.off_min;
+    if(state.on_sec!==null) document.getElementById("onSec").value=state.on_sec;
   }
 }
 
-/* ========= SCHEDULE Logic (FIXED) ========= */
-// Chú ý: Ta dùng trực tiếp state.pause_json để render
+/* ========= SCHEDULE TABLE ========= */
 function renderPauseTable(){
   const tb=document.getElementById('pauseTbody');
   if(!tb) return;
   tb.innerHTML="";
-  
-  // Sử dụng dữ liệu từ state
-  let pauseRanges = state.pause_json;
-  if(!Array.isArray(pauseRanges)) pauseRanges=[];
+  let arr = state.pause_json;
+  if(!Array.isArray(arr)) arr=[];
 
-  if(pauseRanges.length===0){
+  if(arr.length===0){
     tb.innerHTML='<tr><td colspan="4" style="color:#8e8e93;padding:15px">Chưa có mốc. Bấm <b>+ Thêm mốc</b></td></tr>';
     return;
   }
-
   const labels=["CN","T2","T3","T4","T5","T6","T7"];
-  pauseRanges.forEach(function(r, idx){
-    const s=(r&&r.s)?String(r.s):"12:00";
-    const e=(r&&r.e)?String(r.e):"13:00";
-    const on=(r&&Number(r.on)===1);
-    const w=(r && r.w !== undefined) ? r.w : 127;
-
+  arr.forEach((r, idx)=>{
+    const s=(r.s||"12:00"), e=(r.e||"13:00"), on=(r.on==1), w=(r.w===undefined?127:r.w);
     let daysHtml = '<div class="day-selector">';
     for(let i=1;i<=7;i++){
-      const bitIdx = (i==7) ? 0 : i;
-      const isActive = (w & (1<<bitIdx));
-      daysHtml += `<div class="day-btn ${isActive?'active':''}" onclick="toggleDay(${idx},${bitIdx},this)">${labels[bitIdx]}</div>`;
+      const b=(i==7?0:i), act=(w&(1<<b));
+      daysHtml += `<div class="day-btn ${act?'active':''}" onclick="toggleDay(${idx},${b},this)">${labels[b]}</div>`;
     }
     daysHtml += '</div>';
 
     const tr1=document.createElement('tr');
-    tr1.setAttribute('data-row','time');
     tr1.innerHTML =
-      `<td><input type="time" value="${s}" data-idx="${idx}" data-k="s" onchange="onPauseCellChange(this)"></td>`+
-      `<td><input type="time" value="${e}" data-idx="${idx}" data-k="e" onchange="onPauseCellChange(this)"></td>`+
-      `<td style="text-align:center"><label class="switch"><input type="checkbox" ${on?'checked':''} data-idx="${idx}" data-k="on" onchange="onPauseToggle(this)"><span class="slider"></span></label></td>`+
-      `<td style="text-align:center"><button class="btn-del" onclick="deletePauseRow(${idx})">X</button></td>`;
+      `<td><input type="time" value="${s}" onchange="updP(${idx},'s',this.value)"></td>`+
+      `<td><input type="time" value="${e}" onchange="updP(${idx},'e',this.value)"></td>`+
+      `<td style="text-align:center"><label class="switch"><input type="checkbox" ${on?'checked':''} onchange="updP(${idx},'on',this.checked?1:0)"><span class="slider"></span></label></td>`+
+      `<td style="text-align:center"><button class="btn-del" onclick="delP(${idx})">X</button></td>`;
     tb.appendChild(tr1);
-
     const tr2=document.createElement('tr');
-    tr2.className='pause-day-row';
-    tr2.setAttribute('data-row','days');
-    tr2.innerHTML = `<td colspan="2" style="padding-top:2px;padding-bottom:10px">${daysHtml}</td><td></td><td></td>`;
+    tr2.innerHTML = `<td colspan="4" style="border:none;padding-top:2px;padding-bottom:10px">${daysHtml}</td>`;
     tb.appendChild(tr2);
   });
 }
-
-function onPauseCellChange(el){
-  const idx=parseInt(el.getAttribute('data-idx')||"0",10);
-  const k=el.getAttribute('data-k');
+function updP(idx,k,v){
   if(!state.pause_json[idx]) state.pause_json[idx]={s:"12:00",e:"13:00",on:1,w:127};
-  state.pause_json[idx][k]=el.value;
+  state.pause_json[idx][k]=v;
 }
-function onPauseToggle(el){
-  const idx=parseInt(el.getAttribute('data-idx')||"0",10);
-  if(!state.pause_json[idx]) state.pause_json[idx]={s:"12:00",e:"13:00",on:1,w:127};
-  state.pause_json[idx].on = el.checked ? 1 : 0;
-}
-function toggleDay(idx, bit, el){
+function toggleDay(idx,b,el){
   if(!state.pause_json[idx]) return;
-  let w = (state.pause_json[idx].w !== undefined) ? state.pause_json[idx].w : 127;
-  const mask = 1 << bit;
-  if(w & mask){ w &= ~mask; if(el) el.classList.remove('active'); }
-  else { w |= mask; if(el) el.classList.add('active'); }
+  let w = state.pause_json[idx].w===undefined?127:state.pause_json[idx].w;
+  const m = 1<<b;
+  if(w&m){ w &= ~m; el.classList.remove('active'); }
+  else { w |= m; el.classList.add('active'); }
   state.pause_json[idx].w = w;
 }
-
 function addPauseRow(){
   if(!Array.isArray(state.pause_json)) state.pause_json=[];
-  state.pause_json.push({s:"11:00", e:"05:00", on:1, w:127});
+  state.pause_json.push({s:"11:00",e:"05:00",on:1,w:127});
   renderPauseTable();
 }
-function deletePauseRow(idx){
-  if(!Array.isArray(state.pause_json)) return;
+function delP(idx){
   state.pause_json.splice(idx,1);
   renderPauseTable();
 }
-
-function loadPauseFromTelemetry(){
-  // Chỉ render lại từ state đã nhận qua MQTT
-  renderPauseTable();
-  addLog("Loaded schedule from telemetry state");
-}
-
 function savePause(){
-  // FIX SAVE: Gửi trực tiếp Array Object, để Firmware tự serialize
-  const payload = state.pause_json || [];
-  if(JSON.stringify(payload).length > 1000){
-    alert("Dữ liệu quá dài! Hãy xóa bớt mốc giờ.");
-    return;
-  }
-  rpcCall("setPauseJson", payload);
-  addLog("Gửi lệnh Save Schedule (RPC)");
-  alert("Đã gửi lịch nghỉ lên thiết bị.");
+  const pl = state.pause_json||[];
+  if(JSON.stringify(pl).length>1000){ alert("Data quá dài!"); return; }
+  rpcCall("setPauseJson", pl);
+  addLog("Gửi lệnh Lưu Lịch (RPC)");
+  alert("Đã gửi lịch lên thiết bị!");
 }
 
-/* ========= Boot ========= */
+/* ========= BOOT ========= */
 loadUiSettings();
 updateTopicInfo();
 renderHome();
 setTimeout(mqttConnect, 350);
-
 </script>
 </body>
 </html>
