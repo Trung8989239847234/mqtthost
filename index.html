@@ -471,6 +471,8 @@ let mqttConnState = 'disconnected';
 let lastTelemetryTs = 0;
 const STALE_MS = 10000; // 10s không có telemetry => coi như stale
 let uiLocked = false;
+const AUTO_LOCK_MS = 30000; // 30s không tương tác => tự khóa
+let autoLockArmedAt = 0;
 
 const state = {
   time_rem: "--:--", rem_s: null, off_min: null, on_sec: null,
@@ -489,6 +491,38 @@ function showToast(msg) {
 
 
 function updateStatusDot(){
+
+function autoLockTick(){
+  // chỉ auto-lock khi đang mở khóa
+  if(uiLocked) return;
+
+  const now = Date.now();
+  if(!lastUserInteraction) return;
+
+  // nếu người dùng vừa mở khóa, đặt mốc
+  if(!autoLockArmedAt) autoLockArmedAt = now;
+
+  if(now - lastUserInteraction > AUTO_LOCK_MS){
+    // khóa lại + đồng bộ retained
+    uiLocked = true;
+
+    const btn = document.getElementById("btnLock");
+    if(btn){
+      btn.textContent = "🔒";
+      btn.classList.add("locked");
+    }
+    setControlsDisabled(true);
+
+    try{
+      if(client && mqttConnState === 'connected'){
+        client.publish(topicUiLock(), JSON.stringify({locked: true}), {qos: 1, retain: true});
+      }
+    }catch(e){}
+
+    showToast("Tự khóa sau 30s");
+  }
+}
+
   const dot = document.getElementById("statusDot");
   if(!dot) return;
 
@@ -520,14 +554,24 @@ function setControlsDisabled(disabled){
 
 function toggleLock(){
   uiLocked = !uiLocked;
+  lastUserInteraction = Date.now();
+  autoLockArmedAt = 0;
   const btn = document.getElementById("btnLock");
   if(btn) {
     btn.textContent = uiLocked ? "🔒" : "🔓";
     btn.classList.toggle("locked", uiLocked);
   }
   setControlsDisabled(uiLocked);
+  // [MỚI] Đồng bộ multi-user qua MQTT (retained)
+  try{
+    if(client && mqttConnState === 'connected'){
+      client.publish(topicUiLock(), JSON.stringify({locked: uiLocked}), {qos: 1, retain: true});
+    }
+  }catch(e){}
   showToast(uiLocked ? "Đã khóa thao tác" : "Đã mở khóa");
 }
+
+
 
 function toggleSettings(){
   const panel = document.getElementById("settingsPanel");
@@ -609,6 +653,7 @@ function baseTopic(){ return "devices/" + getCfg().devid; }
 function topicTelemetry(){ return baseTopic() + "/telemetry"; }
 function topicRpcReqPlus(){ return baseTopic() + "/rpc/request/+"; }
 function topicRpcRespPlus(){ return baseTopic() + "/rpc/response/+"; }
+function topicUiLock(){ return baseTopic() + "/ui/lock"; }
 
 function updateTopicInfo(){
   const info = [`PUB Telemetry: ${topicTelemetry()}`, `PUB RPC: ${baseTopic() + "/rpc/response/{reqId}"}`].join(" | ");
@@ -719,7 +764,7 @@ function mqttConnect(){
     showToast("Đã kết nối Server!", "show"); // Toast báo kết nối
     updateTopicInfo();
 
-    client.subscribe([topicTelemetry(), topicRpcRespPlus()], (err) => {
+    client.subscribe([topicTelemetry(), topicRpcRespPlus(), topicUiLock()], (err) => {
       if(err) addLog("SUB error: " + err.message);
       else {
         addLog("Subscribed. Requesting Sync...");
@@ -779,7 +824,25 @@ function mqttConnect(){
         renderHome();
       }catch(e){}
     }
-    // 2. RPC Response
+    // 2. UI Lock Sync (multi-user)
+    else if(topic === topicUiLock()){
+      try{
+        const o = JSON.parse(txt);
+        if(typeof o.locked === 'boolean'){
+          uiLocked = o.locked;
+          lastUserInteraction = Date.now();
+          autoLockArmedAt = 0;
+          const btn = document.getElementById('btnLock');
+          if(btn){
+            btn.textContent = uiLocked ? '🔒' : '🔓';
+            btn.classList.toggle('locked', uiLocked);
+          }
+          setControlsDisabled(uiLocked);
+          showToast(uiLocked ? 'Đã khóa thao tác (đồng bộ)' : 'Đã mở khóa (đồng bộ)');
+        }
+      }catch(e){}
+    }
+    // 3. RPC Response
     else if(topic.startsWith(baseTopic()+"/rpc/response/")){
       try{
         const r = JSON.parse(txt);
@@ -979,6 +1042,8 @@ setTimeout(mqttConnect, 350);
   // [MỚI] default: ẩn phần cài đặt để màn hình gọn
   // (mở bằng nút ⚙️ CÀI ĐẶT)
   // lock mặc định: OFF
+  setInterval(autoLockTick, 500);
+
   (function(){
     const panel = document.getElementById('settingsPanel');
     if(panel) panel.classList.remove('open');
