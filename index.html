@@ -363,7 +363,6 @@
       <div id="timerDisplay" class="timer-box">--:--</div>
       <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
 
-      <!-- [MỚI] AMPS / TEMP (đơn giản) -->
       <div class="simple-sensors" id="simpleSensors">
         <span id="statusDot" class="status-dot status-bad" title="MQTT / Telemetry"></span>
         <div><span id="ampsValue">--</span><span class="unit">A</span></div>
@@ -422,10 +421,7 @@
         <button class="btn-m btn-manual" onclick="setMaint(6)">∞ Thủ công</button>
       </div>
       <button class="btn-cancel" onclick="setMaint(0)">HỦY BẢO TRÌ</button>
-
-      <div class="log-box" id="logDisplay">
-        <div class="log-entry">Log: ready.</div>
-      </div>
+      
       </div>
 
     </div>
@@ -527,6 +523,10 @@
       <div class="log-box" id="topicBox" style="height:auto;margin-top:12px">
         <div class="log-entry"><b>Topic EMQX đang dùng:</b></div>
         <div class="log-entry" id="topicInfo">-</div>
+      </div>
+      
+      <div class="log-box" id="logDisplay" style="margin-top:12px">
+        <div class="log-entry">Log: ready.</div>
       </div>
 
       <div style="margin-top:10px;text-align:left;font-size:11px;color:#cfd2d8;opacity:.9">
