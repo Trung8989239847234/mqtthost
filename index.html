@@ -340,7 +340,78 @@
     .pill.dev-ok .dot{background:#34c759; box-shadow:0 0 10px rgba(52,199,89,.35), 0 0 0 1px rgba(255,255,255,0.15);}
     .pill.dev-bad .dot{background:#ff3b30; box-shadow:0 0 10px rgba(255,59,48,.30), 0 0 0 1px rgba(255,255,255,0.15);}
 
-  </style>
+  
+
+/* =============================
+   SETTINGS ACCORDION (CARDS)
+   ============================= */
+.cfg-wrap{margin-top:8px;}
+.cfg-card{
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:16px;
+  overflow:hidden;
+  margin:10px 0;
+  background:rgba(0,0,0,0.22);
+}
+.cfg-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px 12px;
+  cursor:pointer;
+  user-select:none;
+}
+.cfg-left{display:flex;align-items:center;gap:10px;}
+.cfg-badge{
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.10);
+  border:1px solid rgba(255,255,255,0.10);
+  color:#e5e5e5;
+}
+.cfg-title{font-weight:800;font-size:13px;letter-spacing:.3px;}
+.cfg-arrow{opacity:.75;transition:transform .2s ease;}
+.cfg-body{
+  max-height:0;
+  opacity:0;
+  transform:translateY(-3px);
+  transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
+  padding:0 12px;
+}
+.cfg-card.open .cfg-body{
+  max-height:2200px;
+  opacity:1;
+  transform:translateY(0);
+  padding-bottom:12px;
+}
+.cfg-card.open .cfg-arrow{transform:rotate(180deg);}
+.cfg-note{
+  margin-top:6px;
+  font-size:11px;
+  color:#8e8e93;
+  text-align:left;
+  font-weight:700;
+}
+.cfg-footnote{
+  margin-top:8px;
+  font-size:11px;
+  color:#cfd2d8;
+  opacity:.85;
+  text-align:left;
+}
+
+.cfg-card.wifi{border-left:4px solid #0a84ff;}
+.cfg-card.blynk{border-left:4px solid #34c759;}
+.cfg-card.tb{border-left:4px solid #32ade6;}
+.cfg-card.sensors{border-left:4px solid #ff9f0a;}
+.cfg-card.emqx-dev{border-left:4px solid #bf5af2;}
+.cfg-card.mqttws{border-left:4px solid #60efff;}
+</style>
 </head>
 
 <body>
@@ -472,65 +543,284 @@
     <div id="settings" class="tab-content">
       <h2>Cấu hình Hệ thống</h2>
 
-      <div class="input-group">
-        <label>Device ID</label>
-        <input type="text" id="cfg_devid" value="timer02">
-      </div>
+      <div class="cfg-wrap">
 
-      <hr style="border-color:rgba(255,255,255,0.1);margin:15px 0">
+        <!-- MQTT WebSocket (Browser Dashboard) -->
+        <div class="cfg-card mqttws" id="cfgCard-mqttws">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">MQTT</span>
+              <span class="cfg-title">MQTT WebSocket (Dashboard)</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
 
-      <div class="input-group">
-        <label>EMQX Host</label>
-        <input type="text" id="cfg_emqx_host" value="n21f2dda.ala.dedicated.aws.emqxcloud.com">
-      </div>
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>Device ID (để tạo Topic)</label>
+              <input type="text" id="cfg_devid" value="timer02">
+            </div>
 
-      <div class="input-group">
-        <label>EMQX WebSocket Port</label>
-        <input type="number" id="cfg_emqx_ws_port" value="8084">
-      </div>
+            <div class="input-group">
+              <label>EMQX Host</label>
+              <input type="text" id="cfg_emqx_host" value="n21f2dda.ala.dedicated.aws.emqxcloud.com">
+            </div>
 
-      <div class="input-group">
-        <label>WebSocket Path</label>
-        <input type="text" id="cfg_emqx_ws_path" value="/mqtt">
-      </div>
+            <div class="input-group">
+              <label>EMQX WebSocket Port</label>
+              <input type="number" id="cfg_emqx_ws_port" value="8084">
+            </div>
 
-      <div class="input-group">
-        <label>Use TLS (wss)</label>
-        <select id="cfg_emqx_wss">
-          <option value="1" selected>Bật (wss://)</option>
-          <option value="0">Tắt (ws://)</option>
-        </select>
-      </div>
+            <div class="input-group">
+              <label>WebSocket Path</label>
+              <input type="text" id="cfg_emqx_ws_path" value="/mqtt">
+            </div>
 
-      <div class="input-group">
-        <label>EMQX Username</label>
-        <input type="text" id="cfg_emqx_user" value="anhtrung1">
-      </div>
+            <div class="input-group">
+              <label>Use TLS (wss)</label>
+              <select id="cfg_emqx_wss">
+                <option value="1" selected>Bật (wss://)</option>
+                <option value="0">Tắt (ws://)</option>
+              </select>
+            </div>
 
-      <div class="input-group">
-        <label>EMQX Password</label>
-        <input type="password" id="cfg_emqx_pass" value="anhtrung1">
-        <span class="toggle-eye" onclick="togglePass('cfg_emqx_pass')">👁️</span>
-      </div>
+            <div class="input-group">
+              <label>EMQX Username</label>
+              <input type="text" id="cfg_emqx_user" value="anhtrung1">
+            </div>
 
-      <button class="btn-primary" onclick="saveUiSettings()">LƯU (TRÊN TRÌNH DUYỆT)</button>
+            <div class="input-group">
+              <label>EMQX Password</label>
+              <input type="password" id="cfg_emqx_pass" value="anhtrung1">
+              <span class="toggle-eye" onclick="togglePass('cfg_emqx_pass')">👁️</span>
+            </div>
 
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn-m" style="flex:1;background:#007bff" onclick="mqttConnect()">KẾT NỐI</button>
-        <button class="btn-m" style="flex:1" onclick="mqttDisconnect()">NGẮT</button>
-      </div>
+            <button class="btn-primary" onclick="saveUiSettings()">LƯU (TRÊN TRÌNH DUYỆT)</button>
 
-      <div class="log-box" id="topicBox" style="height:auto;margin-top:12px">
-        <div class="log-entry"><b>Topic EMQX đang dùng:</b></div>
-        <div class="log-entry" id="topicInfo">-</div>
-      </div>
-      
-      <div class="log-box" id="logDisplay" style="margin-top:12px">
-        <div class="log-entry">Log: ready.</div>
-      </div>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button class="btn-m" style="flex:1;background:#007bff" onclick="mqttConnect()">KẾT NỐI</button>
+              <button class="btn-m" style="flex:1" onclick="mqttDisconnect()">NGẮT</button>
+            </div>
 
-      <div style="margin-top:10px;text-align:left;font-size:11px;color:#cfd2d8;opacity:.9">
-        Lưu ý: GitHub Pages chỉ chạy trên browser nên <b>phải dùng MQTT qua WebSocket</b> (ws/wss). Port TCP 1883 không dùng trực tiếp trong browser.
+            <div class="log-box" id="topicBox" style="height:auto;margin-top:12px">
+              <div class="log-entry"><b>Topic EMQX đang dùng:</b></div>
+              <div class="log-entry" id="topicInfo">-</div>
+            </div>
+
+            <div class="log-box" id="logDisplay" style="margin-top:12px">
+              <div class="log-entry">Log: ready.</div>
+            </div>
+
+            <div style="margin-top:10px;text-align:left;font-size:11px;color:#cfd2d8;opacity:.9">
+              Lưu ý: GitHub Pages chỉ chạy trên browser nên <b>phải dùng MQTT qua WebSocket</b> (ws/wss). Port TCP 1883 không dùng trực tiếp trong browser.
+            </div>
+          </div>
+        </div>
+
+        <!-- WiFi + Device -->
+        <div class="cfg-card wifi" id="cfgCard-wifi">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">ESP32</span>
+              <span class="cfg-title">WiFi & Device</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
+
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>Device ID (ESP32 sau reboot)</label>
+              <input type="text" id="cfg_sys_devid" value="timer02">
+            </div>
+
+            <div class="input-group">
+              <label>WiFi SSID</label>
+              <input type="text" id="cfg_wifi_ssid" value="Thanh Trung 123">
+            </div>
+
+            <div class="input-group">
+              <label>WiFi Password</label>
+              <input type="password" id="cfg_wifi_pass" value="anhtrung">
+              <span class="toggle-eye" onclick="togglePass('cfg_wifi_pass')">👁️</span>
+            </div>
+
+            <div class="cfg-note">* Đổi WiFi / Device ID sẽ khiến ESP32 reboot.</div>
+          </div>
+        </div>
+
+        <!-- Blynk -->
+        <div class="cfg-card blynk" id="cfgCard-blynk">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">APP</span>
+              <span class="cfg-title">Blynk</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
+
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>Trạng thái Blynk</label>
+              <select id="cfg_b_en">
+                <option value="1" selected>Bật (Enable)</option>
+                <option value="0">Tắt (Disable)</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label>Blynk Server</label>
+              <input type="text" id="cfg_b_host" value="blynk.hqn.vn">
+            </div>
+
+            <div class="input-group">
+              <label>Blynk Port</label>
+              <input type="number" id="cfg_b_port" value="8080">
+            </div>
+
+            <div class="input-group">
+              <label>Blynk Token</label>
+              <input type="password" id="cfg_b_token" value="gxShmU6_ZvZOKY2UZRew9PwkipWM_9uJ">
+              <span class="toggle-eye" onclick="togglePass('cfg_b_token')">👁️</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ThingsBoard -->
+        <div class="cfg-card tb" id="cfgCard-tb">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">IOT</span>
+              <span class="cfg-title">ThingsBoard</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
+
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>Trạng thái ThingsBoard</label>
+              <select id="cfg_tb_en">
+                <option value="1" selected>Bật (Enable)</option>
+                <option value="0">Tắt (Disable)</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label>ThingsBoard Server</label>
+              <input type="text" id="cfg_tb_host" value="thingsboard.cloud">
+            </div>
+
+            <div class="input-group">
+              <label>ThingsBoard Port</label>
+              <input type="number" id="cfg_tb_port" value="1883">
+            </div>
+
+            <div class="input-group">
+              <label>Device Token</label>
+              <input type="password" id="cfg_tb_token" value="KtRAK5YlpIeoDvrqKg6p">
+              <span class="toggle-eye" onclick="togglePass('cfg_tb_token')">👁️</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sensors -->
+        <div class="cfg-card sensors" id="cfgCard-sensors">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">HW</span>
+              <span class="cfg-title">Sensors</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
+
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>SCT (Cảm biến dòng)</label>
+              <select id="cfg_sct_en">
+                <option value="1" selected>Bật</option>
+                <option value="0">Tắt</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label>DS18B20 (Nhiệt độ)</label>
+              <select id="cfg_temp_en">
+                <option value="1" selected>Bật</option>
+                <option value="0">Tắt</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label>Phao chống tràn (Phao 1)</label>
+              <select id="cfg_phao1_en">
+                <option value="1" selected>Bật</option>
+                <option value="0">Tắt</option>
+              </select>
+            </div>
+
+            <div class="cfg-note">* Thay đổi sensor sẽ khiến ESP32 reboot.</div>
+          </div>
+        </div>
+
+        <!-- EMQX (ESP32 TCP) -->
+        <div class="cfg-card emqx-dev" id="cfgCard-emqx-dev">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">MQTT</span>
+              <span class="cfg-title">EMQX (ESP32 TCP)</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
+
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>Trạng thái EMQX (ESP32)</label>
+              <select id="cfg_dev_emqx_en">
+                <option value="1" selected>Bật</option>
+                <option value="0">Tắt</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label>EMQX Host (TCP)</label>
+              <input type="text" id="cfg_dev_emqx_host" value="n21f2dda.ala.dedicated.aws.emqxcloud.com">
+            </div>
+
+            <div class="input-group">
+              <label>EMQX Port (TCP)</label>
+              <input type="number" id="cfg_dev_emqx_port" value="1883">
+            </div>
+
+            <div class="input-group">
+              <label>EMQX Username</label>
+              <input type="text" id="cfg_dev_emqx_user" value="anhtrung1">
+            </div>
+
+            <div class="input-group">
+              <label>EMQX Password</label>
+              <input type="password" id="cfg_dev_emqx_pass" value="anhtrung1">
+              <span class="toggle-eye" onclick="togglePass('cfg_dev_emqx_pass')">👁️</span>
+            </div>
+
+            <div class="input-group">
+              <label>Use TLS (ESP32)</label>
+              <select id="cfg_dev_emqx_tls">
+                <option value="1">Bật (TLS)</option>
+                <option value="0" selected>Tắt</option>
+              </select>
+            </div>
+
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <button class="btn-m" style="flex:1" onclick="copyUiToDevEmqx()">COPY TỪ MQTT WEB</button>
+            </div>
+
+            <div class="cfg-note">* Thay đổi EMQX (ESP32) sẽ khiến ESP32 reboot.</div>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:10px;background:linear-gradient(90deg,#34c759,#0a84ff)" onclick="saveSysConfig()">GỬI CẤU HÌNH XUỐNG ESP32 (RPC)</button>
+        <div class="cfg-footnote">
+          * Sẽ gọi MQTT RPC method <b>setSysConfig</b> (theo code .ino) và ESP32 sẽ reboot.
+        </div>
       </div>
     </div>
   </div>
@@ -698,6 +988,11 @@ function switchTab(t){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
   document.getElementById(t).classList.add('active');
   document.getElementById('tab-'+t).classList.add('active');
+
+  // [NEW] Khi mở tab CÀI ĐẶT: mặc định đóng hết các card (accordion)
+  if(t === 'settings'){
+    closeAllCfgCards();
+  }
 }
 function openSchedule(){
   switchTab('schedule');
@@ -709,6 +1004,165 @@ function openSchedule(){
 function togglePass(id){
   const x = document.getElementById(id);
   x.type = (x.type === "password") ? "text" : "password";
+}
+
+
+
+/* ========= [NEW] Settings Accordion ========= */
+function closeAllCfgCards(){
+  document.querySelectorAll('#settings .cfg-card').forEach(c=>c.classList.remove('open'));
+}
+function toggleCfgCard(headEl){
+  const card = headEl.closest('.cfg-card');
+  if(!card) return;
+  const isOpen = card.classList.contains('open');
+  closeAllCfgCards();
+  if(!isOpen) card.classList.add('open');
+}
+
+/* ========= [NEW] ESP32 SysConfig (RPC setSysConfig) ========= */
+function copyUiToDevEmqx(){
+  try{
+    const ui = getCfg();
+    const h = document.getElementById('cfg_dev_emqx_host');
+    const u = document.getElementById('cfg_dev_emqx_user');
+    const p = document.getElementById('cfg_dev_emqx_pass');
+    if(h && ui.host) h.value = ui.host;
+    if(u && ui.user) u.value = ui.user;
+    if(p && ui.pass) p.value = ui.pass;
+    showToast('Đã copy EMQX từ MQTT Web');
+  }catch(e){}
+}
+
+function getSysCfgFromForm(){
+  const v = (id, d='') => (document.getElementById(id)?.value ?? d);
+  const num = (x, d=0) => {
+    const n = parseInt(String(x), 10);
+    return Number.isFinite(n) ? n : d;
+  };
+  return {
+    ssid: String(v('cfg_wifi_ssid')).trim(),
+    pass: String(v('cfg_wifi_pass')),
+    devid: String(v('cfg_sys_devid')).trim(),
+
+    b_en: num(v('cfg_b_en','1'), 1),
+    b_host: String(v('cfg_b_host')).trim(),
+    b_port: num(v('cfg_b_port','8080'), 8080),
+    b_token: String(v('cfg_b_token')),
+
+    tb_en: num(v('cfg_tb_en','1'), 1),
+    tb_host: String(v('cfg_tb_host')).trim(),
+    tb_port: num(v('cfg_tb_port','1883'), 1883),
+    tb_token: String(v('cfg_tb_token')),
+
+    sct_en: num(v('cfg_sct_en','1'), 1),
+    temp_en: num(v('cfg_temp_en','1'), 1),
+    phao1_en: num(v('cfg_phao1_en','1'), 1),
+
+    emqx_en: num(v('cfg_dev_emqx_en','1'), 1),
+    emqx_host: String(v('cfg_dev_emqx_host')).trim(),
+    emqx_port: num(v('cfg_dev_emqx_port','1883'), 1883),
+    emqx_user: String(v('cfg_dev_emqx_user')).trim(),
+    emqx_pass: String(v('cfg_dev_emqx_pass')),
+    emqx_tls: num(v('cfg_dev_emqx_tls','0'), 0)
+  };
+}
+
+function saveSysConfig(){
+  const cfg = getSysCfgFromForm();
+  localStorage.setItem('esp_sys_cfg', JSON.stringify(cfg));
+
+  if(!client || !client.connected){
+    showToast('Chưa kết nối MQTT để gửi SysConfig!');
+    return;
+  }
+  rpcCall('setSysConfig', cfg);
+  showToast('Đã gửi SysConfig - ESP32 sẽ reboot!');
+}
+
+function loadSysConfig(){
+  // defaults from .ino
+  const defaults = {
+    ssid: "Thanh Trung 123",
+    pass: "anhtrung",
+    devid: "timer02",
+    b_en: 1,
+    b_host: "blynk.hqn.vn",
+    b_port: 8080,
+    b_token: "gxShmU6_ZvZOKY2UZRew9PwkipWM_9uJ",
+    tb_en: 1,
+    tb_host: "thingsboard.cloud",
+    tb_port: 1883,
+    tb_token: "KtRAK5YlpIeoDvrqKg6p",
+    sct_en: 1,
+    temp_en: 1,
+    phao1_en: 1,
+    emqx_en: 1,
+    emqx_host: "n21f2dda.ala.dedicated.aws.emqxcloud.com",
+    emqx_port: 1883,
+    emqx_user: "anhtrung1",
+    emqx_pass: "anhtrung1",
+    emqx_tls: 0
+  };
+
+  let c = null;
+  try{
+    const raw = localStorage.getItem('esp_sys_cfg');
+    c = raw ? JSON.parse(raw) : null;
+  }catch(e){ c = null; }
+
+  const ui = (()=>{ try{return getCfg();}catch(e){return null;} })();
+  const seed = Object.assign({}, defaults);
+
+  // If UI cfg exists, mirror host/user/pass to ease setup
+  if(ui){
+    if(ui.devid) seed.devid = ui.devid;
+    if(ui.host) seed.emqx_host = ui.host;
+    if(ui.user) seed.emqx_user = ui.user;
+    if(ui.pass) seed.emqx_pass = ui.pass;
+  }
+
+  c = Object.assign(seed, (c||{}));
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = String(val ?? ''); };
+  setVal('cfg_wifi_ssid', c.ssid);
+  setVal('cfg_wifi_pass', c.pass);
+  setVal('cfg_sys_devid', c.devid);
+
+  setVal('cfg_b_en', c.b_en);
+  setVal('cfg_b_host', c.b_host);
+  setVal('cfg_b_port', c.b_port);
+  setVal('cfg_b_token', c.b_token);
+
+  setVal('cfg_tb_en', c.tb_en);
+  setVal('cfg_tb_host', c.tb_host);
+  setVal('cfg_tb_port', c.tb_port);
+  setVal('cfg_tb_token', c.tb_token);
+
+  setVal('cfg_sct_en', c.sct_en);
+  setVal('cfg_temp_en', c.temp_en);
+  setVal('cfg_phao1_en', c.phao1_en);
+
+  setVal('cfg_dev_emqx_en', c.emqx_en);
+  setVal('cfg_dev_emqx_host', c.emqx_host);
+  setVal('cfg_dev_emqx_port', c.emqx_port);
+  setVal('cfg_dev_emqx_user', c.emqx_user);
+  setVal('cfg_dev_emqx_pass', c.emqx_pass);
+  setVal('cfg_dev_emqx_tls', c.emqx_tls);
+
+  // Keep sys devid auto-follow UI devid until user edits sys devid manually
+  const uiId = document.getElementById('cfg_devid');
+  const sysId = document.getElementById('cfg_sys_devid');
+  if(uiId && sysId){
+    if(!sysId.dataset.touched){
+      sysId.value = String(c.devid || uiId.value || '');
+    }
+    uiId.addEventListener('change', ()=>{
+      if(sysId.dataset.touched === '1') return;
+      sysId.value = uiId.value;
+    });
+    sysId.addEventListener('input', ()=>{ sysId.dataset.touched = '1'; });
+  }
 }
 
 /* ========= Settings persistence ========= */
@@ -1110,6 +1564,7 @@ function savePause(){
 
 /* ========= BOOT ========= */
 loadUiSettings();
+loadSysConfig();
 updateTopicInfo();
 renderHome();
 setTimeout(mqttConnect, 350);
