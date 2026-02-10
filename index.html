@@ -411,17 +411,70 @@
 .cfg-card.sensors{border-left:4px solid #ff9f0a;}
 .cfg-card.emqx-dev{border-left:4px solid #bf5af2;}
 .cfg-card.mqttws{border-left:4px solid #60efff;}
+
+/* === [NEW] MODAL PIN === */
+.modal-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(5px);
+  z-index:2000;display:none;justify-content:center;align-items:center;
+}
+.modal-overlay.show{display:flex;animation:fadeIn .2s}
+.modal-box{
+  background:#2a2a2a;border:1px solid rgba(255,255,255,0.1);
+  padding:20px;border-radius:16px;width:280px;text-align:center;
+  box-shadow:0 10px 40px rgba(0,0,0,0.5);
+}
+.pin-display{
+  background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);
+  color:#fff;font-size:24px;letter-spacing:5px;padding:10px;
+  width:100%;border-radius:8px;margin-bottom:15px;text-align:center;
+  outline:none;font-weight:bold;
+}
+.pin-pad{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn-pin{
+  background:rgba(255,255,255,0.1);border:none;color:#fff;
+  font-size:18px;padding:12px;border-radius:8px;cursor:pointer;
+  transition:.1s;
+}
+.btn-pin:active{background:rgba(255,255,255,0.2);transform:scale(.95)}
+.btn-pin.red{background:rgba(255,69,58,0.2);color:#ff453a}
+.btn-pin.green{background:rgba(40,167,69,0.2);color:#28a745}
+
 </style>
 </head>
 
 <body>
   <div id="toast">Thông báo</div>
 
+  <!-- [NEW] Modal PIN -->
+  <div id="pinModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 style="margin-top:0;color:#e5e5e5;font-size:16px;margin-bottom:15px">NHẬP MẬT KHẨU (PIN)</h3>
+      <input type="password" id="pinInput" class="pin-display" readonly placeholder="****">
+      <div class="pin-pad">
+        <button class="btn-pin" onclick="typePin(1)">1</button>
+        <button class="btn-pin" onclick="typePin(2)">2</button>
+        <button class="btn-pin" onclick="typePin(3)">3</button>
+        <button class="btn-pin" onclick="typePin(4)">4</button>
+        <button class="btn-pin" onclick="typePin(5)">5</button>
+        <button class="btn-pin" onclick="typePin(6)">6</button>
+        <button class="btn-pin" onclick="typePin(7)">7</button>
+        <button class="btn-pin" onclick="typePin(8)">8</button>
+        <button class="btn-pin" onclick="typePin(9)">9</button>
+        <button class="btn-pin red" onclick="clearPin()">C</button>
+        <button class="btn-pin" onclick="typePin(0)">0</button>
+        <button class="btn-pin green" onclick="submitPin()">OK</button>
+      </div>
+      <button class="btn-ghost" style="width:100%;margin-top:15px;justify-content:center;color:#8e8e93" onclick="closePinModal()">Hủy bỏ</button>
+    </div>
+  </div>
+
   <div class="card">
     <div class="nav-tabs">
       <div id="tab-home" class="nav-item active" onclick="switchTab('home')">TRANG CHỦ</div>
       <div id="tab-schedule" class="nav-item" onclick="openSchedule()">HẸN GIỜ</div>
-      <div id="tab-settings" class="nav-item" onclick="switchTab('settings')">CÀI ĐẶT</div>
+      <!-- [UPDATE] Thêm bảo mật cho tab settings -->
+      <div id="tab-settings" class="nav-item" onclick="tryOpenSettings()">CÀI ĐẶT</div>
     </div>
 
     <div id="home" class="tab-content active">
@@ -1560,6 +1613,55 @@ function savePause(){
   if(JSON.stringify(pl).length>2000){ showToast("Data quá dài!"); return; } // Toast error
   rpcCall("setPauseJson", pl);
   showToast("Đã gửi lịch nghỉ!"); // Toast success
+}
+
+/* ========= [NEW] PIN LOGIC ========= */
+let enteredPin = "";
+const CORRECT_PIN = "8888"; // Mặc định pass 8888
+let isSettingsAuth = false;
+
+function tryOpenSettings(){
+  if(isSettingsAuth){
+    switchTab('settings');
+  } else {
+    // Show modal
+    document.getElementById('pinModal').classList.add('show');
+    clearPin();
+  }
+}
+
+function closePinModal(){
+  document.getElementById('pinModal').classList.remove('show');
+  enteredPin = "";
+}
+
+function typePin(n){
+  if(enteredPin.length < 6) {
+    enteredPin += n;
+    updatePinDisplay();
+  }
+}
+
+function clearPin(){
+  enteredPin = "";
+  updatePinDisplay();
+}
+
+function updatePinDisplay(){
+  const el = document.getElementById('pinInput');
+  el.value = enteredPin ? "*".repeat(enteredPin.length) : "";
+}
+
+function submitPin(){
+  if(enteredPin === CORRECT_PIN){
+    isSettingsAuth = true;
+    closePinModal();
+    switchTab('settings');
+    showToast("Đã mở khóa cài đặt");
+  } else {
+    showToast("Sai mật khẩu!");
+    clearPin();
+  }
 }
 
 /* ========= BOOT ========= */
