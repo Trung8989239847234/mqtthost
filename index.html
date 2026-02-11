@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ESP32 TIMER PRO (EMQX)</title>
+  <title>ESP32 TIMER PRO (GEMINI)</title>
 
+  <!-- MQTT -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <!-- Markdown Parser for AI responses -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
     /* === STYLE CŨ GIỮ NGUYÊN === */
@@ -23,7 +26,7 @@
       box-shadow:0 8px 32px 0 rgba(0,0,0,0.37);
       width:360px; text-align:center;
       border:1px solid rgba(255,255,255,0.1);
-      position: relative; /* Để toast hiển thị đúng */
+      position: relative;
     }
 
     .nav-tabs{display:flex;justify-content:space-around;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px}
@@ -142,9 +145,7 @@
     .log-box{margin-top:25px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;height:110px;overflow-y:auto;text-align:left;font-family:'Courier New',monospace;font-size:10px;color:#00ff00;opacity:.9}
     .log-entry{margin-bottom:2px;border-bottom:1px dashed #333}
     
-    /* === [MỚI] STYLE CHO TIMELINE & TOAST === */
-    
-    /* Timeline 24H */
+    /* Timeline & Toast */
     .timeline-container { margin: 15px 0 20px 0; text-align: left; }
     .timeline-labels { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 3px; }
     .timeline-bar {
@@ -152,10 +153,9 @@
         border: 1px solid rgba(255,255,255,0.1);
     }
     .t-seg { height: 100%; }
-    .t-run { background: #28a745; } /* Màu xanh chạy */
-    .t-off { background: #dc3545; } /* Màu đỏ nghỉ */
+    .t-run { background: #28a745; }
+    .t-off { background: #dc3545; }
     
-    /* Toast Notification (Thay thế Alert) */
     #toast {
         visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 50px;
         padding: 12px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px;
@@ -164,7 +164,6 @@
     }
     #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
     
-    /* Schedule & Others */
     .card2{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:12px;margin-top:10px}
     .tbl{width:100%;border-collapse:collapse;font-size:12px}
     .tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left}
@@ -188,7 +187,7 @@
     .btn-save:hover{filter:brightness(1.06)}
     .badge-conn{display:inline-block;font-size:11px;color:#cfd2d8;margin-top:6px;opacity:.9}
 
-    /* === [MỚI] HIỂN THỊ AMPS / TEMP (ĐƠN GIẢN) === */
+    /* Amps / Temp */
     .simple-sensors{
       margin:10px 0 6px;
       display:flex;
@@ -200,16 +199,13 @@
       font-size:22px;
       color:#e5e5e5;
       letter-spacing:.3px;
+      transition: opacity .25s ease;
     }
     .simple-sensors .unit{font-size:13px;font-weight:800;opacity:.75;margin-left:4px}
-@media (max-width: 420px){ .simple-sensors{font-size:24px} }
-
-    /* === [MỚI] STATUS DOT + SETTINGS COLLAPSE + LOCK === */
-    .simple-sensors{
-      transition: opacity .25s ease;
-      gap:16px;
-    }
     .simple-sensors.stale{ opacity:.45; }
+    @media (max-width: 420px){ .simple-sensors{font-size:24px} }
+
+    /* Status Dot & Settings */
     .status-dot{
       width:9px;height:9px;border-radius:999px;
       display:inline-block;
@@ -223,10 +219,10 @@
     .status-bad{ background:#ff3b30; box-shadow:0 0 10px rgba(255,59,48,.30), 0 0 0 1px rgba(255,255,255,0.15); }
 
     .settings-bar{
-      margin:10px 0 6px;
+      margin:12px 0 10px;
       display:flex;
+      justify-content:center;
       align-items:center;
-      justify-content:space-between;
       gap:10px;
     }
     .btn-ghost{
@@ -259,23 +255,16 @@
       transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
     }
     .settings-panel.open{
-      max-height:2600px; /* đủ lớn cho toàn bộ phần cài đặt */
+      max-height:2600px;
       opacity:1;
       transform:translateY(0);
     }
-
-    /* Khi khóa: làm mờ toàn bộ phần cài đặt */
     .settings-panel.is-locked{ opacity:.55; }
     .settings-panel.is-locked button,
     .settings-panel.is-locked input{
       pointer-events:none;
     }
 
-    /* === [MỚI] LOCK ONLY (center + big) === */
-    .settings-bar{
-      justify-content:center;
-      margin:12px 0 10px;
-    }
     .btn-lock-big{
       width:auto;
       min-width:180px;
@@ -287,7 +276,6 @@
       justify-content:center;
       gap:0;
       white-space:nowrap;
-      /* font giống tab TRANG CHỦ */
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       font-weight:600;
       font-size: 12px;
@@ -297,16 +285,9 @@
     @media (max-width: 420px){
       .btn-lock-big{ min-width:200px; height:44px; font-size: 12px; border-radius:12px; }
     }
-    .lock-note{
-      margin-top:8px;
-      font-size:12px;
-      color:#8e8e93;
-      font-weight:700;
-      letter-spacing:.2px;
-    }
     #lockBtnLabel{display:inline-block;}
 
-    /* === [MỚI] BADGES ROW (STATUS/MQTT/DEVICE) === */
+    /* Badges */
     .badges-row{
       display:flex;
       justify-content:center;
@@ -339,114 +320,151 @@
     .pill.mqtt-bad .dot{background:#ff3b30; box-shadow:0 0 10px rgba(255,59,48,.30), 0 0 0 1px rgba(255,255,255,0.15);}
     .pill.dev-ok .dot{background:#34c759; box-shadow:0 0 10px rgba(52,199,89,.35), 0 0 0 1px rgba(255,255,255,0.15);}
     .pill.dev-bad .dot{background:#ff3b30; box-shadow:0 0 10px rgba(255,59,48,.30), 0 0 0 1px rgba(255,255,255,0.15);}
+    
+    /* Accordion */
+    .cfg-wrap{margin-top:8px;}
+    .cfg-card{
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:16px;
+      overflow:hidden;
+      margin:10px 0;
+      background:rgba(0,0,0,0.22);
+    }
+    .cfg-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:12px 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .cfg-left{display:flex;align-items:center;gap:10px;}
+    .cfg-badge{
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.10);
+      border:1px solid rgba(255,255,255,0.10);
+      color:#e5e5e5;
+    }
+    .cfg-title{font-weight:800;font-size:13px;letter-spacing:.3px;}
+    .cfg-arrow{opacity:.75;transition:transform .2s ease;}
+    .cfg-body{
+      max-height:0;
+      opacity:0;
+      transform:translateY(-3px);
+      transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
+      padding:0 12px;
+    }
+    .cfg-card.open .cfg-body{
+      max-height:2200px;
+      opacity:1;
+      transform:translateY(0);
+      padding-bottom:12px;
+    }
+    .cfg-card.open .cfg-arrow{transform:rotate(180deg);}
+    .cfg-note{margin-top:6px;font-size:11px;color:#8e8e93;text-align:left;font-weight:700;}
+    .cfg-footnote{margin-top:8px;font-size:11px;color:#cfd2d8;opacity:.85;text-align:left;}
 
-  
+    .cfg-card.wifi{border-left:4px solid #0a84ff;}
+    .cfg-card.blynk{border-left:4px solid #34c759;}
+    .cfg-card.tb{border-left:4px solid #32ade6;}
+    .cfg-card.sensors{border-left:4px solid #ff9f0a;}
+    .cfg-card.emqx-dev{border-left:4px solid #bf5af2;}
+    .cfg-card.mqttws{border-left:4px solid #60efff;}
+    /* [NEW] AI Color */
+    .cfg-card.ai{border-left:4px solid #8E2DE2;}
 
-/* =============================
-   SETTINGS ACCORDION (CARDS)
-   ============================= */
-.cfg-wrap{margin-top:8px;}
-.cfg-card{
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:16px;
-  overflow:hidden;
-  margin:10px 0;
-  background:rgba(0,0,0,0.22);
-}
-.cfg-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:12px 12px;
-  cursor:pointer;
-  user-select:none;
-}
-.cfg-left{display:flex;align-items:center;gap:10px;}
-.cfg-badge{
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.7px;
-  text-transform:uppercase;
-  padding:4px 8px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.10);
-  border:1px solid rgba(255,255,255,0.10);
-  color:#e5e5e5;
-}
-.cfg-title{font-weight:800;font-size:13px;letter-spacing:.3px;}
-.cfg-arrow{opacity:.75;transition:transform .2s ease;}
-.cfg-body{
-  max-height:0;
-  opacity:0;
-  transform:translateY(-3px);
-  transition:max-height .25s ease, opacity .25s ease, transform .25s ease;
-  padding:0 12px;
-}
-.cfg-card.open .cfg-body{
-  max-height:2200px;
-  opacity:1;
-  transform:translateY(0);
-  padding-bottom:12px;
-}
-.cfg-card.open .cfg-arrow{transform:rotate(180deg);}
-.cfg-note{
-  margin-top:6px;
-  font-size:11px;
-  color:#8e8e93;
-  text-align:left;
-  font-weight:700;
-}
-.cfg-footnote{
-  margin-top:8px;
-  font-size:11px;
-  color:#cfd2d8;
-  opacity:.85;
-  text-align:left;
-}
+    /* Modal PIN */
+    .modal-overlay{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.6);backdrop-filter:blur(5px);
+      z-index:2000;display:none;justify-content:center;align-items:center;
+    }
+    .modal-overlay.show{display:flex;animation:fadeIn .2s}
+    .modal-box{
+      background:#2a2a2a;border:1px solid rgba(255,255,255,0.1);
+      padding:20px;border-radius:16px;width:280px;text-align:center;
+      box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    }
+    .pin-display{
+      background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);
+      color:#fff;font-size:24px;letter-spacing:5px;padding:10px;
+      width:100%;border-radius:8px;margin-bottom:15px;text-align:center;
+      outline:none;font-weight:bold;
+    }
+    .pin-pad{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .btn-pin{
+      background:rgba(255,255,255,0.1);border:none;color:#fff;
+      font-size:18px;padding:12px;border-radius:8px;cursor:pointer;
+      transition:.1s;
+    }
+    .btn-pin:active{background:rgba(255,255,255,0.2);transform:scale(.95)}
+    .btn-pin.red{background:rgba(255,69,58,0.2);color:#ff453a}
+    .btn-pin.green{background:rgba(40,167,69,0.2);color:#28a745}
 
-.cfg-card.wifi{border-left:4px solid #0a84ff;}
-.cfg-card.blynk{border-left:4px solid #34c759;}
-.cfg-card.tb{border-left:4px solid #32ade6;}
-.cfg-card.sensors{border-left:4px solid #ff9f0a;}
-.cfg-card.emqx-dev{border-left:4px solid #bf5af2;}
-.cfg-card.mqttws{border-left:4px solid #60efff;}
-
-/* === [NEW] MODAL PIN === */
-.modal-overlay{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.6);backdrop-filter:blur(5px);
-  z-index:2000;display:none;justify-content:center;align-items:center;
-}
-.modal-overlay.show{display:flex;animation:fadeIn .2s}
-.modal-box{
-  background:#2a2a2a;border:1px solid rgba(255,255,255,0.1);
-  padding:20px;border-radius:16px;width:280px;text-align:center;
-  box-shadow:0 10px 40px rgba(0,0,0,0.5);
-}
-.pin-display{
-  background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);
-  color:#fff;font-size:24px;letter-spacing:5px;padding:10px;
-  width:100%;border-radius:8px;margin-bottom:15px;text-align:center;
-  outline:none;font-weight:bold;
-}
-.pin-pad{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.btn-pin{
-  background:rgba(255,255,255,0.1);border:none;color:#fff;
-  font-size:18px;padding:12px;border-radius:8px;cursor:pointer;
-  transition:.1s;
-}
-.btn-pin:active{background:rgba(255,255,255,0.2);transform:scale(.95)}
-.btn-pin.red{background:rgba(255,69,58,0.2);color:#ff453a}
-.btn-pin.green{background:rgba(40,167,69,0.2);color:#28a745}
-
-</style>
+    /* === [NEW] Gemini UI Elements === */
+    .gemini-box {
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(100, 100, 255, 0.1);
+      border: 1px solid rgba(100, 100, 255, 0.3);
+      border-radius: 12px;
+    }
+    .gemini-input {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      resize: none;
+      font-family: inherit;
+      box-sizing: border-box; /* quan trọng */
+    }
+    .btn-gemini {
+      background: linear-gradient(90deg, #8E2DE2, #4A00E0);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      font-size: 13px;
+      transition: transform 0.2s;
+    }
+    .btn-gemini:hover { transform: scale(1.02); }
+    .btn-gemini:active { transform: scale(0.98); }
+    .btn-gemini-mini {
+      background: linear-gradient(90deg, #8E2DE2, #4A00E0);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .ai-loading { animation: pulse 1.5s infinite; opacity: 0.7; pointer-events: none; }
+    
+  </style>
 </head>
 
 <body>
   <div id="toast">Thông báo</div>
 
-  <!-- [NEW] Modal PIN -->
+  <!-- Modal PIN -->
   <div id="pinModal" class="modal-overlay">
     <div class="modal-box">
       <h3 style="margin-top:0;color:#e5e5e5;font-size:16px;margin-bottom:15px">NHẬP MẬT KHẨU (PIN)</h3>
@@ -473,7 +491,6 @@
     <div class="nav-tabs">
       <div id="tab-home" class="nav-item active" onclick="switchTab('home')">TRANG CHỦ</div>
       <div id="tab-schedule" class="nav-item" onclick="openSchedule()">HẸN GIỜ</div>
-      <!-- [UPDATE] Thêm bảo mật cho tab settings -->
       <div id="tab-settings" class="nav-item" onclick="tryOpenSettings()">CÀI ĐẶT</div>
     </div>
 
@@ -491,9 +508,9 @@
         <span id="statusDot" class="status-dot status-bad" title="MQTT / Telemetry"></span>
         <div><span id="ampsValue">--</span><span class="unit">A</span></div>
         <div><span id="tempValue">--</span><span class="unit">°C</span></div>
+        <!-- [NEW] Gemini Analysis Button -->
+        <button id="btnAiAnalyze" class="btn-gemini-mini" onclick="analyzeSensorsAI()">✨ Dr.AI</button>
       </div>
-
-
 
       <div class="settings-bar">
         <button type="button" id="btnLock" class="btn-ghost btn-lock-big locked" onclick="toggleLock()" title="Mở khóa để chỉnh / tự khóa sau 30s">
@@ -502,11 +519,20 @@
       </div>
 
       <div id="settingsPanel" class="settings-panel">
-<div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH (PRESETS)</div>
+      <div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH (PRESETS)</div>
       <div class="presets-container">
         <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
         <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
         <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
+      </div>
+
+      <!-- [NEW] AI Settings Control -->
+      <div class="gemini-box" style="margin-bottom:15px">
+        <div style="font-size:11px;color:#cfd2d8;margin-bottom:6px;font-weight:bold;">✨ ĐIỀU KHIỂN THÔNG MINH</div>
+        <textarea id="aiControlPrompt" class="gemini-input" rows="1" placeholder="VD: Tăng thời gian chạy thêm 5 giây..."></textarea>
+        <button id="btnAiControl" class="btn-gemini" onclick="controlSettingsAI()">
+          <span>✨ Thực hiện</span>
+        </button>
       </div>
 
       <div class="control-row">
@@ -547,12 +573,19 @@
       <button class="btn-cancel" onclick="setMaint(0)">HỦY BẢO TRÌ</button>
       
       </div>
-
     </div>
 
     <div id="schedule" class="tab-content">
       <h2>Hẹn giờ nghỉ</h2>
 
+      <!-- [NEW] Gemini Schedule Creator -->
+      <div class="gemini-box">
+        <div style="font-size:11px;color:#cfd2d8;margin-bottom:6px;font-weight:bold;">✨ TRỢ LÝ LẬP LỊCH THÔNG MINH</div>
+        <textarea id="aiPrompt" class="gemini-input" rows="2" placeholder="VD: Nghỉ từ 10h tối đến 6h sáng hàng ngày..."></textarea>
+        <button id="btnAiSchedule" class="btn-gemini" onclick="generateScheduleAI()">
+          <span>✨ Tạo lịch tự động</span>
+        </button>
+      </div>
 
       <div class="timeline-container">
         <div class="timeline-labels">
@@ -563,7 +596,6 @@
           Hôm nay không có lịch nghỉ nào kích hoạt.
         </div>
       </div>
-
 
       <div class="card2">
         <div style="text-align:left;font-size:11px;color:#8e8e93;margin-bottom:8px">
@@ -586,7 +618,6 @@
           <button class="btn-m" onclick="addPauseRow()">+ Thêm mốc</button>
           <button class="btn-save" onclick="savePause()">Lưu Lịch</button>
         </div>
-
         <div style="margin-top:8px;text-align:left;font-size:11px;color:#8e8e93">
           Mẹo: hỗ trợ khoảng qua đêm (vd 22:00→05:00).
         </div>
@@ -597,6 +628,25 @@
       <h2>Cấu hình Hệ thống</h2>
 
       <div class="cfg-wrap">
+
+        <!-- [NEW] Gemini API Config -->
+        <div class="cfg-card ai" id="cfgCard-ai">
+          <div class="cfg-head" onclick="toggleCfgCard(this)">
+            <div class="cfg-left">
+              <span class="cfg-badge">AI</span>
+              <span class="cfg-title">Gemini API Key (Bắt buộc)</span>
+            </div>
+            <div class="cfg-arrow">▾</div>
+          </div>
+          <div class="cfg-body">
+            <div class="input-group">
+              <label>API Key (Lấy từ Google AI Studio)</label>
+              <input type="password" id="cfg_gemini_key" placeholder="AIzaSy..." value="AIzaSyB5K7JbtmLiQ4t-HpcB6wrzPBhJ5PWcFhs">
+              <span class="toggle-eye" onclick="togglePass('cfg_gemini_key')">👁️</span>
+            </div>
+            <div class="cfg-note">Miễn phí. Tạo tại: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#0a84ff">aistudio.google.com</a></div>
+          </div>
+        </div>
 
         <!-- MQTT WebSocket (Browser Dashboard) -->
         <div class="cfg-card mqttws" id="cfgCard-mqttws">
@@ -892,7 +942,7 @@ let uiLocked = true;
 let autoRelockTimer = null;
 const AUTO_RELOCK_MS = 30000; // 30s tự khóa lại sau khi mở khóa
 
-const state = {
+window.state = {
   time_rem: "--:--", rem_s: null, off_min: null, on_sec: null,
   status: "SLEEPING", maint_mode: 0, pause_active: 0, relay_run: false, wait5s: false,
   pause_json: [],
@@ -906,8 +956,6 @@ function showToast(msg) {
   x.className = "show";
   setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
 }
-
-
 
 function setMqttPill(connected){
   const el = document.getElementById("mqttPill");
@@ -1050,7 +1098,7 @@ function switchTab(t){
 function openSchedule(){
   switchTab('schedule');
   // Load lại bảng (dữ liệu đã có sẵn trong state do Auto-Sync)
-  renderPauseTable();
+  window.renderPauseTable();
 }
 
 /* ========= Password toggle ========= */
@@ -1124,7 +1172,7 @@ function getSysCfgFromForm(){
 function saveSysConfig(){
   const cfg = getSysCfgFromForm();
   localStorage.setItem('esp_sys_cfg', JSON.stringify(cfg));
-
+  
   if(!client || !client.connected){
     showToast('Chưa kết nối MQTT để gửi SysConfig!');
     return;
@@ -1227,11 +1275,13 @@ function getCfg(){
     wsPath: (document.getElementById('cfg_emqx_ws_path').value || "/mqtt").trim(),
     wss: (document.getElementById('cfg_emqx_wss').value || "1") === "1",
     user: (document.getElementById('cfg_emqx_user').value || "").trim(),
-    pass: (document.getElementById('cfg_emqx_pass').value || "")
+    pass: (document.getElementById('cfg_emqx_pass').value || ""),
+    geminiKey: (document.getElementById('cfg_gemini_key').value || "")
   };
 }
 function saveUiSettings(){
-  localStorage.setItem("emqx_ui_cfg", JSON.stringify(getCfg()));
+  const cfg = getCfg();
+  localStorage.setItem("emqx_ui_cfg", JSON.stringify(cfg));
   showToast("Đã lưu cấu hình!"); // Thay alert
   updateTopicInfo();
 }
@@ -1247,6 +1297,7 @@ function loadUiSettings(){
     document.getElementById('cfg_emqx_wss').value = cfg.wss ? "1" : "0";
     if(cfg.user) document.getElementById('cfg_emqx_user').value = cfg.user;
     if(cfg.pass !== undefined) document.getElementById('cfg_emqx_pass').value = cfg.pass;
+    if(cfg.geminiKey) document.getElementById('cfg_gemini_key').value = cfg.geminiKey;
   }catch(e){}
 }
 
@@ -1269,7 +1320,7 @@ function hm2min(s) {
     return parseInt(p[0])*60 + parseInt(p[1]);
 }
 
-function renderTimeline() {
+window.renderTimeline = function() {
     const bar = document.getElementById("timelineBar");
     const stt = document.getElementById("timelineStatus");
     if(!bar) return;
@@ -1277,7 +1328,7 @@ function renderTimeline() {
 
     // 1. Tạo mảng 1440 phút (0 = Chạy/Xanh, 1 = Nghỉ/Đỏ)
     let dayMap = new Array(1440).fill(0);
-    const ranges = state.pause_json || [];
+    const ranges = window.state.pause_json || [];
     
     // Nếu không có lịch nào -> Full xanh
     if(ranges.length === 0) {
@@ -1394,28 +1445,28 @@ function mqttConnect(){
       try{
         const obj = JSON.parse(txt);
         // Sync
-        if(obj.time_rem !== undefined) state.time_rem = obj.time_rem;
-        if(obj.rem_s !== undefined) state.rem_s = obj.rem_s;
-        if(obj.on_sec !== undefined) state.on_sec = obj.on_sec;
-        if(obj.off_min !== undefined) state.off_min = obj.off_min;
-        if(obj.status !== undefined) state.status = obj.status;
-        if(obj.maint_mode !== undefined) state.maint_mode = obj.maint_mode;
-        if(obj.pause_active !== undefined) state.pause_active = obj.pause_active;
-        if(obj.relay_run !== undefined) state.relay_run = obj.relay_run;
-        if(obj.amps !== undefined) state.amps = obj.amps;
-        if(obj.temp !== undefined) state.temp = obj.temp;
+        if(obj.time_rem !== undefined) window.state.time_rem = obj.time_rem;
+        if(obj.rem_s !== undefined) window.state.rem_s = obj.rem_s;
+        if(obj.on_sec !== undefined) window.state.on_sec = obj.on_sec;
+        if(obj.off_min !== undefined) window.state.off_min = obj.off_min;
+        if(obj.status !== undefined) window.state.status = obj.status;
+        if(obj.maint_mode !== undefined) window.state.maint_mode = obj.maint_mode;
+        if(obj.pause_active !== undefined) window.state.pause_active = obj.pause_active;
+        if(obj.relay_run !== undefined) window.state.relay_run = obj.relay_run;
+        if(obj.amps !== undefined) window.state.amps = obj.amps;
+        if(obj.temp !== undefined) window.state.temp = obj.temp;
 
         // SYNC LỊCH TRÌNH
         if(obj.pause_json !== undefined) {
            let raw = obj.pause_json;
            if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e){} }
-           if(Array.isArray(raw)) state.pause_json = raw; else state.pause_json = [];
+           if(Array.isArray(raw)) window.state.pause_json = raw; else window.state.pause_json = [];
            
            // [MỚI] Vẽ lại Timeline ngay khi có dữ liệu lịch
-           renderTimeline();
+           window.renderTimeline();
 
            // Nếu đang mở tab Schedule thì vẽ lại bảng
-           if(document.getElementById('schedule').classList.contains('active')) renderPauseTable();
+           if(document.getElementById('schedule').classList.contains('active')) window.renderPauseTable();
         }
         lastTelemetryTs = Date.now();
         deviceOnline = true;
@@ -1489,16 +1540,16 @@ function setMaint(mode){
 
 /* ========= RENDER HOME ========= */
 function renderHome(){
-  document.getElementById("timerDisplay").textContent = (state.time_rem && state.time_rem.length>0) ? state.time_rem : "--:--";
+  document.getElementById("timerDisplay").textContent = (window.state.time_rem && window.state.time_rem.length>0) ? window.state.time_rem : "--:--";
   const b = document.getElementById("statusBadge");
   const pb = document.getElementById("progressBar");
   const timerBox = document.getElementById("timerDisplay");
 
   let ac="#28a745", ag="rgba(40,167,69,0.55)";
-  const pause = (Number(state.pause_active)||0)>0;
-  const maint = Number(state.maint_mode)||0;
-  const relay = !!state.relay_run;
-  const wait5s = (String(state.status).toUpperCase().includes("WAIT") || String(state.status).toUpperCase().includes("CHO RESET"));
+  const pause = (Number(window.state.pause_active)||0)>0;
+  const maint = Number(window.state.maint_mode)||0;
+  const relay = !!window.state.relay_run;
+  const wait5s = (String(window.state.status).toUpperCase().includes("WAIT") || String(window.state.status).toUpperCase().includes("CHO RESET"));
 
   if(pause){
     b.innerHTML="⏸ ĐANG NGHỈ"; b.className="status-badge status-off";
@@ -1508,7 +1559,7 @@ function renderHome(){
     pb.style.width="100%"; pb.style.backgroundColor="#dc3545"; ac="#dc3545"; ag="rgba(220,53,69,0.55)";
   } else if(relay){
     b.innerHTML="RUNNING (ON)"; b.className="status-badge status-on"; pb.style.backgroundColor="#28a745";
-    const t=Number(state.on_sec)||0, c=Number(state.rem_s)||0;
+    const t=Number(window.state.on_sec)||0, c=Number(window.state.rem_s)||0;
     if(t>0 && c>=0) pb.style.width=(c/t*100)+"%";
   } else if(wait5s){
     b.innerHTML="WAITING RESET."; b.className="status-badge status-wait";
@@ -1516,7 +1567,7 @@ function renderHome(){
   } else {
     b.innerHTML="SLEEPING (OFF)"; b.className="status-badge status-off"; pb.style.backgroundColor="#6c757d";
     ac="#6c757d"; ag="rgba(108,117,125,0.55)";
-    const t=(Number(state.off_min)||0)*60, c=Number(state.rem_s)||0;
+    const t=(Number(window.state.off_min)||0)*60, c=Number(window.state.rem_s)||0;
     if(t>0 && c>=0) pb.style.width=(c/t*100)+"%";
   }
   timerBox.style.setProperty("--accent", ac);
@@ -1531,29 +1582,29 @@ function renderHome(){
 
   const aEl = document.getElementById("ampsValue");
   if(aEl){
-    const v = parseFloat(state.amps);
+    const v = parseFloat(window.state.amps);
     aEl.textContent = (!stale && Number.isFinite(v)) ? v.toFixed(2) : "--";
   }
   const tEl = document.getElementById("tempValue");
   if(tEl){
-    const v = parseFloat(state.temp);
+    const v = parseFloat(window.state.temp);
     tEl.textContent = (!stale && Number.isFinite(v)) ? v.toFixed(2) : "--";
   }
   updateStatusDot();
 
 
   if(Date.now()-lastUserInteraction>5000){
-    if(state.off_min!==null) document.getElementById("offMin").value=state.off_min;
-    if(state.on_sec!==null) document.getElementById("onSec").value=state.on_sec;
+    if(window.state.off_min!==null) document.getElementById("offMin").value=window.state.off_min;
+    if(window.state.on_sec!==null) document.getElementById("onSec").value=window.state.on_sec;
   }
 }
 
 /* ========= SCHEDULE TABLE ========= */
-function renderPauseTable(){
+window.renderPauseTable = function(){
   const tb=document.getElementById('pauseTbody');
   if(!tb) return;
   tb.innerHTML="";
-  let arr = state.pause_json;
+  let arr = window.state.pause_json;
   if(!Array.isArray(arr)) arr=[];
 
   if(arr.length===0){
@@ -1582,35 +1633,36 @@ function renderPauseTable(){
     tb.appendChild(tr2);
   });
 }
-function updP(idx,k,v){
-  if(!state.pause_json[idx]) state.pause_json[idx]={s:"12:00",e:"13:00",on:1,w:127};
-  state.pause_json[idx][k]=v;
+window.updP = function(idx,k,v){
+  if(!window.state.pause_json[idx]) window.state.pause_json[idx]={s:"12:00",e:"13:00",on:1,w:127};
+  window.state.pause_json[idx][k]=v;
   // Render lại timeline luôn để user thấy thay đổi (preview)
-  renderTimeline();
+  window.renderTimeline();
 }
-function toggleDay(idx,b,el){
-  if(!state.pause_json[idx]) return;
-  let w = state.pause_json[idx].w===undefined?127:state.pause_json[idx].w;
+window.toggleDay = function(idx,b,el){
+  if(!window.state.pause_json[idx]) return;
+  let w = window.state.pause_json[idx].w===undefined?127:window.state.pause_json[idx].w;
   const m = 1<<b;
   if(w&m){ w &= ~m; el.classList.remove('active'); }
   else { w |= m; el.classList.add('active'); }
-  state.pause_json[idx].w = w;
-  renderTimeline();
+  window.state.pause_json[idx].w = w;
+  window.renderTimeline();
 }
-function addPauseRow(){
-  if(!Array.isArray(state.pause_json)) state.pause_json=[];
-  state.pause_json.push({s:"11:00",e:"05:00",on:1,w:127});
-  renderPauseTable();
-  renderTimeline();
+window.addPauseRow = function(){
+  if(!Array.isArray(window.state.pause_json)) window.state.pause_json=[];
+  window.state.pause_json.push({s:"11:00",e:"05:00",on:1,w:127});
+  window.renderPauseTable();
+  window.renderTimeline();
 }
-function delP(idx){
-  state.pause_json.splice(idx,1);
-  renderPauseTable();
-  renderTimeline();
+window.delP = function(idx){
+  window.state.pause_json.splice(idx,1);
+  window.renderPauseTable();
+  window.renderTimeline();
 }
-function savePause(){
-  const pl = state.pause_json||[];
+window.savePause = function(){
+  const pl = window.state.pause_json||[];
   if(JSON.stringify(pl).length>2000){ showToast("Data quá dài!"); return; } // Toast error
+  
   rpcCall("setPauseJson", pl);
   showToast("Đã gửi lịch nghỉ!"); // Toast success
 }
@@ -1620,48 +1672,240 @@ let enteredPin = "";
 const CORRECT_PIN = "8888"; // Mặc định pass 8888
 let isSettingsAuth = false;
 
-function tryOpenSettings(){
+window.tryOpenSettings = function(){
   if(isSettingsAuth){
     switchTab('settings');
   } else {
     // Show modal
     document.getElementById('pinModal').classList.add('show');
-    clearPin();
+    window.clearPin();
   }
 }
 
-function closePinModal(){
+window.closePinModal = function(){
   document.getElementById('pinModal').classList.remove('show');
   enteredPin = "";
 }
 
-function typePin(n){
+window.typePin = function(n){
   if(enteredPin.length < 6) {
     enteredPin += n;
-    updatePinDisplay();
+    window.updatePinDisplay();
   }
 }
 
-function clearPin(){
+window.clearPin = function(){
   enteredPin = "";
-  updatePinDisplay();
+  window.updatePinDisplay();
 }
 
-function updatePinDisplay(){
+window.updatePinDisplay = function(){
   const el = document.getElementById('pinInput');
   el.value = enteredPin ? "*".repeat(enteredPin.length) : "";
 }
 
-function submitPin(){
+window.submitPin = function(){
   if(enteredPin === CORRECT_PIN){
     isSettingsAuth = true;
-    closePinModal();
+    window.closePinModal();
     switchTab('settings');
     showToast("Đã mở khóa cài đặt");
   } else {
     showToast("Sai mật khẩu!");
-    clearPin();
+    window.clearPin();
   }
+}
+
+/* ========= [NEW] GEMINI API INTEGRATIONS ========= */
+
+async function callGemini(prompt) {
+  // [FIX] Lấy Key trực tiếp từ ô nhập liệu trong Cài đặt
+  const key = document.getElementById('cfg_gemini_key').value.trim();
+  
+  if (!key) {
+    showToast("Thiếu API Key trong Cài đặt!");
+    return null;
+  }
+
+  try {
+    // [REVERT] Quay lại dùng model 2.5 flash preview theo yêu cầu của bạn
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+    
+    if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error?.message || "Lỗi API không xác định");
+    }
+    
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+  } catch (error) {
+    console.error("Gemini Error:", error);
+    showToast("Lỗi AI: " + error.message);
+    return null;
+  }
+}
+
+window.controlSettingsAI = async function() {
+  const input = document.getElementById("aiControlPrompt").value;
+  if (!input) { showToast("Vui lòng nhập lệnh!"); return; }
+
+  const btn = document.getElementById("btnAiControl");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = `<span class="ai-loading">✨ Đang xử lý...</span>`;
+  btn.disabled = true;
+
+  // Get current values
+  const currentOn = parseInt(document.getElementById("onSec").value || "0");
+  const currentOff = parseInt(document.getElementById("offMin").value || "0");
+
+  const prompt = `
+    Bạn là trợ lý điều khiển thiết bị.
+    Trạng thái hiện tại: Thời gian CHẠY (ON) = ${currentOn} giây, Thời gian NGHỈ (OFF) = ${currentOff} phút.
+    Yêu cầu người dùng: "${input}"
+
+    Hãy tính toán và trả về JSON chứa giá trị mới.
+    Chỉ trả về các trường cần thay đổi.
+    Format JSON: {"on_sec": số_nguyên, "off_min": số_nguyên}
+    
+    Ví dụ: 
+    - "Tăng chạy thêm 5s" -> {"on_sec": ${currentOn + 5}}
+    - "Đặt nghỉ 30 phút" -> {"off_min": 30}
+    
+    CHỈ TRẢ VỀ JSON THUẦN.
+  `;
+
+  const result = await callGemini(prompt);
+
+  if (result) {
+    try {
+      const cleanJson = result.replace(/```json/g, "").replace(/```/g, "").trim();
+      const changes = JSON.parse(cleanJson);
+      let changed = false;
+
+      if (changes.on_sec !== undefined) {
+        document.getElementById("onSec").value = changes.on_sec;
+        changed = true;
+      }
+      if (changes.off_min !== undefined) {
+        document.getElementById("offMin").value = changes.off_min;
+        changed = true;
+      }
+
+      if (changed) {
+        saveSettings(); // Auto save
+        showToast(`Đã cập nhật: On=${document.getElementById("onSec").value}s, Off=${document.getElementById("offMin").value}m`);
+      } else {
+        showToast("Không hiểu lệnh hoặc không có thay đổi.");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Lỗi xử lý phản hồi AI.");
+    }
+  }
+
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+}
+
+window.generateScheduleAI = async function() {
+  const input = document.getElementById("aiPrompt").value;
+  if (!input) { showToast("Vui lòng nhập mô tả!"); return; }
+  
+  const btn = document.getElementById("btnAiSchedule");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = `<span class="ai-loading">✨ Đang suy nghĩ...</span>`;
+  btn.disabled = true;
+
+  // Prompt kỹ thuật để ép Gemini trả về JSON chuẩn
+  const prompt = `
+    Bạn là trợ lý lập lịch cho thiết bị IoT.
+    Yêu cầu của người dùng: "${input}"
+    
+    Hãy chuyển đổi yêu cầu này thành mảng JSON gồm các đối tượng lịch trình NGHỈ (PAUSE).
+    Format JSON: [{"s": "HH:MM", "e": "HH:MM", "on": 1, "w": 127}]
+    - "s": Giờ bắt đầu nghỉ (24h format).
+    - "e": Giờ kết thúc nghỉ.
+    - "on": 1 (luôn bật).
+    - "w": Bitmask thứ trong tuần (CN=1, T2=2, T3=4, T4=8, T5=16, T6=32, T7=64). Cộng dồn lại.
+      Ví dụ: "Hàng ngày" = 127. "Thứ 2, 4, 6" = 2+8+32 = 42.
+    
+    Lưu ý quan trọng:
+    - Nếu người dùng nói "Chạy từ X đến Y", nghĩa là họ muốn NGHỈ các giờ còn lại (Nghỉ từ 00:00->X và từ Y->23:59).
+    - Nếu người dùng nói "Nghỉ từ X đến Y", hãy dùng đúng giờ đó.
+    
+    CHỈ TRẢ VỀ JSON THUẦN (raw json array), KHÔNG CÓ MARKDOWN HAY CHÚ THÍCH.
+  `;
+
+  const result = await callGemini(prompt);
+  
+  if (result) {
+    try {
+      // Clean up markdown block if present
+      const cleanJson = result.replace(/```json/g, "").replace(/```/g, "").trim();
+      const newItems = JSON.parse(cleanJson);
+      
+      if (Array.isArray(newItems)) {
+        // [FIXED] Nối thêm vào danh sách cũ thay vì ghi đè
+        const currentList = Array.isArray(window.state.pause_json) ? window.state.pause_json : [];
+        window.state.pause_json = currentList.concat(newItems);
+
+        window.renderPauseTable(); // Cập nhật bảng
+        window.renderTimeline();   // Cập nhật timeline
+        showToast(`Đã thêm ${newItems.length} mốc lịch mới!`);
+        
+        // [MODIFIED] Auto-save to server after AI generation
+        if(window.savePause) {
+           window.savePause();
+        }
+      } else {
+        showToast("AI trả về format không đúng.");
+      }
+    } catch (e) {
+      showToast("Lỗi phân tích JSON từ AI.");
+      console.error(e);
+    }
+  }
+
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+}
+
+window.analyzeSensorsAI = async function() {
+  const btn = document.getElementById("btnAiAnalyze");
+  if(btn.classList.contains('ai-loading')) return;
+
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳...";
+  btn.classList.add('ai-loading');
+
+  const amps = window.state.amps || 0;
+  const temp = window.state.temp || 0;
+  const status = window.state.status || "Unknown";
+
+  const prompt = `
+    Đóng vai bác sĩ kỹ thuật IoT. Phân tích trạng thái thiết bị này:
+    - Dòng điện: ${amps} A
+    - Nhiệt độ: ${temp} độ C
+    - Trạng thái: ${status}
+    
+    Đưa ra nhận xét ngắn gọn (tối đa 2 câu tiếng Việt) về sức khỏe thiết bị. Có gì bất thường không?
+  `;
+
+  const result = await callGemini(prompt);
+  
+  if (result) {
+    // Show kết quả bằng Modal Alert thay vì Toast để đọc hết
+    alert("🤖 Dr.AI Chẩn đoán:\n\n" + result);
+  }
+
+  btn.innerHTML = originalText;
+  btn.classList.remove('ai-loading');
 }
 
 /* ========= BOOT ========= */
