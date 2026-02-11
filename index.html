@@ -17,6 +17,7 @@
       --danger: #ef4444;
       --warning: #f59e0b;
       --text-dim: #94a3b8;
+      --ai-gradient: linear-gradient(135deg, #8b5cf6, #d946ef);
     }
 
     body {
@@ -61,7 +62,7 @@
 
     .card-stats { display: flex; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 12px; font-size: 11px; }
 
-    /* === PANEL ĐIỀU KHIỂN CHI TIẾT (STYLED LIKE ORIGINAL) === */
+    /* === PANEL ĐIỀU KHIỂN CHI TIẾT === */
     .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; justify-content: center; align-items: flex-end; }
     .panel {
       width: 100%; max-width: 500px; background: #1e293b; 
@@ -74,9 +75,7 @@
     .panel.show { transform: translateY(0); }
     .handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: 0 auto 20px; cursor: pointer; }
 
-    /* --- UI ELEMENTS FROM ORIGINAL FILE --- */
-    
-    /* Info Group (Quick View) */
+    /* UI Elements */
     .info-group { display: flex; justify-content: space-around; align-items: center; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 15px 0; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
     .info-item { text-align: center; flex: 1; }
     .info-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
@@ -84,7 +83,6 @@
     .info-unit { font-size: 11px; color: #64748b; font-weight: 700; }
     .info-div { width: 1px; height: 40px; background: rgba(255,255,255,0.1); }
 
-    /* Presets */
     .presets-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
     .btn-preset { 
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ccc; 
@@ -94,7 +92,6 @@
     .btn-preset:active { transform: scale(0.96); }
     .btn-preset span { display: block; font-weight: 800; font-size: 12px; margin-bottom: 4px; color: #fff; }
 
-    /* Control Rows (Steppers) */
     .control-row { 
       background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; 
       display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);
@@ -108,11 +105,9 @@
     .btn-step:active { background: rgba(255,255,255,0.2); }
     .stepper input { width: 50px; background: transparent; border: none; color: #fff; text-align: center; font-weight: 800; font-size: 16px; outline: none; }
 
-    /* Save Button */
     .btn-save-main { width: 100%; padding: 15px; border-radius: 14px; border: none; background: var(--accent); color: white; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
     .btn-save-main:active { transform: scale(0.98); }
 
-    /* Maintenance Grid */
     .maintenance-title { font-size: 11px; font-weight: 800; color: #64748b; margin: 25px 0 10px; text-transform: uppercase; letter-spacing: 1px; }
     .maintenance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .btn-m { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
@@ -122,15 +117,71 @@
     .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #ff453a; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px; }
 
     /* === AI FAB & TOAST === */
-    .ai-fab { position: fixed; right: 25px; bottom: 25px; width: 56px; height: 56px; background: linear-gradient(135deg, #8b5cf6, #d946ef); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); z-index: 900; }
+    .ai-fab { position: fixed; right: 25px; bottom: 25px; width: 56px; height: 56px; background: var(--ai-gradient); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); z-index: 900; transition: transform 0.2s; }
+    .ai-fab:active { transform: scale(0.9); }
+    
     #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #334155; color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 600; display: none; z-index: 3000; border: 1px solid rgba(255,255,255,0.1); }
+
+    /* === AI MODAL === */
+    #aiModal { display: none; z-index: 1100; align-items: center; justify-content: center; }
+    .ai-content { 
+      width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; padding: 25px; 
+      border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      display: flex; flex-direction: column; gap: 15px; position: relative;
+    }
+    .ai-title { font-size: 16px; font-weight: 800; background: var(--ai-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin: 0; }
+    
+    .ai-input-group { position: relative; }
+    .ai-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; padding: 12px; padding-right: 40px; border-radius: 12px; box-sizing: border-box; font-size: 14px; }
+    .ai-input:focus { border-color: #8b5cf6; outline: none; }
+    .btn-mic { position: absolute; right: 5px; top: 5px; background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+    .btn-mic.listening { background: rgba(239, 68, 68, 0.2); animation: pulse 1.5s infinite; }
+    
+    .ai-actions { display: flex; gap: 10px; margin-top: 5px; }
+    .btn-ai { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; color: #fff; transition: 0.2s; }
+    .btn-ai-send { background: var(--ai-gradient); }
+    .btn-ai-analyze { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
+    .btn-ai-analyze:hover { background: rgba(255,255,255,0.15); }
+
+    .ai-response { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; font-size: 13px; color: #e2e8f0; line-height: 1.5; max-height: 200px; overflow-y: auto; display: none; border-left: 3px solid #8b5cf6; }
+    .ai-key-input { font-size: 11px; padding: 8px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #94a3b8; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
   </style>
 </head>
 <body>
 
   <div id="toast">Thông báo</div>
 
-  <!-- PANEL ĐIỀU KHIỂN CHI TIẾT (GHÉP TỪ FILE GỐC CỦA BẠN) -->
+  <!-- AI MODAL -->
+  <div id="aiModal" class="panel-overlay" onclick="if(event.target.id==='aiModal') closeAI()">
+    <div class="ai-content">
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <h3 class="ai-title">✨ TRUNG TÂM AI</h3>
+        <button onclick="closeAI()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      
+      <!-- Key Config -->
+      <input type="password" id="geminiKey" class="ai-key-input" placeholder="Dán Gemini API Key vào đây (Lưu tự động)" onchange="saveGeminiKey(this.value)">
+
+      <!-- Command Input -->
+      <div class="ai-input-group">
+        <input type="text" id="aiCommand" class="ai-input" placeholder="Nhập lệnh hoặc hỏi (VD: Bật máy 1 10 phút)">
+        <button class="btn-mic" onclick="startVoice(this)">🎤</button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="ai-actions">
+        <button class="btn-ai btn-ai-send" onclick="executeAI()">🚀 GỬI LỆNH</button>
+        <button class="btn-ai btn-ai-analyze" onclick="analyzeSystem()">🏥 KHÁM BỆNH</button>
+      </div>
+
+      <!-- Response Area -->
+      <div id="aiResponse" class="ai-response"></div>
+    </div>
+  </div>
+
+  <!-- PANEL ĐIỀU KHIỂN CHI TIẾT -->
   <div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
     <div class="panel" id="mainPanel">
       <div class="handle" onclick="closePanel({target:{id:'panelOverlay'}})"></div>
@@ -143,7 +194,6 @@
         <div id="panelStatusBadge" style="padding: 4px 10px; background: #334155; border-radius: 20px; font-size: 10px; font-weight: bold;">OFFLINE</div>
       </div>
 
-      <!-- Quick Info Group -->
       <div class="info-group">
         <div class="info-item">
             <span class="info-label">CÀI ĐẶT NGHỈ</span>
@@ -160,7 +210,6 @@
         </div>
       </div>
 
-      <!-- Presets -->
       <div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH</div>
       <div class="presets-container">
         <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
@@ -168,7 +217,6 @@
         <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
       </div>
 
-      <!-- Steppers Control -->
       <div class="control-row">
         <div class="label-section">
           <div class="icon">🏃</div>
@@ -176,7 +224,7 @@
         </div>
         <div class="stepper">
           <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
-          <input type="number" id="onSec" value="5">
+          <input type="number" id="onSec" value="0">
           <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
         </div>
       </div>
@@ -188,14 +236,13 @@
         </div>
         <div class="stepper">
           <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
-          <input type="number" id="offMin" value="1">
+          <input type="number" id="offMin" value="0">
           <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
         </div>
       </div>
 
       <button class="btn-save-main" onclick="saveSettings()">LƯU CÀI ĐẶT</button>
 
-      <!-- Maintenance -->
       <div class="maintenance-title">🔧 Chế độ bảo trì</div>
       <div class="maintenance-grid">
         <button class="btn-m" onclick="setMaint(1)">7p</button>
@@ -207,7 +254,7 @@
       </div>
       <button class="btn-cancel" onclick="setMaint(0)">HỦY BẢO TRÌ</button>
 
-      <div style="height: 30px;"></div> <!-- Spacer -->
+      <div style="height: 30px;"></div>
     </div>
   </div>
 
@@ -218,43 +265,44 @@
         <span id="deviceCount">ĐANG THEO DÕI: 0 THIẾT BỊ</span>
       </div>
       <div class="header-actions">
-        <!-- Nút Reset LocalStorage để nhập lại config nếu cần -->
-        <button class="btn-circle" onclick="if(confirm('Reset Config?')){localStorage.clear();location.reload();}">↻</button>
+        <button class="btn-circle" onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻</button>
       </div>
     </header>
 
-    <div class="device-grid" id="grid">
-      <!-- Cards sẽ tự động được thêm vào đây -->
-    </div>
+    <div class="device-grid" id="grid"></div>
   </div>
 
-  <div class="ai-fab" onclick="askAI()">✨</div>
+  <div class="ai-fab" onclick="openAI()">✨</div>
 
 <script>
-/* ========= SERVER MẶC ĐỊNH ========= */
+/* ========= CONFIG ========= */
 const DEFAULT_MQTT = {
   host: "n21f2dda.ala.dedicated.aws.emqxcloud.com",
   port: "8084",
   user: "anhtrung1",
-  pass: "anhtrung1",
-  gemini: "" 
+  pass: "anhtrung1"
 };
 
 window.devices = {};
 let client = null;
 let currentSelectedId = null;
 
-/* ========= MQTT CONNECTION ========= */
+/* ========= INIT & MQTT ========= */
+window.onload = function() {
+    connect();
+    // Load saved API Key
+    const key = localStorage.getItem("gemini_api_key");
+    if(key) document.getElementById("geminiKey").value = key;
+};
+
 function connect() {
   const url = `wss://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}/mqtt`;
-  
   if(client) client.end();
-  console.log("Connecting to", url);
-
+  
   client = mqtt.connect(url, {
     username: DEFAULT_MQTT.user,
     password: DEFAULT_MQTT.pass,
-    clientId: "eco_pro_" + Math.random().toString(16).slice(2, 8)
+    clientId: "eco_ai_" + Math.random().toString(16).slice(2, 8)
   });
 
   client.on("connect", () => {
@@ -270,32 +318,27 @@ function connect() {
 
     try {
       const data = JSON.parse(payload.toString());
-      
-      // Auto-add new device
-      if(!window.devices[devId]) {
-        window.devices[devId] = { id: devId };
-      }
-
+      if(!window.devices[devId]) { window.devices[devId] = { id: devId }; }
       Object.assign(window.devices[devId], data);
       window.devices[devId].lastSeen = Date.now();
-
       render();
       
-      // Nếu đang mở panel của thiết bị này, cập nhật số liệu real-time (trừ khi đang nhập liệu)
       if(currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
-          // Chỉ cập nhật hiển thị, không cập nhật input để tránh nhảy số khi user đang nhập
+          // Update Text Display (Quick View)
           if(data.off_min !== undefined) document.getElementById("qOff").textContent = data.off_min;
           if(data.on_sec !== undefined) document.getElementById("qOn").textContent = data.on_sec;
+          
+          // Update Inputs (Chỉ khi người dùng không đang nhập)
+          if(document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
+          if(document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
       }
     } catch(e) { console.error("Data error", e); }
   });
 }
 
-/* ========= RENDER DASHBOARD ========= */
 function render() {
   const grid = document.getElementById("grid");
   const ids = Object.keys(window.devices).sort();
-  
   document.getElementById("deviceCount").innerText = `ĐANG THEO DÕI: ${ids.length} THIẾT BỊ`;
 
   ids.forEach(id => {
@@ -312,8 +355,6 @@ function render() {
     }
 
     card.className = `device-card ${isOnline ? '' : 'offline'}`;
-    
-    // Status text coloring
     let statusClass = "status";
     if(dev.status && dev.status.includes("OFF")) statusClass += " off";
 
@@ -334,12 +375,10 @@ function render() {
   });
 }
 
-/* ========= PANEL CONTROLS (THE ORIGINAL LOGIC) ========= */
+/* ========= PANEL CONTROLS ========= */
 function openPanel(id) {
   currentSelectedId = id;
   const dev = window.devices[id];
-  
-  // Điền thông tin vào Panel
   document.getElementById("panelTitle").innerText = id.toUpperCase();
   document.getElementById("panelId").innerText = "Last Update: " + new Date(dev.lastSeen).toLocaleTimeString();
   
@@ -348,7 +387,7 @@ function openPanel(id) {
   badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
   badge.style.background = isOnline ? "var(--success)" : "#334155";
 
-  // Điền dữ liệu vào Inputs và Quick View
+  // Lấy giá trị từ state nếu có
   const off = dev.off_min || 0;
   const on = dev.on_sec || 0;
 
@@ -359,6 +398,19 @@ function openPanel(id) {
 
   document.getElementById("panelOverlay").style.display = "flex";
   setTimeout(() => document.getElementById("mainPanel").classList.add("show"), 10);
+  
+  // TỰ ĐỘNG ĐỒNG BỘ KHI MỞ PANEL
+  requestDeviceSync(id);
+}
+
+function requestDeviceSync(id) {
+    if(!client) return;
+    // Gửi lệnh giả với params rỗng để thiết bị trả về giá trị hiện tại
+    // Điều này kích hoạt code: tbGetIntParam(..., runOffMin) -> trả về runOffMin -> gửi RPC response
+    const topic = `devices/${id}/rpc/request/${Date.now()}`;
+    client.publish(topic, JSON.stringify({ method: "setOffMin", params: {} }));
+    client.publish(topic, JSON.stringify({ method: "setOnSec", params: {} }));
+    showToast("Đang đồng bộ dữ liệu...");
 }
 
 function closePanel(e) {
@@ -369,65 +421,153 @@ function closePanel(e) {
   }
 }
 
-// Logic Stepper +/-
 function adjustValue(id, d) {
     const el = document.getElementById(id);
     let val = parseInt(el.value) || 0;
     val += d;
     if(val < 0) val = 0;
     el.value = val;
-    // Update Quick View Realtime
     if(id === "offMin") document.getElementById("qOff").textContent = val;
     if(id === "onSec") document.getElementById("qOn").textContent = val;
 }
 
-// Logic Presets
 function applyPreset(m, s) {
     document.getElementById("offMin").value = m;
     document.getElementById("onSec").value = s;
     document.getElementById("qOff").textContent = m;
     document.getElementById("qOn").textContent = s;
-    saveSettings(); // Auto save for presets
+    saveSettings();
 }
 
-/* ========= RPC COMMANDS ========= */
 function saveSettings() {
     if(!currentSelectedId || !client) return;
     const m = parseInt(document.getElementById("offMin").value);
     const s = parseInt(document.getElementById("onSec").value);
-    
-    // Send RPC to specific device ID
-    const baseTopic = `devices/${currentSelectedId}/rpc/request/${Date.now()}`;
-    client.publish(baseTopic, JSON.stringify({ method: "setOffMin", params: m }));
-    client.publish(baseTopic, JSON.stringify({ method: "setOnSec", params: s }));
-    client.publish(baseTopic, JSON.stringify({ method: "save", params: 1 }));
-    
+    rpcSend(currentSelectedId, "setOffMin", m);
+    rpcSend(currentSelectedId, "setOnSec", s);
+    rpcSend(currentSelectedId, "save", 1);
     showToast(`Đã gửi cài đặt tới ${currentSelectedId}`);
 }
 
 function setMaint(mode) {
     if(!currentSelectedId || !client) return;
-    const topic = `devices/${currentSelectedId}/rpc/request/${Date.now()}`;
-    client.publish(topic, JSON.stringify({ method: "setMaintenance", params: mode }));
+    rpcSend(currentSelectedId, "setMaintenance", mode);
     showToast(`Gửi lệnh bảo trì tới ${currentSelectedId}`);
 }
 
-/* ========= AI ========= */
-async function askAI() {
-  const geminiKey = prompt("Nhập Google Gemini API Key để phân tích:");
-  if(!geminiKey) return;
+function rpcSend(id, method, params) {
+    const topic = `devices/${id}/rpc/request/${Date.now()}`;
+    client.publish(topic, JSON.stringify({ method: method, params: params }));
+}
 
-  const context = JSON.stringify(window.devices);
-  const promptText = `Phân tích hệ thống IoT gồm các máy: ${context}. Máy nào hoạt động bất thường? Trả lời ngắn gọn Tiếng Việt.`;
+/* ========= AI INTELLIGENCE ========= */
+function openAI() { document.getElementById("aiModal").style.display = "flex"; }
+function closeAI() { document.getElementById("aiModal").style.display = "none"; }
+function saveGeminiKey(val) { localStorage.setItem("gemini_api_key", val.trim()); showToast("Đã lưu API Key"); }
 
-  showToast("AI đang phân tích...");
-  try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
-      method: "POST", body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-    });
-    const d = await resp.json();
-    alert("🤖 Dr.AI Report:\n" + d.candidates[0].content.parts[0].text);
-  } catch(e) { alert("Lỗi kết nối AI"); }
+// Voice Recognition
+function startVoice(btn) {
+    if(!('webkitSpeechRecognition' in window)) { alert("Trình duyệt không hỗ trợ giọng nói"); return; }
+    const r = new webkitSpeechRecognition();
+    r.lang = 'vi-VN';
+    r.start();
+    btn.classList.add('listening');
+    r.onresult = (e) => {
+        document.getElementById("aiCommand").value = e.results[0][0].transcript;
+        btn.classList.remove('listening');
+        executeAI(); // Auto send on silence
+    }
+    r.onerror = () => btn.classList.remove('listening');
+    r.onspeechend = () => btn.classList.remove('listening');
+}
+
+// Main AI Logic
+async function executeAI() {
+    const cmd = document.getElementById("aiCommand").value;
+    const key = document.getElementById("geminiKey").value;
+    const resBox = document.getElementById("aiResponse");
+    
+    if(!cmd || !key) { showToast("Nhập lệnh và API Key!"); return; }
+    
+    resBox.style.display = "block";
+    resBox.innerHTML = "🤖 Đang suy nghĩ...";
+
+    const context = JSON.stringify(window.devices);
+    const prompt = `
+    Bạn là trợ lý IoT. 
+    Danh sách thiết bị hiện tại: ${context}
+    Người dùng nói: "${cmd}"
+    
+    Nhiệm vụ:
+    1. Xác định thiết bị mục tiêu (qua ID hoặc tên gọi tương tự). Nếu là "tất cả", target="ALL".
+    2. Xác định hành động: "config" (cài đặt giờ), "maint" (bảo trì), "analyze" (hỏi thông tin).
+    
+    Trả về JSON DUY NHẤT theo format:
+    {
+      "target": "device_id" hoặc "ALL",
+      "action": "config" | "maint" | "analyze",
+      "params": { "off": number_phut, "on": number_giay } (nếu config),
+      "mode": number_0_6 (nếu maint),
+      "message": "Câu trả lời ngắn cho người dùng"
+    }
+    Chỉ trả về JSON thuần, không markdown.
+    `;
+
+    try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const d = await resp.json();
+        const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+        const logic = JSON.parse(raw);
+
+        // Hiển thị phản hồi
+        resBox.innerHTML = `🤖 ${logic.message || "Đã hiểu lệnh"}`;
+
+        // Thực thi lệnh MQTT
+        if(logic.action === "config" || logic.action === "maint") {
+            const targets = (logic.target === "ALL") ? Object.keys(window.devices) : [logic.target];
+            
+            targets.forEach(id => {
+                if(window.devices[id]) {
+                    if(logic.action === "config" && logic.params) {
+                        rpcSend(id, "setOffMin", logic.params.off);
+                        rpcSend(id, "setOnSec", logic.params.on);
+                        rpcSend(id, "save", 1);
+                    }
+                    if(logic.action === "maint" && logic.mode !== undefined) {
+                        rpcSend(id, "setMaintenance", logic.mode);
+                    }
+                }
+            });
+            showToast(`Đã gửi lệnh tới ${targets.length} thiết bị`);
+        }
+
+    } catch(e) {
+        console.error(e);
+        resBox.innerHTML = "❌ Lỗi: Không hiểu lệnh hoặc sai API Key.";
+    }
+}
+
+async function analyzeSystem() {
+    const key = document.getElementById("geminiKey").value;
+    if(!key) { showToast("Cần API Key"); return; }
+    
+    const context = JSON.stringify(window.devices);
+    const prompt = `Phân tích dữ liệu JSON các thiết bị IoT sau: ${context}. Hãy báo cáo ngắn gọn: Thiết bị nào hoạt động bình thường? Thiết bị nào có thông số bất thường (dòng cao, nhiệt độ cao, mất kết nối)? Đưa ra lời khuyên.`;
+    
+    document.getElementById("aiResponse").style.display = "block";
+    document.getElementById("aiResponse").innerHTML = "🔍 Đang khám bệnh...";
+    
+    try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const d = await resp.json();
+        document.getElementById("aiResponse").innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
+    } catch(e) { alert("Lỗi AI"); }
 }
 
 function showToast(m) {
@@ -436,10 +576,7 @@ function showToast(m) {
   setTimeout(() => t.style.display = "none", 3000);
 }
 
-// Init
-window.onload = connect;
 setInterval(render, 10000);
-
 </script>
 </body>
 </html>
