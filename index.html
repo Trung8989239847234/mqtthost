@@ -40,7 +40,7 @@
     .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
     .btn-circle:hover { background: var(--accent); }
 
-    /* === GRID THIẾT BỊ (DASHBOARD) === */
+    /* === GRID THIẾT BỊ === */
     .device-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
     .device-card {
       background: var(--card-bg); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px;
@@ -56,25 +56,17 @@
     .card-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; }
     .card-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
 
-    /* === UPDATED CARD STATS (HUGE) === */
-    .card-main-stats { 
-        display: flex; justify-content: space-around; align-items: center; 
-        flex-grow: 1; padding: 10px 0;
-    }
+    /* STATS */
+    .card-main-stats { display: flex; justify-content: space-around; align-items: center; flex-grow: 1; padding: 10px 0; }
     .stat-item { text-align: center; }
     .stat-icon { font-size: 18px; margin-bottom: -5px; opacity: 0.6; }
     .stat-value { font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
     .stat-unit { font-size: 12px; font-weight: 700; opacity: 0.5; margin-left: 2px; }
-    
-    .stat-item.off .stat-value { color: #94a3b8; } /* Màu xám cho Nghỉ */
-    .stat-item.on .stat-value { color: var(--warning); } /* Màu vàng/cam cho Chạy */
+    .stat-item.off .stat-value { color: #94a3b8; }
+    .stat-item.on .stat-value { color: var(--warning); }
 
-    /* === UPDATED TIMER (MINI) === */
-    .card-timer-mini { 
-        text-align: center; margin-top: 15px; 
-        background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px;
-        border-top: 1px solid rgba(255,255,255,0.05);
-    }
+    /* TIMER MINI */
+    .card-timer-mini { text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
     .mini-time { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
     .mini-status { font-size: 9px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-top: 2px; display: block; }
     .mini-status.off { color: var(--text-dim); }
@@ -82,12 +74,9 @@
     /* === PANEL ĐIỀU KHIỂN CHI TIẾT === */
     .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; justify-content: center; align-items: flex-end; }
     .panel {
-      width: 100%; max-width: 500px; background: #1e293b; 
-      border-top-left-radius: 24px; border-top-right-radius: 24px;
-      padding: 24px; box-sizing: border-box; 
-      transform: translateY(100%); transition: 0.4s cubic-bezier(0.33, 1, 0.68, 1);
-      box-shadow: 0 -10px 50px rgba(0,0,0,0.5);
-      max-height: 90vh; overflow-y: auto;
+      width: 100%; max-width: 500px; background: #1e293b; border-top-left-radius: 24px; border-top-right-radius: 24px;
+      padding: 24px; box-sizing: border-box; transform: translateY(100%); transition: 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+      box-shadow: 0 -10px 50px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;
     }
     .panel.show { transform: translateY(0); }
     .handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: 0 auto 20px; cursor: pointer; }
@@ -101,18 +90,11 @@
     .info-div { width: 1px; height: 40px; background: rgba(255,255,255,0.1); }
 
     .presets-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-    .btn-preset { 
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ccc; 
-      border-radius: 12px; padding: 10px; font-size: 11px; cursor: pointer; transition: .2s;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-    }
+    .btn-preset { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ccc; border-radius: 12px; padding: 10px; font-size: 11px; cursor: pointer; transition: .2s; display: flex; flex-direction: column; align-items: center; text-align: center; }
     .btn-preset:active { transform: scale(0.96); }
     .btn-preset span { display: block; font-weight: 800; font-size: 12px; margin-bottom: 4px; color: #fff; }
 
-    .control-row { 
-      background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; 
-      display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);
-    }
+    .control-row { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
     .label-section { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #cbd5e1; }
     .icon { font-size: 18px; }
     .sub-text { font-size: 10px; color: #64748b; display: block; font-weight: 400; }
@@ -130,38 +112,52 @@
     .btn-m { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
     .btn-m:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .btn-manual { color: var(--warning); border-color: rgba(245, 158, 11, 0.2); }
-    
     .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #ff453a; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px; }
+
+    .btn-schedule { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 12px; }
 
     /* === AI FAB & TOAST === */
     .ai-fab { position: fixed; right: 25px; bottom: 25px; width: 56px; height: 56px; background: var(--ai-gradient); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); z-index: 900; transition: transform 0.2s; }
     .ai-fab:active { transform: scale(0.9); }
-    
     #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #334155; color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 600; display: none; z-index: 3000; border: 1px solid rgba(255,255,255,0.1); }
 
     /* === AI MODAL === */
     #aiModal { display: none; z-index: 1100; align-items: center; justify-content: center; }
-    .ai-content { 
-      width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; padding: 25px; 
-      border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      display: flex; flex-direction: column; gap: 15px; position: relative;
-    }
+    .ai-content { width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; padding: 25px; border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 15px; position: relative; }
     .ai-title { font-size: 16px; font-weight: 800; background: var(--ai-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin: 0; }
-    
     .ai-input-group { position: relative; }
     .ai-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; padding: 12px; padding-right: 40px; border-radius: 12px; box-sizing: border-box; font-size: 14px; }
     .ai-input:focus { border-color: #8b5cf6; outline: none; }
     .btn-mic { position: absolute; right: 5px; top: 5px; background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
     .btn-mic.listening { background: rgba(239, 68, 68, 0.2); animation: pulse 1.5s infinite; }
-    
     .ai-actions { display: flex; gap: 10px; margin-top: 5px; }
     .btn-ai { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; color: #fff; transition: 0.2s; }
     .btn-ai-send { background: var(--ai-gradient); }
     .btn-ai-analyze { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
     .btn-ai-analyze:hover { background: rgba(255,255,255,0.15); }
-
     .ai-response { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; font-size: 13px; color: #e2e8f0; line-height: 1.5; max-height: 200px; overflow-y: auto; display: none; border-left: 3px solid #8b5cf6; }
     .ai-key-input { font-size: 11px; padding: 8px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #94a3b8; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+
+    /* === SCHEDULE MODAL STYLES === */
+    #scheduleModal { display: none; z-index: 1200; align-items: center; justify-content: center; }
+    .schedule-content { width: 95%; max-width: 450px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
+    
+    .sched-list { margin-top: 15px; max-height: 300px; overflow-y: auto; }
+    .sched-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
+    .sched-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sched-time input { background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; padding: 5px; border-radius: 6px; width: 60px; text-align: center; }
+    
+    .day-select { display: flex; gap: 4px; justify-content: space-between; }
+    .d-btn { width: 100%; text-align: center; padding: 6px 0; border-radius: 6px; font-size: 10px; background: rgba(255,255,255,0.05); cursor: pointer; color: #94a3b8; font-weight: 700; }
+    .d-btn.act { background: rgba(59, 130, 246, 0.3); color: #fff; border: 1px solid rgba(59, 130, 246, 0.5); }
+
+    /* Toggle Switch */
+    .sw { position: relative; display: inline-block; width: 34px; height: 20px; }
+    .sw input { opacity: 0; width: 0; height: 0; }
+    .sl { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .2s; border-radius: 20px; }
+    .sl:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%; }
+    input:checked + .sl { background-color: #10b981; }
+    input:checked + .sl:before { transform: translateX(14px); }
 
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
   </style>
@@ -177,24 +173,36 @@
         <h3 class="ai-title">✨ TRUNG TÂM AI</h3>
         <button onclick="closeAI()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
       </div>
-      
-      <!-- Key Config -->
       <input type="password" id="geminiKey" class="ai-key-input" placeholder="Dán Gemini API Key vào đây (Lưu tự động)" onchange="saveGeminiKey(this.value)">
-
-      <!-- Command Input -->
       <div class="ai-input-group">
         <input type="text" id="aiCommand" class="ai-input" placeholder="Nhập lệnh hoặc hỏi (VD: Bật máy 1 10 phút)">
         <button class="btn-mic" onclick="startVoice(this)">🎤</button>
       </div>
-
-      <!-- Action Buttons -->
       <div class="ai-actions">
         <button class="btn-ai btn-ai-send" onclick="executeAI()">🚀 GỬI LỆNH</button>
         <button class="btn-ai btn-ai-analyze" onclick="analyzeSystem()">🏥 KHÁM BỆNH</button>
       </div>
-
-      <!-- Response Area -->
       <div id="aiResponse" class="ai-response"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE MODAL -->
+  <div id="scheduleModal" class="panel-overlay" onclick="if(event.target.id==='scheduleModal') closeSchedule()">
+    <div class="schedule-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+        <h3 style="margin:0; color:#fff">📅 HẸN GIỜ NGHỈ</h3>
+        <button onclick="closeSchedule()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+      </div>
+      <p id="schedDevId" style="font-size:11px; color:#94a3b8; margin-top:-10px">ID: --</p>
+      
+      <div class="sched-list" id="schedList">
+        <!-- JS will render items here -->
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px">
+        <button class="btn-m" style="flex:1" onclick="addScheduleItem()">+ THÊM MỐC</button>
+        <button class="btn-save-main" style="flex:1; margin:0" onclick="saveSchedule()">LƯU LỊCH</button>
+      </div>
     </div>
   </div>
 
@@ -215,14 +223,14 @@
         <div class="info-item">
             <span class="info-label">CÀI ĐẶT NGHỈ</span>
             <div style="display:flex; justify-content:center; align-items:baseline; gap:4px">
-                <span id="qOff" class="info-val">--</span><span class="info-unit">Phút</span>
+                <span id="qOff" class="info-val">--</span><span class="info-unit">P</span>
             </div>
         </div>
         <div class="info-div"></div>
         <div class="info-item">
             <span class="info-label">CÀI ĐẶT CHẠY</span>
             <div style="display:flex; justify-content:center; align-items:baseline; gap:4px">
-                <span id="qOn" class="info-val">--</span><span class="info-unit">Giây</span>
+                <span id="qOn" class="info-val">--</span><span class="info-unit">S</span>
             </div>
         </div>
       </div>
@@ -259,6 +267,7 @@
       </div>
 
       <button class="btn-save-main" onclick="saveSettings()">LƯU CÀI ĐẶT</button>
+      <button class="btn-schedule" onclick="openSchedule()">📅 CÀI ĐẶT LỊCH NGHỈ (SCHEDULE)</button>
 
       <div class="maintenance-title">🔧 Chế độ bảo trì</div>
       <div class="maintenance-grid">
@@ -303,11 +312,12 @@ const DEFAULT_MQTT = {
 window.devices = {};
 let client = null;
 let currentSelectedId = null;
+// Temporary schedule storage
+let tempSchedule = [];
 
 /* ========= INIT & MQTT ========= */
 window.onload = function() {
     connect();
-    // Load saved API Key
     const key = localStorage.getItem("gemini_api_key");
     if(key) document.getElementById("geminiKey").value = key;
 };
@@ -317,8 +327,7 @@ function connect() {
   if(client) client.end();
   
   client = mqtt.connect(url, {
-    username: DEFAULT_MQTT.user,
-    password: DEFAULT_MQTT.pass,
+    username: DEFAULT_MQTT.user, password: DEFAULT_MQTT.pass,
     clientId: "eco_ai_" + Math.random().toString(16).slice(2, 8)
   });
 
@@ -337,19 +346,23 @@ function connect() {
       const data = JSON.parse(payload.toString());
       if(!window.devices[devId]) { 
         window.devices[devId] = { id: devId }; 
-        // Auto-sync when new device appears to get settings for the card display
         requestDeviceSync(devId);
       }
+      
+      // Parse pause_json safely
+      if(data.pause_json) {
+          if(typeof data.pause_json === 'string') {
+              try { data.pause_json = JSON.parse(data.pause_json); } catch(e){}
+          }
+      }
+
       Object.assign(window.devices[devId], data);
       window.devices[devId].lastSeen = Date.now();
       render();
       
       if(currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
-          // Update Text Display (Quick View)
           if(data.off_min !== undefined) document.getElementById("qOff").textContent = data.off_min;
           if(data.on_sec !== undefined) document.getElementById("qOn").textContent = data.on_sec;
-          
-          // Update Inputs (Chỉ khi người dùng không đang nhập)
           if(document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
           if(document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
       }
@@ -376,16 +389,11 @@ function render() {
     }
 
     card.className = `device-card ${isOnline ? '' : 'offline'}`;
-    let statusClass = "status";
-    if(dev.status && dev.status.includes("OFF")) statusClass += " off";
-
     card.innerHTML = `
       <div class="card-top">
         <span class="card-id">${id.toUpperCase()}</span>
         <div class="card-dot ${isOnline ? 'on' : ''}"></div>
       </div>
-      
-      <!-- HUGE STATS (NEW DESIGN) -->
       <div class="card-main-stats">
         <div class="stat-item off">
            <div class="stat-icon">💤</div>
@@ -396,8 +404,6 @@ function render() {
            <div class="stat-value">${dev.on_sec || 0}<span class="stat-unit">S</span></div>
         </div>
       </div>
-
-      <!-- DEMOTED TIMER (MINI) -->
       <div class="card-timer-mini">
         <div class="mini-time">${dev.time_rem || '--:--'}</div>
         <div class="mini-status ${dev.status && dev.status.includes('OFF') ? 'off' : ''}">${dev.status || 'CHỜ DỮ LIỆU'}</div>
@@ -418,10 +424,8 @@ function openPanel(id) {
   badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
   badge.style.background = isOnline ? "var(--success)" : "#334155";
 
-  // Lấy giá trị từ state nếu có
   const off = dev.off_min || 0;
   const on = dev.on_sec || 0;
-
   document.getElementById("offMin").value = off;
   document.getElementById("onSec").value = on;
   document.getElementById("qOff").textContent = off;
@@ -430,14 +434,13 @@ function openPanel(id) {
   document.getElementById("panelOverlay").style.display = "flex";
   setTimeout(() => document.getElementById("mainPanel").classList.add("show"), 10);
   
-  // TỰ ĐỘNG ĐỒNG BỘ KHI MỞ PANEL
   requestDeviceSync(id);
+  // Also request pause json to be sure
+  client.publish(`devices/${id}/rpc/request/${Date.now()}`, JSON.stringify({ method: "getPauseJson", params: {} }));
 }
 
 function requestDeviceSync(id) {
     if(!client) return;
-    // Gửi lệnh giả với params rỗng để thiết bị trả về giá trị hiện tại
-    // Điều này kích hoạt code: tbGetIntParam(..., runOffMin) -> trả về runOffMin -> gửi RPC response
     const topic = `devices/${id}/rpc/request/${Date.now()}`;
     client.publish(topic, JSON.stringify({ method: "setOffMin", params: {} }));
     client.publish(topic, JSON.stringify({ method: "setOnSec", params: {} }));
@@ -490,12 +493,110 @@ function rpcSend(id, method, params) {
     client.publish(topic, JSON.stringify({ method: method, params: params }));
 }
 
+/* ========= SCHEDULE LOGIC ========= */
+function openSchedule() {
+    if(!currentSelectedId) return;
+    document.getElementById("scheduleModal").style.display = "flex";
+    document.getElementById("schedDevId").innerText = "THIẾT BỊ: " + currentSelectedId.toUpperCase();
+    
+    // Deep copy current schedule or init empty
+    const dev = window.devices[currentSelectedId];
+    if(dev && Array.isArray(dev.pause_json)) {
+        tempSchedule = JSON.parse(JSON.stringify(dev.pause_json));
+    } else {
+        tempSchedule = [];
+    }
+    renderScheduleList();
+}
+
+function closeSchedule() { document.getElementById("scheduleModal").style.display = "none"; }
+
+function renderScheduleList() {
+    const list = document.getElementById("schedList");
+    list.innerHTML = "";
+    if(tempSchedule.length === 0) {
+        list.innerHTML = `<div style="text-align:center; color:#64748b; padding:20px;">Chưa có lịch hẹn nào</div>`;
+        return;
+    }
+
+    tempSchedule.forEach((item, idx) => {
+        const s = item.s || "12:00";
+        const e = item.e || "13:00";
+        const on = item.on == 1;
+        const w = item.w === undefined ? 127 : item.w;
+        
+        const days = ["CN","T2","T3","T4","T5","T6","T7"];
+        let daysHtml = "";
+        // 1=T2, ... 6=T7, 7=CN -> In logic bitmask: 0=CN, 1=T2...
+        // Map UI (CN, T2..T7) to Bitmask (0..6)
+        // Order UI: T2, T3, T4, T5, T6, T7, CN
+        const order = [1,2,3,4,5,6,0]; 
+        
+        order.forEach(d => {
+            const isActive = (w & (1 << d));
+            daysHtml += `<div class="d-btn ${isActive?'act':''}" onclick="toggleSchedDay(${idx}, ${d})">${days[d]}</div>`;
+        });
+
+        const div = document.createElement("div");
+        div.className = "sched-item";
+        div.innerHTML = `
+            <div class="sched-row">
+                <div class="sched-time" style="display:flex; align-items:center; gap:5px; font-size:12px">
+                    <span>Từ</span> <input type="time" value="${s}" onchange="updateSched(${idx}, 's', this.value)">
+                    <span>Đến</span> <input type="time" value="${e}" onchange="updateSched(${idx}, 'e', this.value)">
+                </div>
+                <div style="display:flex; gap:10px; align-items:center">
+                    <label class="sw">
+                        <input type="checkbox" ${on?'checked':''} onchange="updateSched(${idx}, 'on', this.checked?1:0)">
+                        <span class="sl"></span>
+                    </label>
+                    <button onclick="removeSched(${idx})" style="background:#ef4444; border:none; color:white; border-radius:4px; width:20px; height:20px; cursor:pointer;">&times;</button>
+                </div>
+            </div>
+            <div class="day-select">${daysHtml}</div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function addScheduleItem() {
+    tempSchedule.push({ s:"12:00", e:"13:00", on:1, w:127 });
+    renderScheduleList();
+}
+
+function removeSched(idx) {
+    tempSchedule.splice(idx, 1);
+    renderScheduleList();
+}
+
+function updateSched(idx, field, val) {
+    if(tempSchedule[idx]) {
+        tempSchedule[idx][field] = val;
+    }
+}
+
+function toggleSchedDay(idx, dayBit) {
+    if(!tempSchedule[idx]) return;
+    let w = tempSchedule[idx].w === undefined ? 127 : tempSchedule[idx].w;
+    const mask = 1 << dayBit;
+    if(w & mask) w &= ~mask;
+    else w |= mask;
+    tempSchedule[idx].w = w;
+    renderScheduleList();
+}
+
+function saveSchedule() {
+    if(!currentSelectedId) return;
+    rpcSend(currentSelectedId, "setPauseJson", tempSchedule);
+    showToast("Đã lưu lịch trình!");
+    closeSchedule();
+}
+
 /* ========= AI INTELLIGENCE ========= */
 function openAI() { document.getElementById("aiModal").style.display = "flex"; }
 function closeAI() { document.getElementById("aiModal").style.display = "none"; }
 function saveGeminiKey(val) { localStorage.setItem("gemini_api_key", val.trim()); showToast("Đã lưu API Key"); }
 
-// Voice Recognition
 function startVoice(btn) {
     if(!('webkitSpeechRecognition' in window)) { alert("Trình duyệt không hỗ trợ giọng nói"); return; }
     const r = new webkitSpeechRecognition();
@@ -505,43 +606,24 @@ function startVoice(btn) {
     r.onresult = (e) => {
         document.getElementById("aiCommand").value = e.results[0][0].transcript;
         btn.classList.remove('listening');
-        executeAI(); // Auto send on silence
+        executeAI();
     }
     r.onerror = () => btn.classList.remove('listening');
     r.onspeechend = () => btn.classList.remove('listening');
 }
 
-// Main AI Logic
 async function executeAI() {
     const cmd = document.getElementById("aiCommand").value;
     const key = document.getElementById("geminiKey").value;
     const resBox = document.getElementById("aiResponse");
     
     if(!cmd || !key) { showToast("Nhập lệnh và API Key!"); return; }
-    
     resBox.style.display = "block";
     resBox.innerHTML = "🤖 Đang suy nghĩ...";
 
     const context = JSON.stringify(window.devices);
-    const prompt = `
-    Bạn là trợ lý IoT. 
-    Danh sách thiết bị hiện tại: ${context}
-    Người dùng nói: "${cmd}"
-    
-    Nhiệm vụ:
-    1. Xác định thiết bị mục tiêu (qua ID hoặc tên gọi tương tự). Nếu là "tất cả", target="ALL".
-    2. Xác định hành động: "config" (cài đặt giờ), "maint" (bảo trì), "analyze" (hỏi thông tin).
-    
-    Trả về JSON DUY NHẤT theo format:
-    {
-      "target": "device_id" hoặc "ALL",
-      "action": "config" | "maint" | "analyze",
-      "params": { "off": number_phut, "on": number_giay } (nếu config),
-      "mode": number_0_6 (nếu maint),
-      "message": "Câu trả lời ngắn cho người dùng"
-    }
-    Chỉ trả về JSON thuần, không markdown.
-    `;
+    const prompt = `Trợ lý IoT. Devices: ${context}. User: "${cmd}". 
+    JSON Output: { "target": "dev_id"|"ALL", "action": "config"|"maint", "params": {...}, "message": "..." }`;
 
     try {
         const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
@@ -551,45 +633,33 @@ async function executeAI() {
         const d = await resp.json();
         const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
         const logic = JSON.parse(raw);
-
-        // Hiển thị phản hồi
-        resBox.innerHTML = `🤖 ${logic.message || "Đã hiểu lệnh"}`;
-
-        // Thực thi lệnh MQTT
-        if(logic.action === "config" || logic.action === "maint") {
+        resBox.innerHTML = `🤖 ${logic.message}`;
+        
+        // MQTT Actions
+        if(logic.action) {
             const targets = (logic.target === "ALL") ? Object.keys(window.devices) : [logic.target];
-            
             targets.forEach(id => {
                 if(window.devices[id]) {
-                    if(logic.action === "config" && logic.params) {
+                    if(logic.action === "config") {
                         rpcSend(id, "setOffMin", logic.params.off);
                         rpcSend(id, "setOnSec", logic.params.on);
                         rpcSend(id, "save", 1);
                     }
-                    if(logic.action === "maint" && logic.mode !== undefined) {
-                        rpcSend(id, "setMaintenance", logic.mode);
-                    }
+                    if(logic.action === "maint") rpcSend(id, "setMaintenance", logic.mode);
                 }
             });
-            showToast(`Đã gửi lệnh tới ${targets.length} thiết bị`);
         }
-
-    } catch(e) {
-        console.error(e);
-        resBox.innerHTML = "❌ Lỗi: Không hiểu lệnh hoặc sai API Key.";
-    }
+    } catch(e) { resBox.innerHTML = "❌ Lỗi AI"; }
 }
 
 async function analyzeSystem() {
     const key = document.getElementById("geminiKey").value;
     if(!key) { showToast("Cần API Key"); return; }
-    
     const context = JSON.stringify(window.devices);
-    const prompt = `Phân tích dữ liệu JSON các thiết bị IoT sau: ${context}. Hãy báo cáo ngắn gọn: Thiết bị nào hoạt động bình thường? Thiết bị nào có thông số bất thường (dòng cao, nhiệt độ cao, mất kết nối)? Đưa ra lời khuyên.`;
+    const prompt = `Phân tích IoT: ${context}. Báo cáo ngắn gọn các bất thường (nhiệt/dòng/kết nối).`;
     
     document.getElementById("aiResponse").style.display = "block";
-    document.getElementById("aiResponse").innerHTML = "🔍 Đang khám bệnh...";
-    
+    document.getElementById("aiResponse").innerHTML = "🔍 Đang khám...";
     try {
         const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
             method: "POST", headers: {"Content-Type": "application/json"},
