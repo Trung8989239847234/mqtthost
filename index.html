@@ -30,7 +30,7 @@
       min-height: 100vh;
     }
 
-    .container { width: 100%; max-width: 800px; }
+    .container { width: 100%; max-width: 900px; }
 
     header {
       display: flex; justify-content: space-between; align-items: center;
@@ -45,11 +45,10 @@
     /* === GRID LAYOUT === */
     .device-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
-    @media (max-width: 480px) { .device-grid { grid-template-columns: 1fr; } }
 
     .device-card {
       background: var(--card-bg);
@@ -66,21 +65,21 @@
     .device-card.selected { border-color: var(--accent); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
     
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .dev-name { font-weight: 800; font-size: 14px; color: #64748b; }
-    .dev-id { font-size: 10px; color: #475569; }
+    .dev-name { font-weight: 800; font-size: 13px; color: #64748b; text-transform: uppercase; }
+    .dev-id { font-size: 9px; color: #475569; }
     .dev-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; }
     .dev-status-dot.active { background: var(--success); box-shadow: 0 0 8px var(--success); }
 
-    .card-body { text-align: center; padding: 10px 0; }
-    .big-time { font-family: 'Courier New', monospace; font-size: 36px; font-weight: 700; color: #e2e8f0; }
-    .small-status { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-top: 4px; }
+    .card-body { text-align: center; padding: 5px 0; }
+    .big-time { font-family: 'Courier New', monospace; font-size: 32px; font-weight: 700; color: #e2e8f0; }
+    .small-status { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-top: 2px; }
 
     .card-footer { 
-      display: flex; justify-content: space-between; margin-top: 12px; 
-      font-size: 12px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;
+      display: flex; justify-content: space-between; margin-top: 10px; 
+      font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px;
     }
 
-    /* === DETAIL PANEL (Overlay or Slide) === */
+    /* === DETAIL PANEL === */
     #detailPanel {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: #1e293b;
@@ -90,17 +89,15 @@
       z-index: 100;
       transform: translateY(100%);
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      max-height: 80vh; overflow-y: auto;
+      max-height: 85vh; overflow-y: auto;
     }
     #detailPanel.open { transform: translateY(0); }
     .close-bar { width: 40px; height: 4px; background: #334155; border-radius: 2px; margin: -10px auto 20px; cursor: pointer; }
 
-    /* Controls & Forms */
     .control-group { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
     .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .btn-save { background: var(--accent); border: none; color: white; padding: 12px; width: 100%; border-radius: 12px; font-weight: 700; cursor: pointer; }
     
-    /* AI Mini floating */
     .ai-fab {
       position: fixed; right: 20px; bottom: 20px;
       width: 56px; height: 56px; border-radius: 28px;
@@ -109,7 +106,6 @@
       font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 90;
     }
 
-    /* Toast */
     #toast {
       position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
       background: rgba(15,23,42,0.9); padding: 10px 20px; border-radius: 50px;
@@ -124,23 +120,23 @@
   <div class="container">
     <header>
       <div class="title-area">
-        <h1>IOT DASHBOARD</h1>
-        <div style="font-size: 10px; color: #475569;">MULTI-DEVICE CONTROL</div>
+        <h1>DYNAMIC DASHBOARD</h1>
+        <div id="devCount" style="font-size: 10px; color: #475569;">ĐANG THEO DÕI: 0 THIẾT BỊ</div>
       </div>
       <div class="status-chips">
-        <div id="mqttStatus" class="chip">MQTT: DISCONNECTED</div>
+        <div id="mqttStatus" class="chip">MQTT: ĐANG NGẮT</div>
       </div>
     </header>
 
     <div class="device-grid" id="deviceGrid">
-      <!-- 4 Cards will be generated here -->
+      <!-- Thiết bị sẽ tự động xuất hiện ở đây -->
     </div>
 
-    <!-- AI Input Area -->
+    <!-- AI Input -->
     <div class="control-group">
-      <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">TRỢ LÝ AI (Hỏi về 4 thiết bị)</div>
+      <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">TRỢ LÝ AI (Hỗ trợ đa thiết bị)</div>
       <div style="display: flex; gap: 8px;">
-        <input type="text" id="aiQuery" style="flex:1; background: #000; border: 1px solid #334155; color: #fff; padding: 10px; border-radius: 8px;" placeholder="Ví dụ: Thiết bị nào đang nóng nhất?">
+        <input type="text" id="aiQuery" style="flex:1; background: #000; border: 1px solid #334155; color: #fff; padding: 10px; border-radius: 8px;" placeholder="Ví dụ: Kiểm tra xem có máy nào quá nhiệt không?">
         <button onclick="askAI()" style="background: #8b5cf6; border: none; color: #fff; padding: 0 15px; border-radius: 8px; cursor: pointer;">Hỏi</button>
       </div>
     </div>
@@ -150,8 +146,8 @@
   <div id="detailPanel">
     <div class="close-bar" onclick="closeDetail()"></div>
     <div id="detailContent">
-      <h2 id="detName" style="margin: 0 0 5px 0;">DEVICE NAME</h2>
-      <div id="detId" style="font-size: 12px; color: #64748b; margin-bottom: 20px;">ID: timerxx</div>
+      <h2 id="detName" style="margin: 0 0 5px 0;">TÊN THIẾT BỊ</h2>
+      <div id="detId" style="font-size: 12px; color: #64748b; margin-bottom: 20px;">ID: --</div>
       
       <div class="control-group">
         <div class="row">
@@ -162,11 +158,11 @@
           <span>Thời gian chạy (Giây)</span>
           <input type="number" id="inpOn" style="width: 60px; text-align: center; background: #000; color: #fff; border: 1px solid #334155; padding: 5px; border-radius: 5px;">
         </div>
-        <button class="btn-save" onclick="saveSelectedDevice()">LƯU CÀI ĐẶT XUỐNG THIẾT BỊ</button>
+        <button class="btn-save" onclick="saveSelectedDevice()">LƯU CÀI ĐẶT</button>
       </div>
 
       <div class="control-group">
-        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px;">BẢO TRÌ NHANH</div>
+        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px;">ĐIỀU KHIỂN NHANH</div>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
            <button onclick="setMaint(0)" style="padding: 10px; border-radius: 8px; border: 1px solid #ef4444; color: #ef4444; background: none;">HỦY</button>
            <button onclick="setMaint(1)" style="padding: 10px; border-radius: 8px; border: 1px solid #94a3b8; color: #94a3b8; background: none;">7P</button>
@@ -176,11 +172,10 @@
     </div>
   </div>
 
-  <div class="ai-fab" onclick="alert('Dr.AI đang lắng nghe...')">✨</div>
+  <div class="ai-fab" onclick="askAI()">✨</div>
 
 <script>
 /* ========= CONFIG ========= */
-const DEVICE_IDS = ["timer01", "timer02", "timer03", "timer04"];
 const MQTT_CONFIG = {
   host: "n21f2dda.ala.dedicated.aws.emqxcloud.com",
   port: 8084,
@@ -192,20 +187,8 @@ const MQTT_CONFIG = {
 let client = null;
 let selectedDeviceId = null;
 
-// Khởi tạo state cho 4 thiết bị
+// window.devices sẽ bắt đầu rỗng và tự lấp đầy khi có MQTT message
 window.devices = {};
-DEVICE_IDS.forEach(id => {
-  window.devices[id] = {
-    online: false,
-    status: "OFFLINE",
-    time_rem: "--:--",
-    amps: 0,
-    temp: 0,
-    off_min: 1,
-    on_sec: 5,
-    lastSeen: 0
-  };
-});
 
 /* ========= MQTT LOGIC ========= */
 function connectMQTT() {
@@ -213,44 +196,63 @@ function connectMQTT() {
   client = mqtt.connect(url, {
     username: MQTT_CONFIG.user,
     password: MQTT_CONFIG.pass,
-    clientId: "web_dashboard_" + Math.random().toString(16).slice(2, 8)
+    clientId: "web_dynamic_" + Math.random().toString(16).slice(2, 8)
   });
 
   client.on("connect", () => {
-    document.getElementById("mqttStatus").innerText = "MQTT: CONNECTED";
-    document.getElementById("mqttStatus").classList.add("online");
-    // Subscribe tất cả thiết bị có prefix devices/
+    const st = document.getElementById("mqttStatus");
+    st.innerText = "MQTT: ĐÃ KẾT NỐI";
+    st.classList.add("online");
+    
+    // Subscribe wildcard để bắt tất cả thiết bị
     client.subscribe("devices/+/telemetry");
     client.subscribe("devices/+/rpc/response/+");
-    showToast("Đã kết nối Server");
+    showToast("Server Online - Chờ thiết bị...");
   });
 
   client.on("message", (topic, payload) => {
     const parts = topic.split('/');
     const devId = parts[1];
-    if (!DEVICE_IDS.includes(devId)) return;
+    if (!devId) return;
 
     try {
       const data = JSON.parse(payload.toString());
-      // Cập nhật state thiết bị cụ thể
+      
+      // TỰ ĐỘNG THÊM THIẾT BỊ MỚI VÀO STATE NẾU CHƯA CÓ
+      if (!window.devices[devId]) {
+        window.devices[devId] = {
+          id: devId,
+          lastSeen: Date.now()
+        };
+        showToast("Phát hiện thiết bị mới: " + devId);
+      }
+
+      // Cập nhật dữ liệu
       Object.assign(window.devices[devId], data);
-      window.devices[devId].online = true;
       window.devices[devId].lastSeen = Date.now();
       
+      updateCounter();
       renderGrid();
-      if (selectedDeviceId === devId) updateDetailView();
+      if (selectedDeviceId === devId) updateDetailInputs();
     } catch(e) { console.error("Data error", e); }
   });
 }
 
 /* ========= UI RENDER ========= */
+function updateCounter() {
+  const count = Object.keys(window.devices).length;
+  document.getElementById("devCount").innerText = `ĐANG THEO DÕI: ${count} THIẾT BỊ`;
+}
+
 function renderGrid() {
   const grid = document.getElementById("deviceGrid");
-  grid.innerHTML = "";
+  const ids = Object.keys(window.devices).sort(); // Sắp xếp ID để giao diện ổn định
 
-  DEVICE_IDS.forEach(id => {
+  // Render lại toàn bộ grid
+  grid.innerHTML = "";
+  ids.forEach(id => {
     const dev = window.devices[id];
-    const isOnline = (Date.now() - dev.lastSeen < 15000);
+    const isOnline = (Date.now() - dev.lastSeen < 20000);
     
     const card = document.createElement("div");
     card.className = `device-card ${selectedDeviceId === id ? 'selected' : ''}`;
@@ -259,18 +261,17 @@ function renderGrid() {
     card.innerHTML = `
       <div class="card-header">
         <div>
-          <div class="dev-name">THIẾT BỊ ${id.slice(-2)}</div>
-          <div class="dev-id">${id}</div>
+          <div class="dev-name">${id}</div>
         </div>
         <div class="dev-status-dot ${isOnline ? 'active' : ''}"></div>
       </div>
       <div class="card-body">
-        <div class="big-time">${dev.time_rem}</div>
-        <div class="small-status">${dev.status}</div>
+        <div class="big-time">${dev.time_rem || "--:--"}</div>
+        <div class="small-status">${dev.status || "WAITING"}</div>
       </div>
       <div class="card-footer">
-        <span>🌡 ${dev.temp}°C</span>
-        <span>⚡ ${dev.amps}A</span>
+        <span>🌡 ${dev.temp || 0}°C</span>
+        <span>⚡ ${dev.amps || 0}A</span>
       </div>
     `;
     grid.appendChild(card);
@@ -281,13 +282,20 @@ function openDetail(id) {
   selectedDeviceId = id;
   const dev = window.devices[id];
   
-  document.getElementById("detName").innerText = "THIẾT BỊ " + id.slice(-2);
-  document.getElementById("detId").innerText = "ID: " + id;
-  document.getElementById("inpOff").value = dev.off_min || 1;
-  document.getElementById("inpOn").value = dev.on_sec || 5;
+  document.getElementById("detName").innerText = "ĐIỀU KHIỂN " + id.toUpperCase();
+  document.getElementById("detId").innerText = "Dữ liệu cuối: " + new Date(dev.lastSeen).toLocaleTimeString();
   
+  updateDetailInputs();
   document.getElementById("detailPanel").classList.add("open");
-  renderGrid(); // update border selected
+  renderGrid();
+}
+
+function updateDetailInputs() {
+  const dev = window.devices[selectedDeviceId];
+  if (!dev) return;
+  // Chỉ cập nhật nếu user không đang gõ (focus)
+  if (document.activeElement.id !== "inpOff") document.getElementById("inpOff").value = dev.off_min || 0;
+  if (document.activeElement.id !== "inpOn") document.getElementById("inpOn").value = dev.on_sec || 0;
 }
 
 function closeDetail() {
@@ -296,30 +304,27 @@ function closeDetail() {
   renderGrid();
 }
 
-function updateDetailView() {
-  const dev = window.devices[selectedDeviceId];
-  // Cập nhật ngầm các con số nếu cần
-}
-
 /* ========= ACTIONS ========= */
 function saveSelectedDevice() {
   if (!selectedDeviceId) return;
   const m = parseInt(document.getElementById("inpOff").value);
   const s = parseInt(document.getElementById("inpOn").value);
   
-  const topic = `devices/${selectedDeviceId}/rpc/request/${Date.now()}`;
+  const reqId = Date.now();
+  const topic = `devices/${selectedDeviceId}/rpc/request/${reqId}`;
+  
   client.publish(topic, JSON.stringify({ method: "setOffMin", params: m }));
   client.publish(topic, JSON.stringify({ method: "setOnSec", params: s }));
   client.publish(topic, JSON.stringify({ method: "save", params: 1 }));
   
-  showToast("Đã gửi lệnh tới " + selectedDeviceId);
+  showToast("Đã gửi cài đặt tới " + selectedDeviceId);
 }
 
 function setMaint(mode) {
   if (!selectedDeviceId) return;
   const topic = `devices/${selectedDeviceId}/rpc/request/${Date.now()}`;
   client.publish(topic, JSON.stringify({ method: "setMaintenance", params: mode }));
-  showToast("Gửi lệnh bảo trì...");
+  showToast("Gửi lệnh bảo trì tới " + selectedDeviceId);
 }
 
 function showToast(m) {
@@ -328,27 +333,28 @@ function showToast(m) {
   setTimeout(() => t.style.display = "none", 3000);
 }
 
-// Watchdog kiểm tra Offline
-setInterval(() => {
-  renderGrid();
-}, 5000);
+// Watchdog định kỳ vẽ lại để cập nhật trạng thái Online/Offline
+setInterval(renderGrid, 10000);
 
-/* ========= AI LOGIC (Mẫu) ========= */
+/* ========= AI LOGIC (Dynamic Context) ========= */
 async function askAI() {
-  const q = document.getElementById("aiQuery").value;
-  const geminiKey = "AIzaSyB5K7JbtmLiQ4t-HpcB6wrzPBhJ5PWcFhs"; // Lấy từ config của bạn
+  const qInput = document.getElementById("aiQuery");
+  const q = qInput.value || "Hãy phân tích trạng thái các thiết bị hiện tại.";
+  const geminiKey = "AIzaSyB5K7JbtmLiQ4t-HpcB6wrzPBhJ5PWcFhs";
   
+  // Gửi toàn bộ danh sách thiết bị đang có cho AI
   const context = JSON.stringify(window.devices);
-  const prompt = `Dữ liệu 4 thiết bị IoT: ${context}. Câu hỏi người dùng: ${q}. Hãy trả lời ngắn gọn, tiếng Việt.`;
+  const prompt = `Bạn là kỹ sư vận hành. Hiện đang có các thiết bị sau: ${context}. Câu hỏi: ${q}. Trả lời ngắn, chuyên nghiệp.`;
   
-  showToast("AI đang suy nghĩ...");
+  showToast("AI đang kiểm tra hệ thống...");
   try {
     const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
       method: "POST",
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const d = await resp.json();
-    alert("🤖 Dr.AI: " + d.candidates[0].content.parts[0].text);
+    alert("🤖 Dr.AI phản hồi:\n" + d.candidates[0].content.parts[0].text);
+    qInput.value = "";
   } catch(e) { alert("Lỗi kết nối AI"); }
 }
 
