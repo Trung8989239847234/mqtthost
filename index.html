@@ -74,10 +74,35 @@
 
     .status-text {
       font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-      color: #64748b; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 6px;
+      color: #64748b; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .status-text.run { color: #3b82f6; }
     .status-text.wait { color: #f59e0b; }
+
+    /* === NEW: QUICK INFO GROUP (BIG STYLE) === */
+    .info-group {
+      display: flex; justify-content: space-around; align-items: center;
+      background: rgba(0,0,0,0.25);
+      border-radius: 18px;
+      padding: 15px 0;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .info-item { text-align: center; flex: 1; }
+    .info-label { 
+      font-size: 10px; color: #94a3b8; font-weight: 700; 
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; 
+    }
+    .info-val-row {
+        display: flex; align-items: baseline; justify-content: center; gap: 4px;
+    }
+    .info-val { 
+        font-size: 42px; line-height: 1; font-weight: 800; color: #fff; 
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .info-unit { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    .info-div { width: 1px; height: 45px; background: rgba(255,255,255,0.1); }
 
     /* === SENSORS ROW (HOME) === */
     .simple-sensors {
@@ -297,6 +322,25 @@
       
       <div id="statusText" class="status-text">
          <span>⚡</span> ĐANG NGHỈ (OFF)
+      </div>
+
+      <!-- 3.5 [NEW] QUICK VIEW SETTINGS -->
+      <div class="info-group">
+        <div class="info-item">
+            <span class="info-label">CÀI ĐẶT NGHỈ</span>
+            <div class="info-val-row">
+                <span id="qOff" class="info-val">--</span>
+                <span class="info-unit">Phút</span>
+            </div>
+        </div>
+        <div class="info-div"></div>
+        <div class="info-item">
+            <span class="info-label">CÀI ĐẶT CHẠY</span>
+            <div class="info-val-row">
+                <span id="qOn" class="info-val">--</span>
+                <span class="info-unit">Giây</span>
+            </div>
+        </div>
       </div>
 
       <!-- 4. Sensors Compact Row (NEW STYLE) -->
@@ -810,6 +854,10 @@ function renderHome(){
   const tEl = document.getElementById("tempValue");
   if(tEl) tEl.textContent = (!stale && Number.isFinite(parseFloat(window.state.temp))) ? parseFloat(window.state.temp).toFixed(2) : "--";
 
+  // Quick Info
+  if(window.state.off_min!==null) document.getElementById("qOff").textContent = window.state.off_min;
+  if(window.state.on_sec!==null) document.getElementById("qOn").textContent = window.state.on_sec;
+
   // Sync inputs if idle
   if(Date.now()-lastUserInteraction>5000){
     if(window.state.off_min!==null) document.getElementById("offMin").value=window.state.off_min;
@@ -946,7 +994,7 @@ function mqttConnect(){
             }
         }catch(e){}
     } else if(topic.includes("rpc/response")){
-        // [ĐÃ SỬA] Bắt giá trị RPC Response và cập nhật ngay lập tức vào ô input
+        // [ĐÃ SỬA] Bắt giá trị RPC Response và cập nhật ngay lập tức vào ô input và quick view
         try {
             const r = JSON.parse(txt);
             if(r.off_min !== undefined) {
@@ -957,6 +1005,8 @@ function mqttConnect(){
                 document.getElementById("onSec").value = r.on_sec;
                 window.state.on_sec = r.on_sec; // Sync vào state luôn
             }
+            // Gọi renderHome để update quick view
+            renderHome();
         } catch(e){}
         showToast("Lệnh thành công!");
     }
