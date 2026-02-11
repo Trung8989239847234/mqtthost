@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ESP32 TIMER PRO (GEMINI)</title>
+  <title>ESP32 TIMER PRO (GEMINI + VOICE)</title>
 
   <!-- MQTT -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -458,6 +458,35 @@
     }
     .ai-loading { animation: pulse 1.5s infinite; opacity: 0.7; pointer-events: none; }
     
+    /* === [NEW] Mic Button Style === */
+    .btn-mic {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-mic:active { background: rgba(255,255,255,0.2); }
+    .btn-mic.listening {
+      background: #ff3b30;
+      border-color: #ff3b30;
+      animation: pulse-red 1.5s infinite;
+    }
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+    }
+    .input-row { display: flex; gap: 8px; align-items: flex-start; }
+
   </style>
 </head>
 
@@ -529,7 +558,10 @@
       <!-- [NEW] AI Settings Control -->
       <div class="gemini-box" style="margin-bottom:15px">
         <div style="font-size:11px;color:#cfd2d8;margin-bottom:6px;font-weight:bold;">✨ ĐIỀU KHIỂN THÔNG MINH</div>
-        <textarea id="aiControlPrompt" class="gemini-input" rows="1" placeholder="VD: Tăng thời gian chạy thêm 5 giây..."></textarea>
+        <div class="input-row">
+          <textarea id="aiControlPrompt" class="gemini-input" rows="2" placeholder="VD: Tăng thời gian chạy thêm 5 giây..."></textarea>
+          <button class="btn-mic" onclick="startListening('aiControlPrompt', this)" title="Nói để nhập">🎤</button>
+        </div>
         <button id="btnAiControl" class="btn-gemini" onclick="controlSettingsAI()">
           <span>✨ Thực hiện</span>
         </button>
@@ -581,7 +613,10 @@
       <!-- [NEW] Gemini Schedule Creator -->
       <div class="gemini-box">
         <div style="font-size:11px;color:#cfd2d8;margin-bottom:6px;font-weight:bold;">✨ TRỢ LÝ LẬP LỊCH THÔNG MINH</div>
-        <textarea id="aiPrompt" class="gemini-input" rows="2" placeholder="VD: Nghỉ từ 10h tối đến 6h sáng hàng ngày..."></textarea>
+        <div class="input-row">
+          <textarea id="aiPrompt" class="gemini-input" rows="2" placeholder="VD: Nghỉ từ 10h tối đến 6h sáng hàng ngày..."></textarea>
+          <button class="btn-mic" onclick="startListening('aiPrompt', this)" title="Nói để nhập">🎤</button>
+        </div>
         <button id="btnAiSchedule" class="btn-gemini" onclick="generateScheduleAI()">
           <span>✨ Tạo lịch tự động</span>
         </button>
@@ -1906,6 +1941,51 @@ window.analyzeSensorsAI = async function() {
 
   btn.innerHTML = originalText;
   btn.classList.remove('ai-loading');
+}
+
+/* ========= [NEW] VOICE INPUT ========= */
+window.startListening = function(inputId, btnEl) {
+  // Check browser support
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast("Trình duyệt không hỗ trợ giọng nói!");
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  
+  recognition.lang = 'vi-VN'; // Vietnamese language
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  btnEl.classList.add('listening');
+
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript;
+    const inputEl = document.getElementById(inputId);
+    if(inputEl) {
+        inputEl.value = text;
+        showToast("Đã nghe: " + text);
+    }
+  };
+
+  recognition.onspeechend = () => {
+    btnEl.classList.remove('listening');
+    recognition.stop();
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech Error:", event.error);
+    btnEl.classList.remove('listening');
+    showToast("Lỗi mic: " + event.error);
+  };
+  
+  // Handle manual stop if clicked again (optional logic, but here we just start)
+  try {
+      recognition.start();
+  } catch(e) {
+      console.error(e);
+  }
 }
 
 /* ========= BOOT ========= */
