@@ -11,7 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    :root { --accent:#00ff00; --bg-card: rgba(30, 41, 59, 0.7); }
+    :root { --accent:#00ff00; --bg-card: rgba(30, 41, 59, 0.85); }
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
@@ -143,6 +143,22 @@
     .btn-m { background: rgba(255,255,255,0.05); border: none; color: #94a3b8; padding: 8px; border-radius: 8px; font-size: 11px; cursor: pointer; }
     .btn-m:hover { background: rgba(255,255,255,0.1); color: white; }
     .btn-manual { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+    
+    /* [ĐÃ SỬA] Style nút Hủy Bảo Trì lấy từ file cũ */
+    .btn-cancel {
+        background: rgba(255,69,58,0.15);
+        color: #ff453a;
+        border: 1px solid rgba(255,69,58,0.3);
+        margin-top: 10px;
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 12px;
+        transition: .2s;
+    }
+    .btn-cancel:hover { background: rgba(255,69,58,0.25); }
 
     /* Other Styles (Gemini, Toast, Modal...) preserved or adapted */
     #toast { visibility: hidden; min-width: 180px; background-color: rgba(15,23,42,0.95); color: #fff; text-align: center; border-radius: 50px; padding: 10px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s; border: 1px solid rgba(255,255,255,0.1); font-weight: 600; backdrop-filter: blur(5px); }
@@ -207,6 +223,25 @@
     
     .cfg-note { margin-top: 6px; font-size: 11px; color: #8e8e93; font-weight: 600; text-align: left; }
     .cfg-footnote { margin-top: 8px; font-size: 11px; color: #cfd2d8; opacity: 0.85; text-align: left; }
+
+    /* Timeline Bar (Fixed) */
+    .timeline-container { margin: 15px 0 20px 0; text-align: left; }
+    .timeline-labels { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 3px; }
+    .timeline-bar {
+        width: 100%; height: 10px; background: #28a745; border-radius: 5px; overflow: hidden; display: flex;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .t-seg { height: 100%; }
+    .t-run { background: #28a745; } /* Màu xanh chạy */
+    .t-off { background: #dc3545; } /* Màu đỏ nghỉ */
+
+    .cfg-card.wifi{border-left:4px solid #0a84ff;}
+    .cfg-card.blynk{border-left:4px solid #34c759;}
+    .cfg-card.tb{border-left:4px solid #32ade6;}
+    .cfg-card.sensors{border-left:4px solid #ff9f0a;}
+    .cfg-card.emqx-dev{border-left:4px solid #bf5af2;}
+    .cfg-card.mqttws{border-left:4px solid #60efff;}
+    .cfg-card.ai{border-left:4px solid #8E2DE2;}
 
   </style>
 </head>
@@ -288,7 +323,7 @@
         </button>
       </div>
 
-      <!-- Settings Panel -->
+      <!-- Settings Panel Inside Home (Quick Controls) -->
       <div id="settingsPanel" class="settings-panel">
           <!-- Voice Control -->
           <div class="gemini-box">
@@ -342,11 +377,12 @@
             <button class="btn-m" onclick="setMaint(5)">80p</button>
             <button class="btn-m btn-manual" onclick="setMaint(6)">∞</button>
           </div>
+          <!-- [ĐÃ SỬA] Dùng class btn-cancel để có màu đỏ như theme cũ -->
           <button class="btn-cancel" onclick="setMaint(0)">HỦY BẢO TRÌ</button>
       </div>
     </div>
 
-    <!-- SCHEDULE TAB (RESTORED FULL UI) -->
+    <!-- SCHEDULE TAB (RESTORED FULL UI & FIXED TIMELINE) -->
     <div id="schedule" class="tab-content">
       <div class="gemini-box">
         <div class="input-row">
@@ -356,12 +392,15 @@
         <button id="btnAiSchedule" class="btn-gemini" onclick="generateScheduleAI()">✨ Tạo lịch tự động</button>
       </div>
 
+      <!-- [FIXED] Timeline Bar Restoration -->
       <div class="timeline-container">
         <div class="timeline-labels">
           <span>00:00</span><span>12:00</span><span>23:59</span>
         </div>
         <div id="timelineBar" class="timeline-bar"></div>
-        <div id="timelineStatus" style="margin-top:6px;font-size:10px;color:#64748b;text-align:right">Loading...</div>
+        <div id="timelineStatus" style="margin-top:6px;font-size:11px;color:#8e8e93;text-align:right">
+          Hôm nay không có lịch nghỉ nào kích hoạt.
+        </div>
       </div>
 
       <div class="card2">
@@ -376,13 +415,10 @@
           <button class="btn-m" onclick="addPauseRow()">+ Thêm mốc</button>
           <button class="btn-save" onclick="savePause()">Lưu Lịch</button>
         </div>
-        <div style="margin-top:8px;text-align:left;font-size:11px;color:#8e8e93">
-          Mẹo: hỗ trợ khoảng qua đêm (vd 22:00→05:00).
-        </div>
       </div>
     </div>
 
-    <!-- SETTINGS TAB (RESTORED FULL INPUTS) -->
+    <!-- SETTINGS TAB (RESTORED FULL CARDS) -->
     <div id="settings" class="tab-content">
       <div class="cfg-wrap">
         
@@ -875,8 +911,16 @@ function mqttConnect(){
     startDeviceWatchdog();
     addLog("Connected!");
     showToast("Đã kết nối Server");
-    client.subscribe([`devices/${cfg.devid}/telemetry`, `devices/${cfg.devid}/rpc/response/+`]);
-    rpcCall("setOffMin", {}); rpcCall("setOnSec", {}); rpcCall("getPauseJson", {});
+    client.subscribe([`devices/${cfg.devid}/telemetry`, `devices/${cfg.devid}/rpc/response/+`], (err) => {
+      if(!err){
+        addLog("Subscribed. Requesting Sync...");
+        rpcCall("setOffMin", {}); 
+        rpcCall("setOnSec", {}); 
+        rpcCall("getPauseJson", {});
+      } else {
+        addLog("Subscribe Error: " + err.message);
+      }
+    });
   });
   
   client.on("reconnect", ()=>{ mqttConnState = "reconnecting"; updateStatusDot(); });
@@ -890,7 +934,10 @@ function mqttConnect(){
             Object.assign(window.state, obj);
             if(obj.pause_json && typeof obj.pause_json === 'string') {
                 try { window.state.pause_json = JSON.parse(obj.pause_json); } catch(e){}
+            } else if (obj.pause_json && Array.isArray(obj.pause_json)) {
+                window.state.pause_json = obj.pause_json;
             }
+            
             lastTelemetryTs = Date.now();
             renderHome();
             if(document.getElementById('schedule').classList.contains('active')) {
@@ -899,6 +946,18 @@ function mqttConnect(){
             }
         }catch(e){}
     } else if(topic.includes("rpc/response")){
+        // [ĐÃ SỬA] Bắt giá trị RPC Response và cập nhật ngay lập tức vào ô input
+        try {
+            const r = JSON.parse(txt);
+            if(r.off_min !== undefined) {
+                document.getElementById("offMin").value = r.off_min;
+                window.state.off_min = r.off_min; // Sync vào state luôn
+            }
+            if(r.on_sec !== undefined) {
+                document.getElementById("onSec").value = r.on_sec;
+                window.state.on_sec = r.on_sec; // Sync vào state luôn
+            }
+        } catch(e){}
         showToast("Lệnh thành công!");
     }
   });
@@ -1039,48 +1098,83 @@ function setMaint(mode){
   showToast("Gửi lệnh bảo trì...");
 }
 
-/* ========= TIMELINE & SCHEDULE ========= */
+/* ========= TIMELINE & SCHEDULE (FIXED) ========= */
 window.renderTimeline = function() {
     const bar = document.getElementById("timelineBar");
     const stt = document.getElementById("timelineStatus");
     if(!bar) return;
     bar.innerHTML = "";
-    
+
+    // 1. Tạo mảng 1440 phút (0 = Chạy/Xanh, 1 = Nghỉ/Đỏ)
     let dayMap = new Array(1440).fill(0);
     const ranges = window.state.pause_json || [];
     
+    // Nếu không có lịch nào -> Full xanh
     if(ranges.length === 0) {
         bar.innerHTML = '<div class="t-seg t-run" style="width:100%"></div>';
         stt.innerText = "Lịch trình: Chạy cả ngày (Không nghỉ)";
         return;
     }
-    
+
+    // Lấy thứ hiện tại (0=CN, 1=T2...)
     const todayBit = 1 << new Date().getDay();
+
     ranges.forEach(r => {
+        // Chỉ vẽ nếu Enabled (on=1) VÀ đúng ngày hôm nay
         const w = (r.w === undefined) ? 127 : r.w;
         if (r.on && (w & todayBit)) {
-            let s = parseInt(r.s.split(':')[0])*60 + parseInt(r.s.split(':')[1]);
-            let e = parseInt(r.e.split(':')[0])*60 + parseInt(r.e.split(':')[1]);
-            if (s < e) { for(let i=s; i<e; i++) dayMap[i] = 1; } 
-            else { for(let i=s; i<1440; i++) dayMap[i] = 1; for(let i=0; i<e; i++) dayMap[i] = 1; }
+            // Parse hh:mm
+            let s = 0, e = 0;
+            // Xử lý chuỗi giờ dạng "HH:MM"
+            if(r.s && r.s.includes(':')) {
+                const p = r.s.split(':');
+                s = parseInt(p[0])*60 + parseInt(p[1]);
+            }
+            if(r.e && r.e.includes(':')) {
+                const p = r.e.split(':');
+                e = parseInt(p[0])*60 + parseInt(p[1]);
+            }
+
+            if (s < e) {
+                for(let i=s; i<e; i++) dayMap[i] = 1; 
+            } else {
+                // Qua đêm (22:00 -> 05:00)
+                for(let i=s; i<1440; i++) dayMap[i] = 1;
+                for(let i=0; i<e; i++) dayMap[i] = 1;
+            }
         }
     });
 
+    // 2. Gộp các đoạn liên tiếp để vẽ HTML
     let html = "";
-    let currentVal = dayMap[0];
+    let currentVal = dayMap[0]; // 0 or 1
     let count = 0;
+
     for(let i=0; i<1440; i++) {
-        if(dayMap[i] === currentVal) count++;
-        else {
-            let percent = (count / 14.4).toFixed(2);
+        if(dayMap[i] === currentVal) {
+            count++;
+        } else {
+            // Đổi trạng thái -> chốt đoạn cũ
+            let percent = (count / 14.4).toFixed(2); // 1440p = 100%
             let cls = currentVal === 1 ? "t-off" : "t-run";
             html += `<div class="t-seg ${cls}" style="width:${percent}%"></div>`;
-            currentVal = dayMap[i]; count = 1;
+            
+            // Reset
+            currentVal = dayMap[i];
+            count = 1;
         }
     }
-    html += `<div class="t-seg ${currentVal===1?'t-off':'t-run'}" style="width:${(count/14.4).toFixed(2)}%"></div>`;
+    // Đoạn cuối cùng
+    let percent = (count / 14.4).toFixed(2);
+    let cls = currentVal === 1 ? "t-off" : "t-run";
+    html += `<div class="t-seg ${cls}" style="width:${percent}%"></div>`;
+
     bar.innerHTML = html;
-    stt.innerText = "Biểu đồ hoạt động hôm nay (Xanh: Chạy, Đỏ: Nghỉ)";
+    
+    // Update text
+    let activeCnt = ranges.filter(r => r.on && ((r.w===undefined?127:r.w) & todayBit)).length;
+    if(activeCnt > 0) stt.innerText = `Hôm nay: ${activeCnt} khoảng nghỉ (Đỏ)`;
+    else stt.innerText = "Hôm nay không có lịch nghỉ nào kích hoạt.";
 }
 
 window.renderPauseTable = function(){
@@ -1164,10 +1258,8 @@ window.controlSettingsAI = async function() {
     if (!input) { showToast("Vui lòng nhập lệnh!"); return; }
     const btn = document.getElementById("btnAiControl");
     const originalText = btn.innerHTML;
-    btn.innerHTML = `<span class="ai-loading">✨ Đang xử lý...</span>`; 
-    btn.disabled = true;
+    btn.innerHTML = `⏳`; btn.disabled = true;
 
-    // Get current values
     const currentOn = parseInt(document.getElementById("onSec").value || "0");
     const currentOff = parseInt(document.getElementById("offMin").value || "0");
 
@@ -1177,129 +1269,68 @@ window.controlSettingsAI = async function() {
       Yêu cầu người dùng: "${input}"
 
       Hãy tính toán và trả về JSON chứa giá trị mới.
-      Chỉ trả về các trường cần thay đổi.
       Format JSON: {"on_sec": số_nguyên, "off_min": số_nguyên}
-      
-      Ví dụ: 
-      - "Tăng chạy thêm 5s" -> {"on_sec": ${currentOn + 5}}
-      - "Đặt nghỉ 30 phút" -> {"off_min": 30}
-      
-      CHỈ TRẢ VỀ JSON THUẦN.
+      Chỉ trả về JSON thuần.
     `;
 
     const result = await callGemini(prompt);
-
     if (result) {
-      try {
-        // [FIX] Tìm vị trí dấu ngoặc nhọn để lấy JSON chuẩn, bỏ qua lời dẫn của AI
-        const start = result.indexOf('{');
-        const end = result.lastIndexOf('}');
-        
-        if (start !== -1 && end !== -1) {
-            const jsonStr = result.substring(start, end + 1);
-            const changes = JSON.parse(jsonStr);
-            let changed = false;
-
-            if (changes.on_sec !== undefined) {
-              document.getElementById("onSec").value = changes.on_sec;
-              changed = true;
+        try {
+            const start = result.indexOf('{');
+            const end = result.lastIndexOf('}');
+            if (start !== -1 && end !== -1) {
+                const jsonStr = result.substring(start, end + 1);
+                const changes = JSON.parse(jsonStr);
+                let changed = false;
+                if (changes.on_sec !== undefined) { document.getElementById("onSec").value = changes.on_sec; changed = true; }
+                if (changes.off_min !== undefined) { document.getElementById("offMin").value = changes.off_min; changed = true; }
+                if (changed) {
+                    saveSettings();
+                    showToast(`Đã cập nhật: On=${document.getElementById("onSec").value}s, Off=${document.getElementById("offMin").value}m`);
+                    document.getElementById("aiControlPrompt").value = "";
+                } else showToast("Không thay đổi.");
             }
-            if (changes.off_min !== undefined) {
-              document.getElementById("offMin").value = changes.off_min;
-              changed = true;
-            }
-
-            if (changed) {
-              saveSettings(); // Auto save
-              showToast(`Đã cập nhật: On=${document.getElementById("onSec").value}s, Off=${document.getElementById("offMin").value}m`);
-              document.getElementById("aiControlPrompt").value = "";
-            } else {
-              showToast("Không có thay đổi nào.");
-            }
-        } else {
-             showToast("AI không trả về lệnh hợp lệ.");
-             console.warn("AI Raw:", result);
-        }
-      } catch (e) {
-        console.error(e);
-        showToast("Lỗi xử lý phản hồi AI.");
-      }
+        } catch(e) { console.error(e); showToast("Lỗi AI"); }
     }
-
-    btn.innerHTML = originalText;
-    btn.disabled = false;
+    btn.innerHTML = originalText; btn.disabled = false;
 }
 
 window.generateScheduleAI = async function() {
-  const input = document.getElementById("aiPrompt").value;
-  if (!input) { showToast("Vui lòng nhập mô tả!"); return; }
-  
-  const btn = document.getElementById("btnAiSchedule");
-  const originalText = btn.innerHTML;
-  btn.innerHTML = `<span class="ai-loading">✨ Đang suy nghĩ...</span>`;
-  btn.disabled = true;
-
-  // Prompt kỹ thuật để ép Gemini trả về JSON chuẩn
-  const prompt = `
-    Bạn là trợ lý lập lịch cho thiết bị IoT.
-    Yêu cầu của người dùng: "${input}"
+    const input = document.getElementById("aiPrompt").value;
+    if (!input) { showToast("Vui lòng nhập mô tả!"); return; }
     
-    Hãy chuyển đổi yêu cầu này thành mảng JSON gồm các đối tượng lịch trình NGHỈ (PAUSE).
-    Format JSON: [{"s": "HH:MM", "e": "HH:MM", "on": 1, "w": 127}]
-    - "s": Giờ bắt đầu nghỉ (24h format).
-    - "e": Giờ kết thúc nghỉ.
-    - "on": 1 (luôn bật).
-    - "w": Bitmask thứ trong tuần (CN=1, T2=2, T3=4, T4=8, T5=16, T6=32, T7=64). Cộng dồn lại.
-      Ví dụ: "Hàng ngày" = 127. "Thứ 2, 4, 6" = 2+8+32 = 42.
-    
-    Lưu ý quan trọng:
-    - Nếu người dùng nói "Chạy từ X đến Y", nghĩa là họ muốn NGHỈ các giờ còn lại (Nghỉ từ 00:00->X và từ Y->23:59).
-    - Nếu người dùng nói "Nghỉ từ X đến Y", hãy dùng đúng giờ đó.
-    
-    CHỈ TRẢ VỀ JSON THUẦN (raw json array), KHÔNG CÓ MARKDOWN HAY CHÚ THÍCH.
-  `;
+    const btn = document.getElementById("btnAiSchedule");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `⏳`; btn.disabled = true;
 
-  const result = await callGemini(prompt);
-  
-  if (result) {
-    try {
-      // [FIX] Tìm vị trí dấu ngoặc vuông để lấy Mảng JSON chuẩn
-      const start = result.indexOf('[');
-      const end = result.lastIndexOf(']');
-      
-      if (start !== -1 && end !== -1) {
-          const jsonStr = result.substring(start, end + 1);
-          const newItems = JSON.parse(jsonStr);
-          
-          if (Array.isArray(newItems)) {
-            const currentList = Array.isArray(window.state.pause_json) ? window.state.pause_json : [];
-            window.state.pause_json = currentList.concat(newItems);
+    const prompt = `
+      Trợ lý lập lịch IoT. Yêu cầu: "${input}"
+      Tạo mảng JSON lịch trình NGHỈ (PAUSE).
+      Format JSON: [{"s": "HH:MM", "e": "HH:MM", "on": 1, "w": 127}]
+      w: Bitmask thứ (CN=1, T2=2... T7=64).
+      Chỉ trả về JSON thuần.
+    `;
 
-            window.renderPauseTable(); 
-            window.renderTimeline();   
-            showToast(`Đã thêm ${newItems.length} mốc lịch mới!`);
-            
-            // Auto-save
-            if(window.savePause) {
-               window.savePause();
-            }
-          } else {
-            showToast("AI trả về format không đúng.");
-          }
-      } else {
-          console.warn("AI Raw:", result);
-          showToast("AI không trả về danh sách lịch.");
-      }
-    } catch (e) {
-      showToast("Lỗi phân tích JSON từ AI.");
-      console.error(e);
+    const result = await callGemini(prompt);
+    if (result) {
+        try {
+            const start = result.indexOf('[');
+            const end = result.lastIndexOf(']');
+            if (start !== -1 && end !== -1) {
+                const jsonStr = result.substring(start, end + 1);
+                const newItems = JSON.parse(jsonStr);
+                if (Array.isArray(newItems)) {
+                    const currentList = Array.isArray(window.state.pause_json) ? window.state.pause_json : [];
+                    window.state.pause_json = currentList.concat(newItems);
+                    window.renderPauseTable(); window.renderTimeline();
+                    showToast(`Đã thêm ${newItems.length} lịch!`);
+                    if(window.savePause) window.savePause();
+                }
+            } else showToast("Lỗi định dạng AI");
+        } catch (e) { console.error(e); showToast("Lỗi AI"); }
     }
-  }
-
-  btn.innerHTML = originalText;
-  btn.disabled = false;
+    btn.innerHTML = originalText; btn.disabled = false;
 }
-
 window.analyzeSensorsAI = async function() {
    const result = await callGemini(`Phân tích nhanh: Dòng ${window.state.amps}A, Nhiệt ${window.state.temp}C.`);
    if(result) alert("🤖 Dr.AI:\n" + result);
