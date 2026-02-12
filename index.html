@@ -32,6 +32,25 @@
       min-height: 100vh;
     }
 
+    /* === LOGIN OVERLAY (NEW) === */
+    #loginOverlay {
+      position: fixed; inset: 0; background: #0f172a; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: var(--card-bg); padding: 40px; border-radius: 24px; text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); width: 300px;
+    }
+    .login-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; background: var(--ai-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .login-input { 
+      width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #334155; 
+      color: #fff; border-radius: 12px; box-sizing: border-box; font-size: 16px; text-align: center; margin: 20px 0;
+    }
+    .login-btn { 
+      width: 100%; padding: 12px; border: none; border-radius: 12px; background: var(--accent); 
+      color: white; font-weight: 700; cursor: pointer; font-size: 14px; 
+    }
+
     /* === HEADER === */
     .container { width: 95%; max-width: 1200px; padding: 20px; box-sizing: border-box; }
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -56,7 +75,6 @@
     .card-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; }
     .card-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
 
-    /* STATS */
     .card-main-stats { display: flex; justify-content: space-around; align-items: center; flex-grow: 1; padding: 10px 0; }
     .stat-item { text-align: center; }
     .stat-icon { font-size: 18px; margin-bottom: -5px; opacity: 0.6; }
@@ -65,7 +83,6 @@
     .stat-item.off .stat-value { color: #94a3b8; }
     .stat-item.on .stat-value { color: var(--warning); }
 
-    /* TIMER MINI */
     .card-timer-mini { text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
     .mini-time { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
     .mini-status { font-size: 9px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-top: 2px; display: block; }
@@ -141,17 +158,13 @@
     /* === SCHEDULE MODAL STYLES === */
     #scheduleModal { display: none; z-index: 1200; align-items: center; justify-content: center; }
     .schedule-content { width: 95%; max-width: 450px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
-    
     .sched-list { margin-top: 15px; max-height: 300px; overflow-y: auto; }
     .sched-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
     .sched-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .sched-time input { background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; padding: 5px; border-radius: 6px; width: 60px; text-align: center; }
-    
     .day-select { display: flex; gap: 4px; justify-content: space-between; }
     .d-btn { width: 100%; text-align: center; padding: 6px 0; border-radius: 6px; font-size: 10px; background: rgba(255,255,255,0.05); cursor: pointer; color: #94a3b8; font-weight: 700; }
     .d-btn.act { background: rgba(59, 130, 246, 0.3); color: #fff; border: 1px solid rgba(59, 130, 246, 0.5); }
-
-    /* Toggle Switch */
     .sw { position: relative; display: inline-block; width: 34px; height: 20px; }
     .sw input { opacity: 0; width: 0; height: 0; }
     .sl { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .2s; border-radius: 20px; }
@@ -165,6 +178,16 @@
 <body>
 
   <div id="toast">Thông báo</div>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-box">
+      <div class="login-title">IOT LOGIN</div>
+      <p style="color:#94a3b8; font-size:12px">Nhập Mã Khách Hàng để quản lý thiết bị</p>
+      <input type="text" id="loginUser" class="login-input" placeholder="Ví dụ: user01">
+      <button class="login-btn" onclick="performLogin()">TRUY CẬP HỆ THỐNG</button>
+    </div>
+  </div>
 
   <!-- AI MODAL -->
   <div id="aiModal" class="panel-overlay" onclick="if(event.target.id==='aiModal') closeAI()">
@@ -195,9 +218,7 @@
       </div>
       <p id="schedDevId" style="font-size:11px; color:#94a3b8; margin-top:-10px">ID: --</p>
       
-      <div class="sched-list" id="schedList">
-        <!-- JS will render items here -->
-      </div>
+      <div class="sched-list" id="schedList"></div>
 
       <div style="display:flex; gap:10px; margin-top:20px">
         <button class="btn-m" style="flex:1" onclick="addScheduleItem()">+ THÊM MỐC</button>
@@ -288,9 +309,10 @@
     <header>
       <div class="logo-area">
         <h1>IOT ECOSYSTEM</h1>
-        <span id="deviceCount">ĐANG THEO DÕI: 0 THIẾT BỊ</span>
+        <span id="deviceCount">ĐANG CHỜ ĐĂNG NHẬP...</span>
       </div>
       <div class="header-actions">
+        <button class="btn-circle" onclick="logout()">🔓</button>
         <button class="btn-circle" onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻</button>
       </div>
     </header>
@@ -312,15 +334,42 @@ const DEFAULT_MQTT = {
 window.devices = {};
 let client = null;
 let currentSelectedId = null;
-// Temporary schedule storage
+let currentUser = "";
 let tempSchedule = [];
 
-/* ========= INIT & MQTT ========= */
+/* ========= INIT & LOGIN ========= */
 window.onload = function() {
-    connect();
+    const savedUser = localStorage.getItem("current_user");
     const key = localStorage.getItem("gemini_api_key");
     if(key) document.getElementById("geminiKey").value = key;
+
+    if(savedUser) {
+        document.getElementById("loginUser").value = savedUser;
+        performLogin();
+    } else {
+        document.getElementById("loginOverlay").style.display = "flex";
+    }
 };
+
+function performLogin() {
+    const u = document.getElementById("loginUser").value.trim();
+    if(!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
+    
+    currentUser = u;
+    localStorage.setItem("current_user", u);
+    document.getElementById("loginOverlay").style.display = "none";
+    
+    // Clear old data
+    window.devices = {};
+    document.getElementById("grid").innerHTML = "";
+    
+    connect();
+}
+
+function logout() {
+    localStorage.removeItem("current_user");
+    location.reload();
+}
 
 function connect() {
   const url = `wss://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}/mqtt`;
@@ -333,13 +382,18 @@ function connect() {
 
   client.on("connect", () => {
     showToast("Đã kết nối Server MQTT");
-    client.subscribe("devices/+/telemetry");
-    client.subscribe("devices/+/rpc/response/+");
+    // Topic mới: users/{USER_ID}/devices/+/telemetry
+    const baseTopic = `users/${currentUser}/devices`;
+    client.subscribe(`${baseTopic}/+/telemetry`);
+    client.subscribe(`${baseTopic}/+/rpc/response/+`);
+    console.log("Subscribed to:", baseTopic);
   });
 
   client.on("message", (topic, payload) => {
+    // Topic format: users/{USER}/devices/{ID}/...
     const parts = topic.split('/');
-    const devId = parts[1];
+    // parts[0]=users, parts[1]=USER, parts[2]=devices, parts[3]=ID
+    const devId = parts[3];
     if(!devId) return;
 
     try {
@@ -349,7 +403,6 @@ function connect() {
         requestDeviceSync(devId);
       }
       
-      // Parse pause_json safely
       if(data.pause_json) {
           if(typeof data.pause_json === 'string') {
               try { data.pause_json = JSON.parse(data.pause_json); } catch(e){}
@@ -373,7 +426,7 @@ function connect() {
 function render() {
   const grid = document.getElementById("grid");
   const ids = Object.keys(window.devices).sort();
-  document.getElementById("deviceCount").innerText = `ĐANG THEO DÕI: ${ids.length} THIẾT BỊ`;
+  document.getElementById("deviceCount").innerText = `KHÁCH HÀNG: ${currentUser.toUpperCase()} | ${ids.length} THIẾT BỊ`;
 
   ids.forEach(id => {
     let card = document.getElementById("card-" + id);
@@ -436,14 +489,13 @@ function openPanel(id) {
   
   requestDeviceSync(id);
   // Also request pause json to be sure
-  client.publish(`devices/${id}/rpc/request/${Date.now()}`, JSON.stringify({ method: "getPauseJson", params: {} }));
+  rpcSend(id, "getPauseJson", {});
 }
 
 function requestDeviceSync(id) {
     if(!client) return;
-    const topic = `devices/${id}/rpc/request/${Date.now()}`;
-    client.publish(topic, JSON.stringify({ method: "setOffMin", params: {} }));
-    client.publish(topic, JSON.stringify({ method: "setOnSec", params: {} }));
+    rpcSend(id, "setOffMin", {});
+    rpcSend(id, "setOnSec", {});
 }
 
 function closePanel(e) {
@@ -488,8 +540,9 @@ function setMaint(mode) {
     showToast(`Gửi lệnh bảo trì tới ${currentSelectedId}`);
 }
 
+// Cấu trúc Topic RPC: users/{USER}/devices/{ID}/rpc/request/...
 function rpcSend(id, method, params) {
-    const topic = `devices/${id}/rpc/request/${Date.now()}`;
+    const topic = `users/${currentUser}/devices/${id}/rpc/request/${Date.now()}`;
     client.publish(topic, JSON.stringify({ method: method, params: params }));
 }
 
@@ -499,7 +552,6 @@ function openSchedule() {
     document.getElementById("scheduleModal").style.display = "flex";
     document.getElementById("schedDevId").innerText = "THIẾT BỊ: " + currentSelectedId.toUpperCase();
     
-    // Deep copy current schedule or init empty
     const dev = window.devices[currentSelectedId];
     if(dev && Array.isArray(dev.pause_json)) {
         tempSchedule = JSON.parse(JSON.stringify(dev.pause_json));
@@ -527,9 +579,6 @@ function renderScheduleList() {
         
         const days = ["CN","T2","T3","T4","T5","T6","T7"];
         let daysHtml = "";
-        // 1=T2, ... 6=T7, 7=CN -> In logic bitmask: 0=CN, 1=T2...
-        // Map UI (CN, T2..T7) to Bitmask (0..6)
-        // Order UI: T2, T3, T4, T5, T6, T7, CN
         const order = [1,2,3,4,5,6,0]; 
         
         order.forEach(d => {
@@ -635,7 +684,6 @@ async function executeAI() {
         const logic = JSON.parse(raw);
         resBox.innerHTML = `🤖 ${logic.message}`;
         
-        // MQTT Actions
         if(logic.action) {
             const targets = (logic.target === "ALL") ? Object.keys(window.devices) : [logic.target];
             targets.forEach(id => {
