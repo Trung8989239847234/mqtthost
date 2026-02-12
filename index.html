@@ -67,7 +67,6 @@
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
       gap: 20px; 
       margin-bottom: 40px; 
-      /* Tối ưu render */
       contain: layout paint;
     }
     .device-card {
@@ -75,7 +74,7 @@
       border: 1px solid rgba(255,255,255,0.08); transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
       cursor: pointer; position: relative; overflow: hidden;
       display: flex; flex-direction: column; justify-content: space-between;
-      will-change: transform, opacity; /* Gợi ý cho browser */
+      will-change: transform, opacity;
     }
     .device-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
     .device-card.offline { opacity: 0.6; filter: grayscale(1); }
@@ -108,31 +107,37 @@
     .panel.show { transform: translateY(0); }
     .handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: 0 auto 20px; cursor: pointer; }
 
-    /* UI Elements */
-    .info-group { display: flex; justify-content: space-around; align-items: center; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 15px 0; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+    /* === NEW BIG CONTROL GROUP === */
+    .info-group { display: flex; justify-content: space-around; align-items: center; background: rgba(255,255,255,0.03); border-radius: 20px; padding: 25px 0; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
     .info-item { text-align: center; flex: 1; }
-    .info-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-    .info-val { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
-    .info-unit { font-size: 11px; color: #64748b; font-weight: 700; }
-    .info-div { width: 1px; height: 40px; background: rgba(255,255,255,0.1); }
+    .info-label { font-size: 11px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; letter-spacing: 0.5px; }
+    
+    .info-val-input {
+        width: 70px; background: transparent; border: none; color: #fff;
+        font-size: 42px; font-weight: 800; text-align: center; outline: none; padding: 0;
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        -moz-appearance: textfield; letter-spacing: -1px;
+    }
+    .info-val-input::-webkit-outer-spin-button, .info-val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .info-unit { font-size: 14px; color: #64748b; font-weight: 700; margin-left: 2px; }
+    .info-div { width: 1px; height: 60px; background: rgba(255,255,255,0.1); }
 
+    .btn-step-big {
+        width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,0.08);
+        border: none; color: #fff; font-size: 22px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; transition: 0.2s;
+    }
+    .btn-step-big:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
+    .btn-step-big:hover { background: rgba(255,255,255,0.15); }
+
+    /* PRESETS & BUTTONS */
     .presets-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
     .btn-preset { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ccc; border-radius: 12px; padding: 10px; font-size: 11px; cursor: pointer; transition: .2s; display: flex; flex-direction: column; align-items: center; text-align: center; }
     .btn-preset:active { transform: scale(0.96); }
     .btn-preset span { display: block; font-weight: 800; font-size: 12px; margin-bottom: 4px; color: #fff; }
 
-    .control-row { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-    .label-section { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #cbd5e1; }
-    .icon { font-size: 18px; }
-    .sub-text { font-size: 10px; color: #64748b; display: block; font-weight: 400; }
-
-    .stepper { display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 3px; }
-    .btn-step { width: 32px; height: 32px; background: rgba(255,255,255,0.05); border: none; color: #fff; border-radius: 6px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .btn-step:active { background: rgba(255,255,255,0.2); }
-    .stepper input { width: 50px; background: transparent; border: none; color: #fff; text-align: center; font-weight: 800; font-size: 16px; outline: none; }
-
-    .btn-save-main { width: 100%; padding: 15px; border-radius: 14px; border: none; background: var(--accent); color: white; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-    .btn-save-main:active { transform: scale(0.98); }
+    .btn-save-main { width: 100%; padding: 16px; border-radius: 16px; border: none; background: var(--accent); color: white; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); text-transform: uppercase; letter-spacing: 1px; }
+    .btn-save-main:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2); }
 
     .maintenance-title { font-size: 11px; font-weight: 800; color: #64748b; margin: 25px 0 10px; text-transform: uppercase; letter-spacing: 1px; }
     .maintenance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -232,7 +237,7 @@
 
       <div style="display:flex; gap:10px; margin-top:20px">
         <button class="btn-m" style="flex:1" onclick="addScheduleItem()">+ THÊM MỐC</button>
-        <button class="btn-save-main" style="flex:1; margin:0" onclick="saveSchedule()">LƯU LỊCH</button>
+        <button class="btn-save-main" style="flex:1; margin:0; padding: 12px; font-size:12px;" onclick="saveSchedule()">LƯU LỊCH</button>
       </div>
     </div>
   </div>
@@ -250,22 +255,34 @@
         <div id="panelStatusBadge" style="padding: 4px 10px; background: #334155; border-radius: 20px; font-size: 10px; font-weight: bold;">OFFLINE</div>
       </div>
 
+      <!-- === NEW BIG CONTROL GROUP === -->
       <div class="info-group">
         <div class="info-item">
             <span class="info-label">CÀI ĐẶT NGHỈ</span>
-            <div style="display:flex; justify-content:center; align-items:baseline; gap:4px">
-                <span id="qOff" class="info-val">--</span><span class="info-unit">P</span>
+            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
+                <button class="btn-step-big" onclick="adjustValue('offMin',-1)">−</button>
+                <div style="display:flex; align-items:baseline; gap:2px">
+                    <input type="number" id="offMin" class="info-val-input" value="0">
+                    <span class="info-unit">P</span>
+                </div>
+                <button class="btn-step-big" onclick="adjustValue('offMin',1)">+</button>
             </div>
         </div>
         <div class="info-div"></div>
         <div class="info-item">
             <span class="info-label">CÀI ĐẶT CHẠY</span>
-            <div style="display:flex; justify-content:center; align-items:baseline; gap:4px">
-                <span id="qOn" class="info-val">--</span><span class="info-unit">S</span>
+            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
+                <button class="btn-step-big" onclick="adjustValue('onSec',-1)">−</button>
+                <div style="display:flex; align-items:baseline; gap:2px">
+                    <input type="number" id="onSec" class="info-val-input" value="0">
+                    <span class="info-unit">S</span>
+                </div>
+                <button class="btn-step-big" onclick="adjustValue('onSec',1)">+</button>
             </div>
         </div>
       </div>
 
+      <!-- PRESETS -->
       <div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH</div>
       <div class="presets-container">
         <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
@@ -273,31 +290,7 @@
         <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
       </div>
 
-      <div class="control-row">
-        <div class="label-section">
-          <div class="icon">🏃</div>
-          <div><div>CHẠY (On)</div><span class="sub-text">Thời gian bật</span></div>
-        </div>
-        <div class="stepper">
-          <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
-          <input type="number" id="onSec" value="0">
-          <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
-        </div>
-      </div>
-
-      <div class="control-row">
-        <div class="label-section">
-          <div class="icon">💤</div>
-          <div><div>NGHỈ (Off)</div><span class="sub-text">Thời gian tắt</span></div>
-        </div>
-        <div class="stepper">
-          <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
-          <input type="number" id="offMin" value="0">
-          <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
-        </div>
-      </div>
-
-      <button class="btn-save-main" onclick="saveSettings()">LƯU CÀI ĐẶT</button>
+      <button class="btn-save-main" onclick="saveSettings()">LƯU CÀI ĐẶT MỚI</button>
       <button class="btn-schedule" onclick="openSchedule()">📅 CÀI ĐẶT LỊCH NGHỈ (SCHEDULE)</button>
 
       <div class="maintenance-title">🔧 Chế độ bảo trì</div>
@@ -396,13 +389,10 @@ function connect() {
     const baseTopic = `users/${currentUser}/devices`;
     client.subscribe(`${baseTopic}/+/telemetry`);
     client.subscribe(`${baseTopic}/+/rpc/response/+`);
-    console.log("Subscribed to:", baseTopic);
   });
 
   client.on("message", (topic, payload) => {
-    // Topic format: users/{USER}/devices/{ID}/...
     const parts = topic.split('/');
-    // parts[0]=users, parts[1]=USER, parts[2]=devices, parts[3]=ID
     const devId = parts[3];
     if(!devId) return;
 
@@ -411,7 +401,7 @@ function connect() {
       
       if(!window.devices[devId]) { 
         window.devices[devId] = { id: devId }; 
-        createDeviceCard(devId); // Create DOM immediately
+        createDeviceCard(devId);
         requestDeviceSync(devId);
       }
       
@@ -425,10 +415,7 @@ function connect() {
       window.devices[devId].lastSeen = Date.now();
       updateDeviceCard(devId);
       
-      // Update Panel if open
       if(currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
-          if(data.off_min !== undefined) document.getElementById("qOff").textContent = data.off_min;
-          if(data.on_sec !== undefined) document.getElementById("qOn").textContent = data.on_sec;
           if(document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
           if(document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
       }
@@ -488,8 +475,8 @@ function updateDeviceCard(id) {
         else dot.classList.remove('on');
     }
 
-    if(valOff) valOff.innerHTML = `${dev.off_min || 0}<span class="stat-unit">P</span>`;
-    if(valOn) valOn.innerHTML = `${dev.on_sec || 0}<span class="stat-unit">S</span>`;
+    if(valOff) valOff.innerHTML = `${dev.off_min !== undefined ? dev.off_min : '--'}<span class="stat-unit">P</span>`;
+    if(valOn) valOn.innerHTML = `${dev.on_sec !== undefined ? dev.on_sec : '--'}<span class="stat-unit">S</span>`;
     if(time) time.innerText = dev.time_rem || '--:--';
     
     if(stt) {
@@ -521,18 +508,13 @@ function openPanel(id) {
   badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
   badge.style.background = isOnline ? "var(--success)" : "#334155";
 
-  const off = dev.off_min || 0;
-  const on = dev.on_sec || 0;
-  document.getElementById("offMin").value = off;
-  document.getElementById("onSec").value = on;
-  document.getElementById("qOff").textContent = off;
-  document.getElementById("qOn").textContent = on;
+  document.getElementById("offMin").value = dev.off_min !== undefined ? dev.off_min : 0;
+  document.getElementById("onSec").value = dev.on_sec !== undefined ? dev.on_sec : 0;
 
   document.getElementById("panelOverlay").style.display = "flex";
   setTimeout(() => document.getElementById("mainPanel").classList.add("show"), 10);
   
   requestDeviceSync(id);
-  // Also request pause json to be sure
   rpcSend(id, "getPauseJson", {});
 }
 
@@ -556,15 +538,11 @@ function adjustValue(id, d) {
     val += d;
     if(val < 0) val = 0;
     el.value = val;
-    if(id === "offMin") document.getElementById("qOff").textContent = val;
-    if(id === "onSec") document.getElementById("qOn").textContent = val;
 }
 
 function applyPreset(m, s) {
     document.getElementById("offMin").value = m;
     document.getElementById("onSec").value = s;
-    document.getElementById("qOff").textContent = m;
-    document.getElementById("qOn").textContent = s;
     saveSettings();
 }
 
@@ -584,7 +562,6 @@ function setMaint(mode) {
     showToast(`Gửi lệnh bảo trì tới ${currentSelectedId}`);
 }
 
-// Cấu trúc Topic RPC: users/{USER}/devices/{ID}/rpc/request/...
 function rpcSend(id, method, params) {
     const topic = `users/${currentUser}/devices/${id}/rpc/request/${Date.now()}`;
     client.publish(topic, JSON.stringify({ method: method, params: params }));
