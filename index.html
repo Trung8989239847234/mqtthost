@@ -40,7 +40,7 @@
     /* === LOGIN OVERLAY === */
     #loginOverlay {
       position: fixed; inset: 0; background: #0f172a; z-index: 9999;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
     }
     .login-box {
       background: var(--card-bg); padding: 40px; border-radius: 24px; text-align: center;
@@ -344,12 +344,11 @@
       </div>
 
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <input id="accEmail" class="dm-input" type="text" placeholder="Email đăng nhập" readonly>
+        <input id="accEmail" class="dm-input" type="text" placeholder="Email đăng nhập" readonly disabled title="Email lấy theo tài khoản đăng nhập, không chỉnh sửa tại đây">
         <input id="linkedPhone" class="dm-input" type="text" placeholder="Liên kết SĐT, ví dụ: 0907888111">
-        <div style="display:flex; gap:8px;">
-          <button class="dm-btn" style="flex:1" onclick="saveLinkedPhone()">🔗 LƯU LIÊN KẾT SĐT</button>
-          <button class="dm-btn warn" style="flex:1" onclick="reconnectByLinkedPhone()">🔄 RECONNECT MQTT</button>
-        </div>
+        <div id="phoneOwnerInfo" style="font-size:11px; color:#94a3b8; margin-top:-2px;">Chưa kiểm tra chủ sở hữu SĐT</div>
+        <button class="dm-btn" onclick="saveLinkedPhone()">🔗 LƯU LIÊN KẾT SĐT (TỰ RECONNECT MQTT)</button>
+        <button class="dm-btn" onclick="checkPhoneOwnerInfo()">🔎 KIỂM TRA SĐT ĐANG THUỘC EMAIL NÀO</button>
       </div>
 
       <div style="font-size:12px; color:#94a3b8; margin:14px 0 8px;">Đổi mật khẩu</div>
@@ -471,9 +470,15 @@
 /* ========= CONFIG ========= */
 const DEFAULT_MQTT = {
   host: "n21f2dda.ala.dedicated.aws.emqxcloud.com",
-  port: "8084",
-  user: "anhtrung1",
-  pass: "anhtrung1"
+  port: "8084"
+};
+
+const SECURITY_CONFIG = {
+  // Đây là JWT secret (HS256), không phải token hoàn chỉnh.
+  emqxJwtSecret: "BiMat_Nay_Chi_Minh_Tao_Biet_2026",
+  // Nếu EMQX cấu hình lấy JWT từ password thì để 'password'.
+  // Nếu cấu hình lấy từ username thì đổi thành 'username'.
+  jwtPlacement: 'password'
 };
 
 const FIREBASE_CONFIG = {
@@ -498,7 +503,20 @@ let fbReady = false;
 let deviceAliases = {};
 let deviceOrders = {};
 let linkedPhone = "";
+let linkedPhoneOwnerUid = "";
 let loginProvider = "password";
+let mqttTopicRoot = "";
+let isManualLoginFlow = false;
+let autoLoginHandled = false;
+
+async function ensureAuthPersistence() {
+    try {
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        console.log('[Auth] Persistence=LOCAL');
+    } catch (err) {
+        console.warn('[Auth] setPersistence failed:', err);
+    }
+}
 function initFirebase() {
     try {
         const isPlaceholder = String(FIREBASE_CONFIG.apiKey || '').includes('YOUR_') ||
@@ -524,6 +542,97 @@ function safeKey(v) {
 
 function getOwnerKey() {
     return firebase.auth().currentUser?.uid || safeKey(currentUser) || 'unknown_user';
+}
+
+function getCurrentUid() {
+    return firebase.auth().currentUser?.uid || '';
+}
+
+function normalizePhone(v) {
+    return String(v || '').replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+}
+
+function phoneLinkKey(phone) {
+    return safeKey(normalizePhone(phone));
+}
+
+async function readPhoneOwner(phone) {
+    if(!fbReady || !fbDb) return '';
+    const key = phoneLinkKey(phone);
+    if(!key) return '';
+    const snap = await fbDb.ref(`iot_phone_links/${key}`).once('value');
+    return String(snap.val() || '');
+}
+
+async function claimPhoneLink(phone) {
+    if(!fbReady || !fbDb) throw new Error('FIREBASE_NOT_READY');
+    const uid = getCurrentUid();
+    if(!uid) throw new Error('UNAUTHENTICATED');
+
+    const key = phoneLinkKey(phone);
+    if(!key) throw new Error('INVALID_PHONE');
+
+    const ref = fbDb.ref(`iot_phone_links/${key}`);
+    let tx;
+    try {
+      tx = await ref.transaction((current) => {
+          if(current === null || current === uid) return uid;
+          return; // abort nếu đã thuộc uid khác
+      }, undefined, false);
+    } catch (err) {
+      // Thường gặp: PERMISSION_DENIED do Firebase Rules
+      throw err;
+    }
+
+    if(!tx.committed) throw new Error('PHONE_ALREADY_LINKED');
+
+    // Mirror thông tin dễ tra cứu trên UI (email hiện tại)
+    const email = firebase.auth().currentUser?.email || '';
+    await fbDb.ref(`iot_phone_link_profiles/${key}`).set({
+        uid,
+        email,
+        phone: normalizePhone(phone),
+        updatedAt: Date.now()
+    });
+
+    return true;
+}
+
+async function releasePhoneLink(phone) {
+    if(!fbReady || !fbDb) return;
+    const uid = getCurrentUid();
+    if(!uid) return;
+
+    const key = phoneLinkKey(phone);
+    if(!key) return;
+
+    const ref = fbDb.ref(`iot_phone_links/${key}`);
+    await ref.transaction((current) => {
+        if(current === uid) return null;
+        return current;
+    }, undefined, false);
+
+    const ownerNow = await readPhoneOwner(phone);
+    if(!ownerNow) {
+      await fbDb.ref(`iot_phone_link_profiles/${key}`).remove();
+    }
+}
+
+async function ensurePhoneOwnership(phone) {
+    const uid = getCurrentUid();
+    const owner = await readPhoneOwner(phone);
+    if(owner && uid && owner !== uid) {
+        throw new Error('PHONE_OWNERSHIP_MISMATCH');
+    }
+    return true;
+}
+
+async function getPhoneOwnerProfile(phone) {
+    if(!fbReady || !fbDb) return null;
+    const key = phoneLinkKey(phone);
+    if(!key) return null;
+    const snap = await fbDb.ref(`iot_phone_link_profiles/${key}`).once('value');
+    return snap.val() || null;
 }
 
 function aliasKey(id) {
@@ -605,7 +714,20 @@ async function loadAccountProfile() {
     try {
         const snap = await fbDb.ref(`iot/${getOwnerKey()}/profile`).once('value');
         const p = snap.val() || {};
-        linkedPhone = String(p.linked_phone || '').trim();
+        linkedPhone = normalizePhone(p.linked_phone || '');
+
+        if(linkedPhone) {
+            const owner = await readPhoneOwner(linkedPhone);
+            linkedPhoneOwnerUid = owner;
+            if(owner && owner !== getCurrentUid()) {
+                // Profile cũ bị trùng, khóa lại để không dùng nhầm topic của tài khoản khác
+                linkedPhone = '';
+                showToast('SĐT trong profile đã thuộc tài khoản khác. Vui lòng liên kết SĐT mới.');
+            }
+        } else {
+            linkedPhoneOwnerUid = '';
+        }
+
         if(document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone;
         const mail = firebase.auth().currentUser?.email || '';
         if(document.getElementById('accEmail')) document.getElementById('accEmail').value = mail;
@@ -742,7 +864,7 @@ function resetDeviceOrder() {
 initFirebase();
 
 /* ========= INIT & LOGIN ========= */
-window.onload = function() {
+window.onload = async function() {
     const savedUser = localStorage.getItem("current_user");
     const key = localStorage.getItem("gemini_api_key");
     if(key) document.getElementById("geminiKey").value = key;
@@ -750,10 +872,37 @@ window.onload = function() {
     if(savedUser) {
         document.getElementById("loginUser").value = savedUser;
     }
-    document.getElementById("loginOverlay").style.display = "flex";
+    // Giữ ẩn login overlay cho tới khi Firebase trả về trạng thái auth đầu tiên,
+    // tránh hiện thoáng bảng đăng nhập khi F5 dù phiên vẫn còn.
+    document.getElementById("loginOverlay").style.display = "none";
+
+    // Giữ phiên đăng nhập qua F5/đóng mở tab
+    await ensureAuthPersistence();
+
+    // Tự khôi phục phiên đăng nhập (đặc biệt Google) sau khi F5
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if(user) {
+            if(isManualLoginFlow || autoLoginHandled) return;
+            autoLoginHandled = true;
+
+            const saved = (localStorage.getItem("current_user") || '').trim();
+            const emailPrefix = String(user.email || '').split('@')[0] || '';
+            const resolvedUser = saved || emailPrefix || 'google_user';
+            const provider = (user.providerData || []).some(p => p.providerId === 'google.com') ? 'google' : 'password';
+
+            document.getElementById("loginUser").value = resolvedUser;
+            await finalizeLogin(resolvedUser, provider);
+            showToast('Đã tự đăng nhập từ phiên trước');
+            return;
+        }
+
+        autoLoginHandled = false;
+        document.getElementById("loginOverlay").style.display = "flex";
+    });
 };
 
 async function performLogin() {
+    isManualLoginFlow = true;
     const u = document.getElementById("loginUser").value.trim();
     const p = document.getElementById("loginPass").value;
     if(!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
@@ -768,10 +917,12 @@ async function performLogin() {
     }
 
     await finalizeLogin(u, "password");
+    isManualLoginFlow = false;
 }
 
 async function performGoogleLogin() {
     try {
+        isManualLoginFlow = true;
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         const cred = await firebase.auth().signInWithPopup(provider);
@@ -784,9 +935,11 @@ async function performGoogleLogin() {
 
         await finalizeLogin(resolvedUser, "google");
         showToast("Đăng nhập Google thành công");
+        isManualLoginFlow = false;
     } catch(err) {
         console.error('Google login error:', err);
         showToast("Không thể đăng nhập Google");
+        isManualLoginFlow = false;
     }
 }
 
@@ -849,30 +1002,101 @@ function logout() {
       localStorage.removeItem("current_user");
       deviceAliases = {};
       deviceOrders = {};
+      mqttTopicRoot = "";
       location.reload();
     });
 }
 
-function connect() {
+function toBase64UrlFromBytes(bytes) {
+  let binary = '';
+  const len = bytes.byteLength || bytes.length;
+  for(let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function toBase64UrlFromString(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+async function buildEmqxJwtHs256() {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    sub: mqttUserId,
+    username: mqttUserId,
+    iat: now,
+    exp: now + 24 * 60 * 60
+  };
+
+  const h = toBase64UrlFromString(JSON.stringify(header));
+  const p = toBase64UrlFromString(JSON.stringify(payload));
+  const message = `${h}.${p}`;
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(SECURITY_CONFIG.emqxJwtSecret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const sigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  const sig = toBase64UrlFromBytes(new Uint8Array(sigBuffer));
+  return `${message}.${sig}`;
+}
+
+async function connect() {
   if(!mqttUserId) {
     showToast('Chưa có MQTT User ID');
     return;
   }
 
+  try {
+    await ensurePhoneOwnership(mqttUserId);
+  } catch(err) {
+    console.error('Phone ownership mismatch:', err);
+    showToast('SĐT này không thuộc tài khoản hiện tại');
+    return;
+  }
+
   const url = `wss://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}/mqtt`;
+  mqttTopicRoot = `users/${mqttUserId}/devices`;
+  if(!mqttTopicRoot) {
+    showToast('MQTT topicRoot không hợp lệ');
+    return;
+  }
+
   if(client) client.end();
+
+  let jwtToken = '';
+  try {
+    jwtToken = await buildEmqxJwtHs256();
+  } catch(err) {
+    console.error('JWT build error:', err);
+    showToast('Không tạo được JWT từ secret.');
+    return;
+  }
+
+  const mqttUsername = SECURITY_CONFIG.jwtPlacement === 'username' ? jwtToken : mqttUserId;
+  const mqttPassword = SECURITY_CONFIG.jwtPlacement === 'password' ? jwtToken : '';
   
   client = mqtt.connect(url, {
-    username: DEFAULT_MQTT.user, password: DEFAULT_MQTT.pass,
+    // Dùng JWT tạo từ secret hardcode theo yêu cầu
+    username: mqttUsername,
+    password: mqttPassword,
     clientId: "eco_ai_" + Math.random().toString(16).slice(2, 8)
   });
 
   client.on("connect", () => {
     showToast("Đã kết nối Server MQTT");
-    // Topic mới: users/{USER_ID}/devices/+/telemetry
-    const baseTopic = `users/${mqttUserId}/devices`;
+    const baseTopic = mqttTopicRoot;
     client.subscribe(`${baseTopic}/+/telemetry`);
     client.subscribe(`${baseTopic}/+/rpc/response/+`);
+    console.log('[MQTT] connected, topic root:', baseTopic, '| userId:', mqttUserId);
 
     fbUpdate(`iot/${getOwnerKey()}/meta`, {
       mqttConnected: true,
@@ -910,6 +1134,15 @@ function connect() {
           if(document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
       }
     } catch(e) { console.error("Data error", e); }
+  });
+
+  client.on('error', (err) => {
+    console.error('[MQTT] error:', err);
+    showToast('MQTT lỗi xác thực/kết nối. Xem Console (F12).');
+  });
+
+  client.on('close', () => {
+    console.warn('[MQTT] connection closed');
   });
 }
 
@@ -1097,7 +1330,11 @@ function forceRun() {
 }
 
 function rpcSend(id, method, params) {
-    const topic = `users/${mqttUserId}/devices/${id}/rpc/request/${Date.now()}`;
+    if(!mqttTopicRoot) {
+        showToast('Chưa có MQTT topicRoot hợp lệ');
+        return;
+    }
+    const topic = `${mqttTopicRoot}/${id}/rpc/request/${Date.now()}`;
     fbLogCommand(id, method, params);
     client.publish(topic, JSON.stringify({ method: method, params: params }));
 }
@@ -1206,31 +1443,106 @@ function openAccountManager() {
     document.getElementById('accountModal').style.display = 'flex';
     if(document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone || '';
     if(document.getElementById('accEmail')) document.getElementById('accEmail').value = firebase.auth().currentUser?.email || '';
+    const info = document.getElementById('phoneOwnerInfo');
+    if(info) info.innerText = 'Chưa kiểm tra chủ sở hữu SĐT';
 }
 function closeAccountManager() { document.getElementById('accountModal').style.display = 'none'; }
 
-async function saveLinkedPhone() {
-    if(!fbReady || !fbDb) return;
-    const phone = (document.getElementById('linkedPhone')?.value || '').trim();
-    if(!phone) { showToast('Nhập SĐT cần liên kết'); return; }
+async function checkPhoneOwnerInfo() {
+    const phone = normalizePhone(document.getElementById('linkedPhone')?.value || linkedPhone || '');
+    const info = document.getElementById('phoneOwnerInfo');
+    if(!phone) {
+        if(info) info.innerText = 'Nhập SĐT trước khi kiểm tra';
+        return;
+    }
+
     try {
-        await fbDb.ref(`iot/${getOwnerKey()}/profile/linked_phone`).set(phone);
-        linkedPhone = phone;
-        mqttUserId = phone;
-        localStorage.setItem('linked_phone', phone);
-        showToast('Đã lưu liên kết SĐT');
-    } catch(e) {
-        showToast('Lưu liên kết thất bại');
+        const ownerUid = await readPhoneOwner(phone);
+        const profile = await getPhoneOwnerProfile(phone);
+
+        if(!ownerUid) {
+            if(info) info.innerText = `SĐT ${phone} chưa liên kết tài khoản nào`;
+            return;
+        }
+
+        const email = profile?.email || '(không có email mirror)';
+        if(info) info.innerText = `SĐT ${phone} đang thuộc: ${email}`;
+        showToast(`SĐT ${phone} => ${email}`);
+    } catch(err) {
+        console.error('checkPhoneOwnerInfo error:', err);
+        if(info) info.innerText = 'Không kiểm tra được chủ sở hữu SĐT';
+        showToast('Lỗi kiểm tra chủ sở hữu SĐT');
     }
 }
 
-function reconnectByLinkedPhone() {
-    const phone = (document.getElementById('linkedPhone')?.value || '').trim();
-    if(phone) {
+async function saveLinkedPhone() {
+    if(!fbReady || !fbDb) return;
+    const phone = normalizePhone(document.getElementById('linkedPhone')?.value || '');
+    if(!phone) { showToast('Nhập SĐT cần liên kết'); return; }
+
+    const prevPhone = linkedPhone;
+    try {
+        await claimPhoneLink(phone);
+
+        if(prevPhone && prevPhone !== phone) {
+            try { await releasePhoneLink(prevPhone); } catch(_) {}
+        }
+
+        await fbDb.ref(`iot/${getOwnerKey()}/profile/linked_phone`).set(phone);
         linkedPhone = phone;
+        linkedPhoneOwnerUid = getCurrentUid();
         mqttUserId = phone;
+        localStorage.setItem('linked_phone', phone);
+
+        // Auto reconnect MQTT ngay sau khi lưu liên kết SĐT
+        window.devices = {};
+        document.getElementById('grid').innerHTML = '';
+        updateCounter();
+        connect();
+
+        // Lưu xong thì đóng popup quản lý tài khoản, khi cần mới mở lại để sửa
+        closeAccountManager();
+
+        showToast('Đã lưu liên kết SĐT và tự reconnect MQTT');
+    } catch(e) {
+        console.error('saveLinkedPhone error:', e);
+        const code = String(e?.code || '');
+        const msg = String(e?.message || '');
+
+        if(String(e?.message || '').includes('PHONE_ALREADY_LINKED')) {
+            showToast('SĐT này đã liên kết với tài khoản khác');
+            return;
+        }
+        if(msg.includes('UNAUTHENTICATED')) {
+            showToast('Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại');
+            return;
+        }
+        if(code.includes('PERMISSION_DENIED') || msg.includes('PERMISSION_DENIED')) {
+            showToast('Firebase Rules đang chặn ghi iot_phone_links / iot_phone_link_profiles');
+            return;
+        }
+        showToast('Lưu liên kết thất bại: ' + (code || msg || 'UNKNOWN_ERROR'));
     }
-    if(!mqttUserId) { showToast('Chưa có SĐT liên kết để reconnect'); return; }
+}
+
+async function reconnectByLinkedPhone() {
+    const inputPhone = normalizePhone(document.getElementById('linkedPhone')?.value || '');
+
+    // Không cho bypass bằng cách nhập SĐT rồi reconnect thẳng
+    if(inputPhone && inputPhone !== linkedPhone) {
+        await saveLinkedPhone();
+    }
+
+    if(!linkedPhone) { showToast('Chưa có SĐT liên kết để reconnect'); return; }
+
+    try {
+        await ensurePhoneOwnership(linkedPhone);
+    } catch(_) {
+        showToast('SĐT này thuộc tài khoản khác, không thể reconnect');
+        return;
+    }
+
+    mqttUserId = linkedPhone;
 
     window.devices = {};
     document.getElementById('grid').innerHTML = '';
