@@ -7,6 +7,9 @@
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
   <style>
     /* Tối ưu hiệu năng render bằng contain và will-change */
@@ -52,6 +55,8 @@
       width: 100%; padding: 12px; border: none; border-radius: 12px; background: var(--accent); 
       color: white; font-weight: 700; cursor: pointer; font-size: 14px; 
     }
+    .login-btn.secondary { background: rgba(148, 163, 184, 0.2); border: 1px solid #475569; margin-top: 10px; }
+    .login-btn.google { background: #fff; color: #0f172a; margin-top: 10px; }
 
     /* === HEADER === */
     .container { width: 95%; max-width: 1200px; padding: 20px; box-sizing: border-box; }
@@ -80,19 +85,43 @@
     .device-card.offline { opacity: 0.6; filter: grayscale(1); }
 
     .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; pointer-events: none;}
+    .card-right { display: flex; align-items: center; gap: 4px; }
     .card-id { font-size: 11px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
     .card-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; transition: background 0.3s; }
     .card-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .mode-badge-mini {
+      min-width: 22px;
+      height: 14px;
+      padding: 0 3px;
+      border-radius: 10px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 8px;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
 
     .card-main-stats { display: flex; justify-content: space-around; align-items: center; flex-grow: 1; padding: 10px 0; pointer-events: none;}
     .stat-item { text-align: center; }
     .stat-icon { font-size: 18px; margin-bottom: -5px; opacity: 0.6; }
+    .stat-icon.run-spin { animation: runRotate 1s linear infinite; opacity: 1; }
     .stat-value { font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
     .stat-unit { font-size: 12px; font-weight: 700; opacity: 0.5; margin-left: 2px; }
     .stat-item.off .stat-value { color: #94a3b8; }
     .stat-item.on .stat-value { color: var(--warning); }
 
-    .card-timer-mini { text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; border-top: 1px solid rgba(255,255,255,0.05); pointer-events: none;}
+    .card-timer-mini {
+      margin-top: 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      pointer-events: none;
+      text-align: center;
+    }
     .mini-time { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
     .mini-status { font-size: 9px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-top: 2px; display: block; }
     .mini-status.off { color: var(--text-dim); }
@@ -145,8 +174,16 @@
     .btn-m:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .btn-manual { color: var(--warning); border-color: rgba(245, 158, 11, 0.2); }
     .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #ff453a; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px; }
+    .btn-force { background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px; }
 
     .btn-schedule { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 12px; }
+    .dm-content { width: 95%; max-width: 520px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
+    .dm-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .dm-item { display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 8px; }
+    .dm-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; border-radius: 10px; padding: 9px; font-size: 12px; box-sizing: border-box; }
+    .dm-btn { background: rgba(59,130,246,.2); color:#93c5fd; border:1px solid rgba(59,130,246,.4); border-radius:10px; padding:9px 8px; font-size:12px; font-weight:700; cursor:pointer; }
+    .dm-btn.warn { background: rgba(245,158,11,.2); color:#fbbf24; border-color: rgba(245,158,11,.4); }
+    .dm-actions { display:flex; gap:8px; margin-top:12px; }
 
     /* === AI FAB & TOAST === */
     .ai-fab { position: fixed; right: 25px; bottom: 25px; width: 56px; height: 56px; background: var(--ai-gradient); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); z-index: 900; transition: transform 0.2s; }
@@ -173,6 +210,10 @@
     /* === SCHEDULE MODAL STYLES === */
     #scheduleModal { display: none; z-index: 1200; align-items: center; justify-content: center; }
     .schedule-content { width: 95%; max-width: 450px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
+    .guide-content { width: 95%; max-width: 520px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
+    .guide-content h4 { margin: 12px 0 8px; color: #93c5fd; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .guide-content ul { margin: 0 0 10px 18px; padding: 0; color: #cbd5e1; font-size: 13px; line-height: 1.5; }
+    .guide-content li { margin-bottom: 6px; }
     .sched-list { margin-top: 15px; max-height: 300px; overflow-y: auto; }
     .sched-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
     .sched-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -188,6 +229,10 @@
     input:checked + .sl:before { transform: translateX(14px); }
 
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    @keyframes runRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -200,7 +245,10 @@
       <div class="login-title">IOT LOGIN</div>
       <p style="color:#94a3b8; font-size:12px">Nhập Mã Khách Hàng để quản lý thiết bị</p>
       <input type="text" id="loginUser" class="login-input" placeholder="Ví dụ: user01">
+      <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu" value="">
       <button class="login-btn" onclick="performLogin()">TRUY CẬP HỆ THỐNG</button>
+      <button class="login-btn google" onclick="performGoogleLogin()">ĐĂNG NHẬP BẰNG GOOGLE</button>
+      <button class="login-btn secondary" onclick="registerAccount()">TẠO TÀI KHOẢN</button>
     </div>
   </div>
 
@@ -238,6 +286,96 @@
       <div style="display:flex; gap:10px; margin-top:20px">
         <button class="btn-m" style="flex:1" onclick="addScheduleItem()">+ THÊM MỐC</button>
         <button class="btn-save-main" style="flex:1; margin:0; padding: 12px; font-size:12px;" onclick="saveSchedule()">LƯU LỊCH</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDE MODAL -->
+  <div id="guideModal" class="panel-overlay" onclick="if(event.target.id==='guideModal') closeGuide()">
+    <div class="guide-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <h3 style="margin:0; color:#fff">📘 HƯỚNG DẪN SỬ DỤNG</h3>
+        <button onclick="closeGuide()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+      </div>
+
+      <h4>1) Đăng nhập</h4>
+      <ul>
+        <li>Nhập <b>Mã Khách Hàng</b> rồi bấm <b>TRUY CẬP HỆ THỐNG</b>.</li>
+        <li>Mặc định đã điền sẵn: <b>0907888111</b> để test nhanh.</li>
+      </ul>
+
+      <h4>2) Điều khiển thiết bị</h4>
+      <ul>
+        <li>Bấm vào thẻ thiết bị để mở panel chi tiết.</li>
+        <li>Chỉnh <b>Cài đặt nghỉ (P)</b> và <b>Cài đặt chạy (S)</b>, sau đó bấm <b>LƯU CÀI ĐẶT MỚI</b>.</li>
+        <li>Dùng preset để cấu hình nhanh theo mẫu.</li>
+      </ul>
+
+      <h4>3) Lịch nghỉ (Schedule)</h4>
+      <ul>
+        <li>Bấm <b>CÀI ĐẶT LỊCH NGHỈ</b> để mở lịch.</li>
+        <li>Thêm mốc giờ, chọn ngày hoạt động, bật/tắt từng mốc rồi bấm <b>LƯU LỊCH</b>.</li>
+      </ul>
+
+      <h4>4) Bảo trì & Force Run</h4>
+      <ul>
+        <li>Chọn mức bảo trì 7p/15p/30p/50p/80p/∞ nếu cần.</li>
+        <li><b>⚡ Force Run</b> dùng để ép chạy ngay, chỉ dùng khi thực sự cần.</li>
+      </ul>
+
+      <h4>5) AI</h4>
+      <ul>
+        <li>Bấm nút ✨ để mở trung tâm AI.</li>
+        <li>Dán Gemini API Key, nhập lệnh tự nhiên hoặc dùng mic để nói.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ACCOUNT MANAGER MODAL -->
+  <div id="accountModal" class="panel-overlay" onclick="if(event.target.id==='accountModal') closeAccountManager()">
+    <div class="dm-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <h3 style="margin:0; color:#fff">👤 QUẢN LÝ TÀI KHOẢN</h3>
+        <button onclick="closeAccountManager()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+      </div>
+
+      <div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">
+        Liên kết SĐT để map đúng namespace MQTT (topic: users/&lt;SĐT&gt;/devices/#)
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <input id="accEmail" class="dm-input" type="text" placeholder="Email đăng nhập" readonly>
+        <input id="linkedPhone" class="dm-input" type="text" placeholder="Liên kết SĐT, ví dụ: 0907888111">
+        <div style="display:flex; gap:8px;">
+          <button class="dm-btn" style="flex:1" onclick="saveLinkedPhone()">🔗 LƯU LIÊN KẾT SĐT</button>
+          <button class="dm-btn warn" style="flex:1" onclick="reconnectByLinkedPhone()">🔄 RECONNECT MQTT</button>
+        </div>
+      </div>
+
+      <div style="font-size:12px; color:#94a3b8; margin:14px 0 8px;">Đổi mật khẩu</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <input id="newPassword" class="dm-input" type="password" placeholder="Mật khẩu mới (>= 6 ký tự)">
+        <input id="confirmPassword" class="dm-input" type="password" placeholder="Nhập lại mật khẩu mới">
+        <div style="display:flex; gap:8px;">
+          <button class="dm-btn" style="flex:1" onclick="changePasswordInApp()">🔐 ĐỔI MẬT KHẨU</button>
+          <button class="dm-btn warn" style="flex:1" onclick="sendResetEmailFromApp()">✉️ GỬI EMAIL RESET</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICE MANAGER MODAL -->
+  <div id="deviceManagerModal" class="panel-overlay" onclick="if(event.target.id==='deviceManagerModal') closeDeviceManager()">
+    <div class="dm-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <h3 style="margin:0; color:#fff">🗂️ QUẢN LÝ TÊN & VỊ TRÍ THIẾT BỊ</h3>
+        <button onclick="closeDeviceManager()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+      </div>
+      <div style="font-size:12px; color:#94a3b8">Đổi tên trực tiếp, dùng ↑ ↓ để sắp thứ tự hiển thị màn hình chính.</div>
+      <div id="dmList" class="dm-list"></div>
+      <div class="dm-actions">
+        <button class="dm-btn" onclick="saveDeviceManagerChanges()" style="flex:1">💾 LƯU THAY ĐỔI</button>
+        <button class="dm-btn warn" onclick="resetDeviceOrder()" style="flex:1">↺ MẶC ĐỊNH</button>
       </div>
     </div>
   </div>
@@ -292,6 +430,7 @@
 
       <button class="btn-save-main" onclick="saveSettings()">LƯU CÀI ĐẶT MỚI</button>
       <button class="btn-schedule" onclick="openSchedule()">📅 CÀI ĐẶT LỊCH NGHỈ (SCHEDULE)</button>
+      <button class="btn-force" onclick="forceRun()">⚡ FORCE RUN</button>
 
       <div class="maintenance-title">🔧 Chế độ bảo trì</div>
       <div class="maintenance-grid">
@@ -315,6 +454,9 @@
         <span id="deviceCount">ĐANG CHỜ ĐĂNG NHẬP...</span>
       </div>
       <div class="header-actions">
+        <button class="btn-circle" onclick="openAccountManager()">👤</button>
+        <button class="btn-circle" onclick="openDeviceManager()">🗂️</button>
+        <button class="btn-circle" onclick="openGuide()">📘</button>
         <button class="btn-circle" onclick="logout()">🔓</button>
         <button class="btn-circle" onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻</button>
       </div>
@@ -334,11 +476,270 @@ const DEFAULT_MQTT = {
   pass: "anhtrung1"
 };
 
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDCX9OOVjK9xHCMR2Qhttfm8Z7vrXZt4z0",
+  authDomain: "iot-trung.firebaseapp.com",
+  databaseURL: "https://iot-trung-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "iot-trung",
+  storageBucket: "iot-trung.firebasestorage.app",
+  messagingSenderId: "649552656369",
+  appId: "1:649552656369:web:faf89019c2614fee95b650",
+  measurementId: "G-K6WR5P6S3Y"
+};
+
 window.devices = {};
 let client = null;
 let currentSelectedId = null;
 let currentUser = "";
+let mqttUserId = "";
 let tempSchedule = [];
+let fbDb = null;
+let fbReady = false;
+let deviceAliases = {};
+let deviceOrders = {};
+let linkedPhone = "";
+let loginProvider = "password";
+function initFirebase() {
+    try {
+        const isPlaceholder = String(FIREBASE_CONFIG.apiKey || '').includes('YOUR_') ||
+                              String(FIREBASE_CONFIG.databaseURL || '').includes('your-project-id');
+        if(isPlaceholder) {
+            console.warn('[Firebase] Đang dùng config mẫu. Hãy thay FIREBASE_CONFIG để kích hoạt.');
+            return;
+        }
+
+        const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_CONFIG);
+        fbDb = app.database();
+        fbReady = true;
+        console.log('[Firebase] Connected Realtime Database');
+
+    } catch(err) {
+        console.error('[Firebase] Init error:', err);
+    }
+}
+
+function safeKey(v) {
+    return String(v || '').replace(/[.#$\[\]/]/g, '_');
+}
+
+function getOwnerKey() {
+    return firebase.auth().currentUser?.uid || safeKey(currentUser) || 'unknown_user';
+}
+
+function aliasKey(id) {
+    return safeKey(id);
+}
+
+function getDisplayName(id) {
+    return deviceAliases[aliasKey(id)] || String(id || '').toUpperCase();
+}
+
+function getOrderOf(id) {
+    const v = deviceOrders[aliasKey(id)];
+    return Number.isFinite(v) ? v : 99999;
+}
+
+function usernameToEmail(username) {
+    const cleaned = String(username || '').trim().replace(/[^a-zA-Z0-9]/g, '');
+    return `${cleaned}@iot.local`;
+}
+
+function fbUpdate(path, data) {
+    if(!fbReady || !fbDb) return;
+    fbDb.ref(path).update(data).catch(err => console.error('[Firebase] update error:', err));
+}
+
+function fbSet(path, data) {
+    if(!fbReady || !fbDb) return;
+    fbDb.ref(path).set(data).catch(err => console.error('[Firebase] set error:', err));
+}
+
+function syncDeviceToFirebase(devId) {
+    if(!fbReady || !fbDb) return;
+    const dev = window.devices[devId];
+    if(!dev) return;
+
+    const userKey = getOwnerKey();
+    const devKey = safeKey(devId);
+    fbSet(`iot/${userKey}/devices/${devKey}`, {
+        ...dev,
+        updatedAt: Date.now()
+    });
+}
+
+function fbLogCommand(devId, method, params) {
+    if(!fbReady || !fbDb) return;
+    const userKey = getOwnerKey();
+    const devKey = safeKey(devId);
+    fbDb.ref(`iot/${userKey}/commands/${devKey}`).push({
+        method,
+        params,
+        ts: Date.now()
+    }).catch(err => console.error('[Firebase] push error:', err));
+}
+
+async function loadDeviceAliases() {
+    if(!fbReady || !fbDb) return;
+    try {
+        const snap = await fbDb.ref(`iot/${getOwnerKey()}/device_aliases`).once('value');
+        deviceAliases = snap.val() || {};
+    } catch(e) {
+        console.warn('Không tải được device aliases', e);
+        deviceAliases = {};
+    }
+}
+
+async function loadDeviceOrders() {
+    if(!fbReady || !fbDb) return;
+    try {
+        const snap = await fbDb.ref(`iot/${getOwnerKey()}/device_orders`).once('value');
+        deviceOrders = snap.val() || {};
+    } catch(e) {
+        console.warn('Không tải được device orders', e);
+        deviceOrders = {};
+    }
+}
+
+async function loadAccountProfile() {
+    if(!fbReady || !fbDb) return;
+    try {
+        const snap = await fbDb.ref(`iot/${getOwnerKey()}/profile`).once('value');
+        const p = snap.val() || {};
+        linkedPhone = String(p.linked_phone || '').trim();
+        if(document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone;
+        const mail = firebase.auth().currentUser?.email || '';
+        if(document.getElementById('accEmail')) document.getElementById('accEmail').value = mail;
+    } catch(e) {
+        linkedPhone = '';
+    }
+}
+
+async function saveDeviceAlias() {
+    if(!currentSelectedId || !fbReady || !fbDb) return;
+    const input = document.getElementById('deviceAliasInput');
+    if(!input) return;
+
+    const val = input.value.trim();
+    const key = aliasKey(currentSelectedId);
+    try {
+        if(val) {
+            await fbDb.ref(`iot/${getOwnerKey()}/device_aliases/${key}`).set(val);
+            deviceAliases[key] = val;
+        } else {
+            await fbDb.ref(`iot/${getOwnerKey()}/device_aliases/${key}`).remove();
+            delete deviceAliases[key];
+        }
+        updateDeviceCard(currentSelectedId);
+        document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
+        showToast('Đã lưu tên hiển thị');
+    } catch(e) {
+        showToast('Lưu tên thất bại');
+    }
+}
+
+function getAllKnownDeviceIds() {
+    const ids = new Set(Object.keys(window.devices || {}));
+    Object.keys(deviceAliases || {}).forEach(k => ids.add(k));
+    Object.keys(deviceOrders || {}).forEach(k => ids.add(k));
+    return Array.from(ids);
+}
+
+function sortDeviceIds(ids) {
+    return [...ids].sort((a,b) => {
+        const oa = getOrderOf(a), ob = getOrderOf(b);
+        if(oa !== ob) return oa - ob;
+        return String(getDisplayName(a)).localeCompare(String(getDisplayName(b)), 'vi');
+    });
+}
+
+function applyCardOrder(id) {
+    const card = document.getElementById('card-' + id);
+    if(card) card.style.order = String(getOrderOf(id));
+}
+
+function renderDeviceManager() {
+    const box = document.getElementById('dmList');
+    if(!box) return;
+    const sorted = sortDeviceIds(getAllKnownDeviceIds());
+    if(sorted.length === 0) {
+        box.innerHTML = `<div style="color:#64748b; text-align:center; padding:16px">Chưa có thiết bị để quản lý</div>`;
+        return;
+    }
+    box.innerHTML = sorted.map((id, idx) => `
+      <div class="dm-item">
+        <input class="dm-input" data-dev="${id}" value="${(deviceAliases[aliasKey(id)] || '').replace(/"/g,'&quot;')}" placeholder="Tên hiển thị cho ${id}">
+        <button class="dm-btn" onclick="moveDeviceOrder('${id}', -1)">↑</button>
+        <button class="dm-btn" onclick="moveDeviceOrder('${id}', 1)">↓</button>
+      </div>
+    `).join('');
+}
+
+function openDeviceManager() {
+    document.getElementById('deviceManagerModal').style.display = 'flex';
+    renderDeviceManager();
+}
+
+function closeDeviceManager() {
+    document.getElementById('deviceManagerModal').style.display = 'none';
+}
+
+function ensureDefaultOrders() {
+    const sorted = sortDeviceIds(getAllKnownDeviceIds());
+    sorted.forEach((id, idx) => {
+        if(!Number.isFinite(deviceOrders[aliasKey(id)])) deviceOrders[aliasKey(id)] = idx;
+    });
+}
+
+function moveDeviceOrder(id, delta) {
+    ensureDefaultOrders();
+    const sorted = sortDeviceIds(getAllKnownDeviceIds());
+    const from = sorted.indexOf(id);
+    if(from < 0) return;
+    const to = from + delta;
+    if(to < 0 || to >= sorted.length) return;
+    const temp = sorted[from];
+    sorted[from] = sorted[to];
+    sorted[to] = temp;
+    sorted.forEach((devId, idx) => { deviceOrders[aliasKey(devId)] = idx; applyCardOrder(devId); });
+    renderDeviceManager();
+}
+
+async function saveDeviceManagerChanges() {
+    if(!fbReady || !fbDb) return;
+    const inputs = document.querySelectorAll('#dmList input[data-dev]');
+    const aliasesNext = {};
+    inputs.forEach(el => {
+        const dev = el.getAttribute('data-dev');
+        const name = (el.value || '').trim();
+        if(name) aliasesNext[aliasKey(dev)] = name;
+    });
+    deviceAliases = aliasesNext;
+    ensureDefaultOrders();
+    try {
+        const base = `iot/${getOwnerKey()}`;
+        await Promise.all([
+            fbDb.ref(base + '/device_aliases').set(deviceAliases),
+            fbDb.ref(base + '/device_orders').set(deviceOrders)
+        ]);
+        Object.keys(window.devices || {}).forEach(id => { updateDeviceCard(id); applyCardOrder(id); });
+        if(currentSelectedId) document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
+        showToast('Đã lưu tên & vị trí thiết bị');
+        closeDeviceManager();
+    } catch(e) {
+        showToast('Lưu thất bại');
+    }
+}
+
+function resetDeviceOrder() {
+    const sorted = Object.keys(window.devices || {}).sort((a,b) => String(a).localeCompare(String(b), 'vi'));
+    sorted.forEach((id, idx) => {
+        deviceOrders[aliasKey(id)] = idx;
+        applyCardOrder(id);
+    });
+    renderDeviceManager();
+}
+
+initFirebase();
 
 /* ========= INIT & LOGIN ========= */
 window.onload = function() {
@@ -348,33 +749,116 @@ window.onload = function() {
 
     if(savedUser) {
         document.getElementById("loginUser").value = savedUser;
-        performLogin();
-    } else {
-        document.getElementById("loginOverlay").style.display = "flex";
     }
+    document.getElementById("loginOverlay").style.display = "flex";
 };
 
-function performLogin() {
+async function performLogin() {
     const u = document.getElementById("loginUser").value.trim();
+    const p = document.getElementById("loginPass").value;
     if(!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
-    
+    if(!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
+
+    const email = usernameToEmail(u);
+    try {
+        await firebase.auth().signInWithEmailAndPassword(email, p);
+    } catch(err) {
+        showToast("Sai tài khoản hoặc mật khẩu");
+        return;
+    }
+
+    await finalizeLogin(u, "password");
+}
+
+async function performGoogleLogin() {
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        const cred = await firebase.auth().signInWithPopup(provider);
+
+        // Với Google, userId hiển thị vẫn lấy từ ô nhập nếu có, nếu không fallback email prefix
+        const enteredUser = document.getElementById("loginUser").value.trim();
+        const emailUser = String(cred.user?.email || '').split('@')[0];
+        const resolvedUser = enteredUser || emailUser || "google_user";
+        document.getElementById("loginUser").value = resolvedUser;
+
+        await finalizeLogin(resolvedUser, "google");
+        showToast("Đăng nhập Google thành công");
+    } catch(err) {
+        console.error('Google login error:', err);
+        showToast("Không thể đăng nhập Google");
+    }
+}
+
+async function finalizeLogin(u, provider) {
+    loginProvider = provider || 'password';
     currentUser = u;
     localStorage.setItem("current_user", u);
     document.getElementById("loginOverlay").style.display = "none";
+
+    await loadDeviceAliases();
+    await loadDeviceOrders();
+    await loadAccountProfile();
+
+    // Flow chuẩn: nếu login Google thì bắt buộc bind SĐT trước khi connect MQTT
+    if(loginProvider === 'google') {
+        mqttUserId = linkedPhone || "";
+    } else {
+        mqttUserId = linkedPhone || u;
+    }
+
+    fbUpdate(`iot/${getOwnerKey()}/meta`, {
+        lastLoginAt: Date.now(),
+        source: "backup3.html",
+        provider: provider || "unknown"
+    });
     
     // Clear old data
     window.devices = {};
     document.getElementById("grid").innerHTML = "";
-    
+
+    if(!mqttUserId) {
+        updateCounter();
+        openAccountManager();
+        showToast('Hãy liên kết SĐT để truy cập đúng topic MQTT');
+        return;
+    }
+
     connect();
 }
 
+async function registerAccount() {
+    const u = document.getElementById("loginUser").value.trim();
+    const p = document.getElementById("loginPass").value;
+    if(!u) { alert("Nhập username trước"); return; }
+    if(!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
+
+    const email = usernameToEmail(u);
+    try {
+        await firebase.auth().createUserWithEmailAndPassword(email, p);
+        showToast("Tạo tài khoản thành công, đang đăng nhập...");
+        await performLogin();
+    } catch(err) {
+        if(err.code === 'auth/email-already-in-use') showToast("Tài khoản đã tồn tại, hãy đăng nhập");
+        else showToast("Không tạo được tài khoản: " + (err.message || err.code));
+    }
+}
+
 function logout() {
-    localStorage.removeItem("current_user");
-    location.reload();
+    firebase.auth().signOut().finally(() => {
+      localStorage.removeItem("current_user");
+      deviceAliases = {};
+      deviceOrders = {};
+      location.reload();
+    });
 }
 
 function connect() {
+  if(!mqttUserId) {
+    showToast('Chưa có MQTT User ID');
+    return;
+  }
+
   const url = `wss://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}/mqtt`;
   if(client) client.end();
   
@@ -386,9 +870,14 @@ function connect() {
   client.on("connect", () => {
     showToast("Đã kết nối Server MQTT");
     // Topic mới: users/{USER_ID}/devices/+/telemetry
-    const baseTopic = `users/${currentUser}/devices`;
+    const baseTopic = `users/${mqttUserId}/devices`;
     client.subscribe(`${baseTopic}/+/telemetry`);
     client.subscribe(`${baseTopic}/+/rpc/response/+`);
+
+    fbUpdate(`iot/${getOwnerKey()}/meta`, {
+      mqttConnected: true,
+      lastMqttConnectAt: Date.now()
+    });
   });
 
   client.on("message", (topic, payload) => {
@@ -414,6 +903,7 @@ function connect() {
       Object.assign(window.devices[devId], data);
       window.devices[devId].lastSeen = Date.now();
       updateDeviceCard(devId);
+      syncDeviceToFirebase(devId);
       
       if(currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
           if(document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
@@ -432,8 +922,11 @@ function createDeviceCard(id) {
     card.onclick = () => openPanel(id);
     card.innerHTML = `
       <div class="card-top">
-        <span class="card-id">${id.toUpperCase()}</span>
-        <div class="card-dot" id="dot-${id}"></div>
+        <span class="card-id" id="label-${id}">${getDisplayName(id)}</span>
+        <div class="card-right">
+          <div class="card-dot" id="dot-${id}"></div>
+          <span class="mode-badge-mini" id="mode-${id}">15p</span>
+        </div>
       </div>
       <div class="card-main-stats">
         <div class="stat-item off">
@@ -441,16 +934,16 @@ function createDeviceCard(id) {
            <div class="stat-value" id="val-off-${id}">--<span class="stat-unit">P</span></div>
         </div>
         <div class="stat-item on">
-           <div class="stat-icon">⚡</div>
+           <div class="stat-icon" id="runicon-${id}">⚡</div>
            <div class="stat-value" id="val-on-${id}">--<span class="stat-unit">S</span></div>
         </div>
       </div>
       <div class="card-timer-mini">
         <div class="mini-time" id="time-${id}">--:--</div>
-        <div class="mini-status" id="stt-${id}">CHỜ DỮ LIỆU</div>
       </div>
     `;
     grid.appendChild(card);
+    applyCardOrder(id);
     updateCounter();
 }
 
@@ -461,10 +954,17 @@ function updateDeviceCard(id) {
     const isOnline = (Date.now() - dev.lastSeen < 30000);
     const card = document.getElementById("card-" + id);
     const dot = document.getElementById("dot-" + id);
+    const modeBadge = document.getElementById("mode-" + id);
+    const runIcon = document.getElementById("runicon-" + id);
     const valOff = document.getElementById("val-off-" + id);
     const valOn = document.getElementById("val-on-" + id);
     const time = document.getElementById("time-" + id);
-    const stt = document.getElementById("stt-" + id);
+    const label = document.getElementById("label-" + id);
+
+    const statusText = String(dev.status || '').toUpperCase();
+    const isRunning = isOnline && (statusText.includes('RUN') || statusText.includes('ON') || statusText.includes('CHẠY'));
+
+    if(runIcon) runIcon.classList.toggle('run-spin', isRunning);
 
     if(card) {
         if(isOnline) card.classList.remove('offline');
@@ -478,16 +978,44 @@ function updateDeviceCard(id) {
     if(valOff) valOff.innerHTML = `${dev.off_min !== undefined ? dev.off_min : '--'}<span class="stat-unit">P</span>`;
     if(valOn) valOn.innerHTML = `${dev.on_sec !== undefined ? dev.on_sec : '--'}<span class="stat-unit">S</span>`;
     if(time) time.innerText = dev.time_rem || '--:--';
-    
-    if(stt) {
-        stt.innerText = dev.status || 'CHỜ...';
-        stt.className = 'mini-status ' + (dev.status && dev.status.includes('OFF') ? 'off' : '');
+    if(label) label.innerText = getDisplayName(id);
+
+    if(modeBadge) {
+        let m = Number(
+          dev.maintenance_mode ??
+          dev.maint_mode ??
+          dev.maintenance ??
+          dev.maint ??
+          dev.mode_maint
+        );
+
+        if(!Number.isFinite(m)) {
+            const s = String(dev.status || '').toUpperCase();
+            const mt = s.match(/(?:MAINT|BẢO\s*TRÌ)\s*[:\- ]?\s*(\d)/i);
+            if(mt) m = Number(mt[1]);
+        }
+
+        if(Number.isFinite(m) && m >= 1 && m <= 6) {
+            modeBadge.style.display = 'inline-flex';
+            const modeTextMap = {
+              1: '7p',
+              2: '15p',
+              3: '30p',
+              4: '50p',
+              5: '80p',
+              6: '∞'
+            };
+            modeBadge.textContent = modeTextMap[m] || '';
+        } else {
+            modeBadge.style.display = 'none';
+        }
     }
 }
 
 function updateCounter() {
     const count = Object.keys(window.devices).length;
-    document.getElementById("deviceCount").innerText = `KHÁCH HÀNG: ${currentUser.toUpperCase()} | ${count} THIẾT BỊ`;
+    const ns = (mqttUserId || currentUser || '').toUpperCase();
+    document.getElementById("deviceCount").innerText = `MQTT USER: ${ns} | ${count} THIẾT BỊ`;
 }
 
 // Watchdog để cập nhật trạng thái Offline mà không cần tin nhắn mới
@@ -500,8 +1028,8 @@ setInterval(() => {
 function openPanel(id) {
   currentSelectedId = id;
   const dev = window.devices[id];
-  document.getElementById("panelTitle").innerText = id.toUpperCase();
-  document.getElementById("panelId").innerText = "Last Update: " + new Date(dev.lastSeen).toLocaleTimeString();
+  document.getElementById("panelTitle").innerText = getDisplayName(id);
+  document.getElementById("panelId").innerText = `ID: ${id.toUpperCase()} | Last Update: ` + new Date(dev.lastSeen).toLocaleTimeString();
   
   const isOnline = (Date.now() - dev.lastSeen < 30000);
   const badge = document.getElementById("panelStatusBadge");
@@ -562,8 +1090,15 @@ function setMaint(mode) {
     showToast(`Gửi lệnh bảo trì tới ${currentSelectedId}`);
 }
 
+function forceRun() {
+    if(!currentSelectedId || !client) return;
+    rpcSend(currentSelectedId, "forceRun", 1);
+    showToast(`Đã gửi FORCE RUN tới ${currentSelectedId}`);
+}
+
 function rpcSend(id, method, params) {
-    const topic = `users/${currentUser}/devices/${id}/rpc/request/${Date.now()}`;
+    const topic = `users/${mqttUserId}/devices/${id}/rpc/request/${Date.now()}`;
+    fbLogCommand(id, method, params);
     client.publish(topic, JSON.stringify({ method: method, params: params }));
 }
 
@@ -665,6 +1200,75 @@ function saveSchedule() {
 /* ========= AI INTELLIGENCE ========= */
 function openAI() { document.getElementById("aiModal").style.display = "flex"; }
 function closeAI() { document.getElementById("aiModal").style.display = "none"; }
+function openGuide() { document.getElementById("guideModal").style.display = "flex"; }
+function closeGuide() { document.getElementById("guideModal").style.display = "none"; }
+function openAccountManager() {
+    document.getElementById('accountModal').style.display = 'flex';
+    if(document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone || '';
+    if(document.getElementById('accEmail')) document.getElementById('accEmail').value = firebase.auth().currentUser?.email || '';
+}
+function closeAccountManager() { document.getElementById('accountModal').style.display = 'none'; }
+
+async function saveLinkedPhone() {
+    if(!fbReady || !fbDb) return;
+    const phone = (document.getElementById('linkedPhone')?.value || '').trim();
+    if(!phone) { showToast('Nhập SĐT cần liên kết'); return; }
+    try {
+        await fbDb.ref(`iot/${getOwnerKey()}/profile/linked_phone`).set(phone);
+        linkedPhone = phone;
+        mqttUserId = phone;
+        localStorage.setItem('linked_phone', phone);
+        showToast('Đã lưu liên kết SĐT');
+    } catch(e) {
+        showToast('Lưu liên kết thất bại');
+    }
+}
+
+function reconnectByLinkedPhone() {
+    const phone = (document.getElementById('linkedPhone')?.value || '').trim();
+    if(phone) {
+        linkedPhone = phone;
+        mqttUserId = phone;
+    }
+    if(!mqttUserId) { showToast('Chưa có SĐT liên kết để reconnect'); return; }
+
+    window.devices = {};
+    document.getElementById('grid').innerHTML = '';
+    updateCounter();
+    connect();
+}
+
+async function changePasswordInApp() {
+    const p1 = document.getElementById('newPassword')?.value || '';
+    const p2 = document.getElementById('confirmPassword')?.value || '';
+    if(p1.length < 6) { showToast('Mật khẩu mới tối thiểu 6 ký tự'); return; }
+    if(p1 !== p2) { showToast('Xác nhận mật khẩu không khớp'); return; }
+    const user = firebase.auth().currentUser;
+    if(!user) { showToast('Chưa đăng nhập'); return; }
+    try {
+        await user.updatePassword(p1);
+        showToast('Đổi mật khẩu thành công');
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    } catch(err) {
+        if(String(err.code || '').includes('requires-recent-login')) {
+            showToast('Phiên đăng nhập cũ, hãy đăng nhập lại rồi đổi mật khẩu');
+        } else {
+            showToast('Không đổi được mật khẩu');
+        }
+    }
+}
+
+async function sendResetEmailFromApp() {
+    const email = (document.getElementById('accEmail')?.value || firebase.auth().currentUser?.email || '').trim();
+    if(!email) { showToast('Không có email để gửi reset'); return; }
+    try {
+        await firebase.auth().sendPasswordResetEmail(email);
+        showToast('Đã gửi email reset mật khẩu');
+    } catch(e) {
+        showToast('Gửi email reset thất bại');
+    }
+}
 function saveGeminiKey(val) { localStorage.setItem("gemini_api_key", val.trim()); showToast("Đã lưu API Key"); }
 
 function startVoice(btn) {
