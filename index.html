@@ -469,13 +469,15 @@
 <script>
 /* ========= CONFIG ========= */
 const DEFAULT_MQTT = {
-  host: "n21f2dda.ala.dedicated.aws.emqxcloud.com",
-  port: "8084"
+  host: "trung-2601.ddns.net",
+  port: "8083",
+  protocol: "ws",
+  path: "/mqtt"
 };
 
 const SECURITY_CONFIG = {
   // Đây là JWT secret (HS256), không phải token hoàn chỉnh.
-  emqxJwtSecret: "BiMat_Nay_Chi_Minh_Tao_Biet_2026",
+  emqxJwtSecret: "NrVgcEA2G9wz4zGxFWEpVWFPEYbo6gtI",
   // Nếu EMQX cấu hình lấy JWT từ password thì để 'password'.
   // Nếu cấu hình lấy từ username thì đổi thành 'username'.
   jwtPlacement: 'password'
@@ -1063,7 +1065,7 @@ async function connect() {
     return;
   }
 
-  const url = `wss://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}/mqtt`;
+  const url = `${DEFAULT_MQTT.protocol}://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}${DEFAULT_MQTT.path || '/mqtt'}`;
   mqttTopicRoot = `users/${mqttUserId}/devices`;
   if(!mqttTopicRoot) {
     showToast('MQTT topicRoot không hợp lệ');
