@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -39,56 +40,190 @@
 
     /* === LOGIN OVERLAY === */
     #loginOverlay {
-      position: fixed; inset: 0; background: #0f172a; z-index: 9999;
-      display: none; flex-direction: column; align-items: center; justify-content: center;
+      position: fixed;
+      inset: 0;
+      background: #0f172a;
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
+
     .login-box {
-      background: var(--card-bg); padding: 40px; border-radius: 24px; text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); width: 300px;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 24px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 300px;
     }
-    .login-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; background: var(--ai-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .login-input { 
-      width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid #334155; 
-      color: #fff; border-radius: 12px; box-sizing: border-box; font-size: 16px; text-align: center; margin: 20px 0;
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: var(--ai-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .login-btn { 
-      width: 100%; padding: 12px; border: none; border-radius: 12px; background: var(--accent); 
-      color: white; font-weight: 700; cursor: pointer; font-size: 14px; 
+
+    .login-input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      color: #fff;
+      border-radius: 12px;
+      box-sizing: border-box;
+      font-size: 16px;
+      text-align: center;
+      margin: 20px 0;
     }
-    .login-btn.secondary { background: rgba(148, 163, 184, 0.2); border: 1px solid #475569; margin-top: 10px; }
-    .login-btn.google { background: #fff; color: #0f172a; margin-top: 10px; }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .login-btn.secondary {
+      background: rgba(148, 163, 184, 0.2);
+      border: 1px solid #475569;
+      margin-top: 10px;
+    }
+
+    .login-btn.google {
+      background: #fff;
+      color: #0f172a;
+      margin-top: 10px;
+    }
 
     /* === HEADER === */
-    .container { width: 95%; max-width: 1200px; padding: 20px; box-sizing: border-box; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .logo-area h1 { font-size: 20px; margin: 0; font-weight: 800; letter-spacing: 1px; color: #fff; }
-    .logo-area span { font-size: 11px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
-    .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-    .btn-circle:hover { background: var(--accent); }
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-area h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .logo-area span {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .btn-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: 0.3s;
+    }
+
+    .btn-circle:hover {
+      background: var(--accent);
+    }
 
     /* === GRID THIẾT BỊ === */
-    .device-grid { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-      gap: 20px; 
-      margin-bottom: 40px; 
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
       contain: layout paint;
     }
+
     .device-card {
-      background: var(--card-bg); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px;
-      border: 1px solid rgba(255,255,255,0.08); transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-      cursor: pointer; position: relative; overflow: hidden;
-      display: flex; flex-direction: column; justify-content: space-between;
+      background: var(--card-bg);
+      backdrop-filter: blur(15px);
+      border-radius: 24px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       will-change: transform, opacity;
     }
-    .device-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-    .device-card.offline { opacity: 0.6; filter: grayscale(1); }
 
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; pointer-events: none;}
-    .card-right { display: flex; align-items: center; gap: 4px; }
-    .card-id { font-size: 11px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
-    .card-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; transition: background 0.3s; }
-    .card-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .device-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .device-card.offline {
+      opacity: 0.6;
+      filter: grayscale(1);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      pointer-events: none;
+    }
+
+    .card-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-id {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #334155;
+      transition: background 0.3s;
+    }
+
+    .card-dot.on {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
     .mode-badge-mini {
       min-width: 22px;
       height: 14px;
@@ -104,137 +239,745 @@
       line-height: 1;
     }
 
-    .card-main-stats { display: flex; justify-content: space-around; align-items: center; flex-grow: 1; padding: 10px 0; pointer-events: none;}
-    .stat-item { text-align: center; }
-    .stat-icon { font-size: 18px; margin-bottom: -5px; opacity: 0.6; }
-    .stat-icon.run-spin { animation: runRotate 1s linear infinite; opacity: 1; }
-    .stat-value { font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
-    .stat-unit { font-size: 12px; font-weight: 700; opacity: 0.5; margin-left: 2px; }
-    .stat-item.off .stat-value { color: #94a3b8; }
-    .stat-item.on .stat-value { color: var(--warning); }
+    .card-main-stats {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-grow: 1;
+      padding: 10px 0;
+      pointer-events: none;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-icon {
+      font-size: 18px;
+      margin-bottom: -5px;
+      opacity: 0.6;
+    }
+
+    .stat-icon.run-spin {
+      animation: runRotate 1s linear infinite;
+      opacity: 1;
+    }
+
+    .stat-value {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .stat-unit {
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.5;
+      margin-left: 2px;
+    }
+
+    .stat-item.off .stat-value {
+      color: #94a3b8;
+    }
+
+    .stat-item.on .stat-value {
+      color: var(--warning);
+    }
 
     .card-timer-mini {
       margin-top: 15px;
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
       border-radius: 12px;
       padding: 8px;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
       pointer-events: none;
       text-align: center;
     }
-    .mini-time { font-family: 'Courier New', monospace; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-    .mini-status { font-size: 9px; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-top: 2px; display: block; }
-    .mini-status.off { color: var(--text-dim); }
+
+    .mini-time {
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .mini-status {
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-top: 2px;
+      display: block;
+    }
+
+    .mini-status.off {
+      color: var(--text-dim);
+    }
 
     /* === PANEL ĐIỀU KHIỂN CHI TIẾT === */
-    .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; justify-content: center; align-items: flex-end; }
-    .panel {
-      width: 100%; max-width: 500px; background: #1e293b; border-top-left-radius: 24px; border-top-right-radius: 24px;
-      padding: 24px; box-sizing: border-box; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
-      box-shadow: 0 -10px 50px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; will-change: transform;
+    .panel-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
     }
-    .panel.show { transform: translateY(0); }
-    .handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: 0 auto 20px; cursor: pointer; }
+
+    .panel {
+      width: 100%;
+      max-width: 500px;
+      background: #1e293b;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 24px;
+      box-sizing: border-box;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+      box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.5);
+      max-height: 90vh;
+      overflow-y: auto;
+      will-change: transform;
+    }
+
+    .panel.show {
+      transform: translateY(0);
+    }
+
+    .handle {
+      width: 40px;
+      height: 4px;
+      background: #475569;
+      border-radius: 2px;
+      margin: 0 auto 20px;
+      cursor: pointer;
+    }
 
     /* === NEW BIG CONTROL GROUP === */
-    .info-group { display: flex; justify-content: space-around; align-items: center; background: rgba(255,255,255,0.03); border-radius: 20px; padding: 25px 0; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
-    .info-item { text-align: center; flex: 1; }
-    .info-label { font-size: 11px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; letter-spacing: 0.5px; }
-    
-    .info-val-input {
-        width: 70px; background: transparent; border: none; color: #fff;
-        font-size: 42px; font-weight: 800; text-align: center; outline: none; padding: 0;
-        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        -moz-appearance: textfield; letter-spacing: -1px;
+    .info-group {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 25px 0;
+      margin-bottom: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .info-val-input::-webkit-outer-spin-button, .info-val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .info-unit { font-size: 14px; color: #64748b; font-weight: 700; margin-left: 2px; }
-    .info-div { width: 1px; height: 60px; background: rgba(255,255,255,0.1); }
+
+    .info-item {
+      text-align: center;
+      flex: 1;
+    }
+
+    .info-label {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      display: block;
+      letter-spacing: 0.5px;
+    }
+
+    .info-val-input {
+      width: 70px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 42px;
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -moz-appearance: textfield;
+      letter-spacing: -1px;
+    }
+
+    .info-val-input::-webkit-outer-spin-button,
+    .info-val-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .info-unit {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 700;
+      margin-left: 2px;
+    }
+
+    .info-div {
+      width: 1px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+    }
 
     .btn-step-big {
-        width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,0.08);
-        border: none; color: #fff; font-size: 22px; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; transition: 0.2s;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
     }
-    .btn-step-big:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
-    .btn-step-big:hover { background: rgba(255,255,255,0.15); }
+
+    .btn-step-big:active {
+      transform: scale(0.9);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-step-big:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
 
     /* PRESETS & BUTTONS */
-    .presets-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-    .btn-preset { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ccc; border-radius: 12px; padding: 10px; font-size: 11px; cursor: pointer; transition: .2s; display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .btn-preset:active { transform: scale(0.96); }
-    .btn-preset span { display: block; font-weight: 800; font-size: 12px; margin-bottom: 4px; color: #fff; }
+    .presets-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
 
-    .btn-save-main { width: 100%; padding: 16px; border-radius: 16px; border: none; background: var(--accent); color: white; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); text-transform: uppercase; letter-spacing: 1px; }
-    .btn-save-main:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2); }
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ccc;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: .2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
 
-    .maintenance-title { font-size: 11px; font-weight: 800; color: #64748b; margin: 25px 0 10px; text-transform: uppercase; letter-spacing: 1px; }
-    .maintenance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .btn-m { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
-    .btn-m:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .btn-manual { color: var(--warning); border-color: rgba(245, 158, 11, 0.2); }
-    .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #ff453a; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px; }
-    .btn-force { background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); margin-top: 10px; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px; }
+    .btn-preset:active {
+      transform: scale(0.96);
+    }
 
-    .btn-schedule { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 12px; }
-    .dm-content { width: 95%; max-width: 520px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
-    .dm-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .dm-item { display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 8px; }
-    .dm-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; border-radius: 10px; padding: 9px; font-size: 12px; box-sizing: border-box; }
-    .dm-btn { background: rgba(59,130,246,.2); color:#93c5fd; border:1px solid rgba(59,130,246,.4); border-radius:10px; padding:9px 8px; font-size:12px; font-weight:700; cursor:pointer; }
-    .dm-btn.warn { background: rgba(245,158,11,.2); color:#fbbf24; border-color: rgba(245,158,11,.4); }
-    .dm-actions { display:flex; gap:8px; margin-top:12px; }
+    .btn-preset span {
+      display: block;
+      font-weight: 800;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .btn-save-main {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-save-main:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
+    }
+
+    .maintenance-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+      margin: 25px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .maintenance-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .btn-m {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-m:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .btn-manual {
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-cancel {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ff453a;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      margin-top: 10px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-force {
+      background: rgba(59, 130, 246, 0.18);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      margin-top: 10px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-schedule {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    .dm-content {
+      width: 95%;
+      max-width: 520px;
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .dm-list {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dm-item {
+      display: grid;
+      grid-template-columns: 1fr 70px 70px;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 12px;
+      padding: 8px;
+    }
+
+    .dm-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      color: #fff;
+      border-radius: 10px;
+      padding: 9px;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+
+    .dm-btn {
+      background: rgba(59, 130, 246, .2);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, .4);
+      border-radius: 10px;
+      padding: 9px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .dm-btn.warn {
+      background: rgba(245, 158, 11, .2);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, .4);
+    }
+
+    .dm-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
 
     /* === AI FAB & TOAST === */
-    .ai-fab { position: fixed; right: 25px; bottom: 25px; width: 56px; height: 56px; background: var(--ai-gradient); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); z-index: 900; transition: transform 0.2s; }
-    .ai-fab:active { transform: scale(0.9); }
-    #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #334155; color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 600; display: none; z-index: 3000; border: 1px solid rgba(255,255,255,0.1); }
+    .ai-fab {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+      width: 56px;
+      height: 56px;
+      background: var(--ai-gradient);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+      z-index: 900;
+      transition: transform 0.2s;
+    }
+
+    .ai-fab:active {
+      transform: scale(0.9);
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #334155;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      z-index: 3000;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
     /* === AI MODAL === */
-    #aiModal { display: none; z-index: 1100; align-items: center; justify-content: center; }
-    .ai-content { width: 90%; max-width: 400px; background: #1e293b; border-radius: 24px; padding: 25px; border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 15px; position: relative; }
-    .ai-title { font-size: 16px; font-weight: 800; background: var(--ai-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin: 0; }
-    .ai-input-group { position: relative; }
-    .ai-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; padding: 12px; padding-right: 40px; border-radius: 12px; box-sizing: border-box; font-size: 14px; }
-    .ai-input:focus { border-color: #8b5cf6; outline: none; }
-    .btn-mic { position: absolute; right: 5px; top: 5px; background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
-    .btn-mic.listening { background: rgba(239, 68, 68, 0.2); animation: pulse 1.5s infinite; }
-    .ai-actions { display: flex; gap: 10px; margin-top: 5px; }
-    .btn-ai { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; color: #fff; transition: 0.2s; }
-    .btn-ai-send { background: var(--ai-gradient); }
-    .btn-ai-analyze { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
-    .btn-ai-analyze:hover { background: rgba(255,255,255,0.15); }
-    .ai-response { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; font-size: 13px; color: #e2e8f0; line-height: 1.5; max-height: 200px; overflow-y: auto; display: none; border-left: 3px solid #8b5cf6; }
-    .ai-key-input { font-size: 11px; padding: 8px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #94a3b8; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+    #aiModal {
+      display: none;
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ai-content {
+      width: 90%;
+      max-width: 400px;
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 25px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      position: relative;
+    }
+
+    .ai-title {
+      font-size: 16px;
+      font-weight: 800;
+      background: var(--ai-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .ai-input-group {
+      position: relative;
+    }
+
+    .ai-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 12px;
+      padding-right: 40px;
+      border-radius: 12px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .ai-input:focus {
+      border-color: #8b5cf6;
+      outline: none;
+    }
+
+    .btn-mic {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .btn-mic.listening {
+      background: rgba(239, 68, 68, 0.2);
+      animation: pulse 1.5s infinite;
+    }
+
+    .ai-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .btn-ai {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+      color: #fff;
+      transition: 0.2s;
+    }
+
+    .btn-ai-send {
+      background: var(--ai-gradient);
+    }
+
+    .btn-ai-analyze {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-ai-analyze:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .ai-response {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.5;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      border-left: 3px solid #8b5cf6;
+    }
+
+    .ai-key-input {
+      font-size: 11px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #94a3b8;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 5px;
+    }
 
     /* === SCHEDULE MODAL STYLES === */
-    #scheduleModal { display: none; z-index: 1200; align-items: center; justify-content: center; }
-    .schedule-content { width: 95%; max-width: 450px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
-    .guide-content { width: 95%; max-width: 520px; background: #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
-    .guide-content h4 { margin: 12px 0 8px; color: #93c5fd; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .guide-content ul { margin: 0 0 10px 18px; padding: 0; color: #cbd5e1; font-size: 13px; line-height: 1.5; }
-    .guide-content li { margin-bottom: 6px; }
-    .sched-list { margin-top: 15px; max-height: 300px; overflow-y: auto; }
-    .sched-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px; }
-    .sched-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .sched-time input { background: rgba(0,0,0,0.3); border: 1px solid #334155; color: #fff; padding: 5px; border-radius: 6px; width: 60px; text-align: center; }
-    .day-select { display: flex; gap: 4px; justify-content: space-between; }
-    .d-btn { width: 100%; text-align: center; padding: 6px 0; border-radius: 6px; font-size: 10px; background: rgba(255,255,255,0.05); cursor: pointer; color: #94a3b8; font-weight: 700; }
-    .d-btn.act { background: rgba(59, 130, 246, 0.3); color: #fff; border: 1px solid rgba(59, 130, 246, 0.5); }
-    .sw { position: relative; display: inline-block; width: 34px; height: 20px; }
-    .sw input { opacity: 0; width: 0; height: 0; }
-    .sl { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .2s; border-radius: 20px; }
-    .sl:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%; }
-    input:checked + .sl { background-color: #10b981; }
-    input:checked + .sl:before { transform: translateX(14px); }
+    #scheduleModal {
+      display: none;
+      z-index: 1200;
+      align-items: center;
+      justify-content: center;
+    }
 
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    .schedule-content {
+      width: 95%;
+      max-width: 450px;
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .guide-content {
+      width: 95%;
+      max-width: 520px;
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .guide-content h4 {
+      margin: 12px 0 8px;
+      color: #93c5fd;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .guide-content ul {
+      margin: 0 0 10px 18px;
+      padding: 0;
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .guide-content li {
+      margin-bottom: 6px;
+    }
+
+    .sched-list {
+      margin-top: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .sched-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    .sched-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .sched-time input {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 5px;
+      border-radius: 6px;
+      width: 60px;
+      text-align: center;
+    }
+
+    .day-select {
+      display: flex;
+      gap: 4px;
+      justify-content: space-between;
+    }
+
+    .d-btn {
+      width: 100%;
+      text-align: center;
+      padding: 6px 0;
+      border-radius: 6px;
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .d-btn.act {
+      background: rgba(59, 130, 246, 0.3);
+      color: #fff;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+    }
+
+    .sw {
+      position: relative;
+      display: inline-block;
+      width: 34px;
+      height: 20px;
+    }
+
+    .sw input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .sl {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #475569;
+      transition: .2s;
+      border-radius: 20px;
+    }
+
+    .sl:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    input:checked+.sl {
+      background-color: #10b981;
+    }
+
+    input:checked+.sl:before {
+      transform: translateX(14px);
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+
     @keyframes runRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div id="toast">Thông báo</div>
@@ -257,9 +1000,11 @@
     <div class="ai-content">
       <div style="display:flex; justify-content:space-between; align-items:center">
         <h3 class="ai-title">✨ TRUNG TÂM AI</h3>
-        <button onclick="closeAI()" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+        <button onclick="closeAI()"
+          style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
       </div>
-      <input type="password" id="geminiKey" class="ai-key-input" placeholder="Dán Gemini API Key vào đây (Lưu tự động)" onchange="saveGeminiKey(this.value)">
+      <input type="password" id="geminiKey" class="ai-key-input" placeholder="Dán Gemini API Key vào đây (Lưu tự động)"
+        onchange="saveGeminiKey(this.value)">
       <div class="ai-input-group">
         <input type="text" id="aiCommand" class="ai-input" placeholder="Nhập lệnh hoặc hỏi (VD: Bật máy 1 10 phút)">
         <button class="btn-mic" onclick="startVoice(this)">🎤</button>
@@ -277,15 +1022,17 @@
     <div class="schedule-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
         <h3 style="margin:0; color:#fff">📅 HẸN GIỜ NGHỈ</h3>
-        <button onclick="closeSchedule()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+        <button onclick="closeSchedule()"
+          style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
       </div>
       <p id="schedDevId" style="font-size:11px; color:#94a3b8; margin-top:-10px">ID: --</p>
-      
+
       <div class="sched-list" id="schedList"></div>
 
       <div style="display:flex; gap:10px; margin-top:20px">
         <button class="btn-m" style="flex:1" onclick="addScheduleItem()">+ THÊM MỐC</button>
-        <button class="btn-save-main" style="flex:1; margin:0; padding: 12px; font-size:12px;" onclick="saveSchedule()">LƯU LỊCH</button>
+        <button class="btn-save-main" style="flex:1; margin:0; padding: 12px; font-size:12px;"
+          onclick="saveSchedule()">LƯU LỊCH</button>
       </div>
     </div>
   </div>
@@ -295,7 +1042,8 @@
     <div class="guide-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
         <h3 style="margin:0; color:#fff">📘 HƯỚNG DẪN SỬ DỤNG</h3>
-        <button onclick="closeGuide()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+        <button onclick="closeGuide()"
+          style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
       </div>
 
       <h4>1) Đăng nhập</h4>
@@ -336,7 +1084,8 @@
     <div class="dm-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
         <h3 style="margin:0; color:#fff">👤 QUẢN LÝ TÀI KHOẢN</h3>
-        <button onclick="closeAccountManager()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+        <button onclick="closeAccountManager()"
+          style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
       </div>
 
       <div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">
@@ -344,9 +1093,11 @@
       </div>
 
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <input id="accEmail" class="dm-input" type="text" placeholder="Email đăng nhập" readonly disabled title="Email lấy theo tài khoản đăng nhập, không chỉnh sửa tại đây">
+        <input id="accEmail" class="dm-input" type="text" placeholder="Email đăng nhập" readonly disabled
+          title="Email lấy theo tài khoản đăng nhập, không chỉnh sửa tại đây">
         <input id="linkedPhone" class="dm-input" type="text" placeholder="Liên kết SĐT, ví dụ: 0907888111">
-        <div id="phoneOwnerInfo" style="font-size:11px; color:#94a3b8; margin-top:-2px;">Chưa kiểm tra chủ sở hữu SĐT</div>
+        <div id="phoneOwnerInfo" style="font-size:11px; color:#94a3b8; margin-top:-2px;">Chưa kiểm tra chủ sở hữu SĐT
+        </div>
         <button class="dm-btn" onclick="saveLinkedPhone()">🔗 LƯU LIÊN KẾT SĐT (TỰ RECONNECT MQTT)</button>
         <button class="dm-btn" onclick="checkPhoneOwnerInfo()">🔎 KIỂM TRA SĐT ĐANG THUỘC EMAIL NÀO</button>
       </div>
@@ -364,13 +1115,16 @@
   </div>
 
   <!-- DEVICE MANAGER MODAL -->
-  <div id="deviceManagerModal" class="panel-overlay" onclick="if(event.target.id==='deviceManagerModal') closeDeviceManager()">
+  <div id="deviceManagerModal" class="panel-overlay"
+    onclick="if(event.target.id==='deviceManagerModal') closeDeviceManager()">
     <div class="dm-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
         <h3 style="margin:0; color:#fff">🗂️ QUẢN LÝ TÊN & VỊ TRÍ THIẾT BỊ</h3>
-        <button onclick="closeDeviceManager()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+        <button onclick="closeDeviceManager()"
+          style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
       </div>
-      <div style="font-size:12px; color:#94a3b8">Đổi tên trực tiếp, dùng ↑ ↓ để sắp thứ tự hiển thị màn hình chính.</div>
+      <div style="font-size:12px; color:#94a3b8">Đổi tên trực tiếp, dùng ↑ ↓ để sắp thứ tự hiển thị màn hình chính.
+      </div>
       <div id="dmList" class="dm-list"></div>
       <div class="dm-actions">
         <button class="dm-btn" onclick="saveDeviceManagerChanges()" style="flex:1">💾 LƯU THAY ĐỔI</button>
@@ -383,39 +1137,41 @@
   <div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
     <div class="panel" id="mainPanel">
       <div class="handle" onclick="closePanel({target:{id:'panelOverlay'}})"></div>
-      
+
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <div>
-           <h2 id="panelTitle" style="margin:0; color: #fff; font-size: 18px;">TIMER CONTROL</h2>
-           <p id="panelId" style="color: var(--text-dim); font-size: 11px; margin: 0;">ID: --</p>
+          <h2 id="panelTitle" style="margin:0; color: #fff; font-size: 18px;">TIMER CONTROL</h2>
+          <p id="panelId" style="color: var(--text-dim); font-size: 11px; margin: 0;">ID: --</p>
         </div>
-        <div id="panelStatusBadge" style="padding: 4px 10px; background: #334155; border-radius: 20px; font-size: 10px; font-weight: bold;">OFFLINE</div>
+        <div id="panelStatusBadge"
+          style="padding: 4px 10px; background: #334155; border-radius: 20px; font-size: 10px; font-weight: bold;">
+          OFFLINE</div>
       </div>
 
       <!-- === NEW BIG CONTROL GROUP === -->
       <div class="info-group">
         <div class="info-item">
-            <span class="info-label">CÀI ĐẶT NGHỈ</span>
-            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
-                <button class="btn-step-big" onclick="adjustValue('offMin',-1)">−</button>
-                <div style="display:flex; align-items:baseline; gap:2px">
-                    <input type="number" id="offMin" class="info-val-input" value="0">
-                    <span class="info-unit">P</span>
-                </div>
-                <button class="btn-step-big" onclick="adjustValue('offMin',1)">+</button>
+          <span class="info-label">CÀI ĐẶT NGHỈ</span>
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
+            <button class="btn-step-big" onclick="adjustValue('offMin',-1)">−</button>
+            <div style="display:flex; align-items:baseline; gap:2px">
+              <input type="number" id="offMin" class="info-val-input" value="0">
+              <span class="info-unit">P</span>
             </div>
+            <button class="btn-step-big" onclick="adjustValue('offMin',1)">+</button>
+          </div>
         </div>
         <div class="info-div"></div>
         <div class="info-item">
-            <span class="info-label">CÀI ĐẶT CHẠY</span>
-            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
-                <button class="btn-step-big" onclick="adjustValue('onSec',-1)">−</button>
-                <div style="display:flex; align-items:baseline; gap:2px">
-                    <input type="number" id="onSec" class="info-val-input" value="0">
-                    <span class="info-unit">S</span>
-                </div>
-                <button class="btn-step-big" onclick="adjustValue('onSec',1)">+</button>
+          <span class="info-label">CÀI ĐẶT CHẠY</span>
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
+            <button class="btn-step-big" onclick="adjustValue('onSec',-1)">−</button>
+            <div style="display:flex; align-items:baseline; gap:2px">
+              <input type="number" id="onSec" class="info-val-input" value="0">
+              <span class="info-unit">S</span>
             </div>
+            <button class="btn-step-big" onclick="adjustValue('onSec',1)">+</button>
+          </div>
         </div>
       </div>
 
@@ -457,7 +1213,8 @@
         <button class="btn-circle" onclick="openDeviceManager()">🗂️</button>
         <button class="btn-circle" onclick="openGuide()">📘</button>
         <button class="btn-circle" onclick="logout()">🔓</button>
-        <button class="btn-circle" onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻</button>
+        <button class="btn-circle"
+          onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻</button>
       </div>
     </header>
 
@@ -466,66 +1223,66 @@
 
   <div class="ai-fab" onclick="openAI()">✨</div>
 
-<script>
-/* ========= CONFIG ========= */
-const DEFAULT_MQTT = {
-  host: "trung-2601.ddns.net",
-  port: "8083",
-  protocol: "ws",
-  path: "/mqtt"
-};
+  <script>
+    /* ========= CONFIG ========= */
+    const DEFAULT_MQTT = {
+      host: "trung-2601.ddns.net",
+      port: "8084",
+      protocol: "wss",
+      path: "/mqtt"
+    };
 
-const SECURITY_CONFIG = {
-  // Đây là JWT secret (HS256), không phải token hoàn chỉnh.
-  emqxJwtSecret: "NrVgcEA2G9wz4zGxFWEpVWFPEYbo6gtI",
-  // Nếu EMQX cấu hình lấy JWT từ password thì để 'password'.
-  // Nếu cấu hình lấy từ username thì đổi thành 'username'.
-  jwtPlacement: 'password'
-};
+    const SECURITY_CONFIG = {
+      // Đây là JWT secret (HS256), không phải token hoàn chỉnh.
+      emqxJwtSecret: "NrVgcEA2G9wz4zGxFWEpVWFPEYbo6gtI",
+      // Nếu EMQX cấu hình lấy JWT từ password thì để 'password'.
+      // Nếu cấu hình lấy từ username thì đổi thành 'username'.
+      jwtPlacement: 'password'
+    };
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDCX9OOVjK9xHCMR2Qhttfm8Z7vrXZt4z0",
-  authDomain: "iot-trung.firebaseapp.com",
-  databaseURL: "https://iot-trung-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "iot-trung",
-  storageBucket: "iot-trung.firebasestorage.app",
-  messagingSenderId: "649552656369",
-  appId: "1:649552656369:web:faf89019c2614fee95b650",
-  measurementId: "G-K6WR5P6S3Y"
-};
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDCX9OOVjK9xHCMR2Qhttfm8Z7vrXZt4z0",
+      authDomain: "iot-trung.firebaseapp.com",
+      databaseURL: "https://iot-trung-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "iot-trung",
+      storageBucket: "iot-trung.firebasestorage.app",
+      messagingSenderId: "649552656369",
+      appId: "1:649552656369:web:faf89019c2614fee95b650",
+      measurementId: "G-K6WR5P6S3Y"
+    };
 
-window.devices = {};
-let client = null;
-let currentSelectedId = null;
-let currentUser = "";
-let mqttUserId = "";
-let tempSchedule = [];
-let fbDb = null;
-let fbReady = false;
-let deviceAliases = {};
-let deviceOrders = {};
-let linkedPhone = "";
-let linkedPhoneOwnerUid = "";
-let loginProvider = "password";
-let mqttTopicRoot = "";
-let isManualLoginFlow = false;
-let autoLoginHandled = false;
+    window.devices = {};
+    let client = null;
+    let currentSelectedId = null;
+    let currentUser = "";
+    let mqttUserId = "";
+    let tempSchedule = [];
+    let fbDb = null;
+    let fbReady = false;
+    let deviceAliases = {};
+    let deviceOrders = {};
+    let linkedPhone = "";
+    let linkedPhoneOwnerUid = "";
+    let loginProvider = "password";
+    let mqttTopicRoot = "";
+    let isManualLoginFlow = false;
+    let autoLoginHandled = false;
 
-async function ensureAuthPersistence() {
-    try {
+    async function ensureAuthPersistence() {
+      try {
         await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         console.log('[Auth] Persistence=LOCAL');
-    } catch (err) {
+      } catch (err) {
         console.warn('[Auth] setPersistence failed:', err);
+      }
     }
-}
-function initFirebase() {
-    try {
+    function initFirebase() {
+      try {
         const isPlaceholder = String(FIREBASE_CONFIG.apiKey || '').includes('YOUR_') ||
-                              String(FIREBASE_CONFIG.databaseURL || '').includes('your-project-id');
-        if(isPlaceholder) {
-            console.warn('[Firebase] Đang dùng config mẫu. Hãy thay FIREBASE_CONFIG để kích hoạt.');
-            return;
+          String(FIREBASE_CONFIG.databaseURL || '').includes('your-project-id');
+        if (isPlaceholder) {
+          console.warn('[Firebase] Đang dùng config mẫu. Hãy thay FIREBASE_CONFIG để kích hoạt.');
+          return;
         }
 
         const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_CONFIG);
@@ -533,397 +1290,397 @@ function initFirebase() {
         fbReady = true;
         console.log('[Firebase] Connected Realtime Database');
 
-    } catch(err) {
+      } catch (err) {
         console.error('[Firebase] Init error:', err);
+      }
     }
-}
 
-function safeKey(v) {
-    return String(v || '').replace(/[.#$\[\]/]/g, '_');
-}
+    function safeKey(v) {
+      return String(v || '').replace(/[.#$\[\]/]/g, '_');
+    }
 
-function getOwnerKey() {
-    return firebase.auth().currentUser?.uid || safeKey(currentUser) || 'unknown_user';
-}
+    function getOwnerKey() {
+      return firebase.auth().currentUser?.uid || safeKey(currentUser) || 'unknown_user';
+    }
 
-function getCurrentUid() {
-    return firebase.auth().currentUser?.uid || '';
-}
+    function getCurrentUid() {
+      return firebase.auth().currentUser?.uid || '';
+    }
 
-function normalizePhone(v) {
-    return String(v || '').replace(/\s+/g, '').replace(/[^0-9+]/g, '');
-}
+    function normalizePhone(v) {
+      return String(v || '').replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+    }
 
-function phoneLinkKey(phone) {
-    return safeKey(normalizePhone(phone));
-}
+    function phoneLinkKey(phone) {
+      return safeKey(normalizePhone(phone));
+    }
 
-async function readPhoneOwner(phone) {
-    if(!fbReady || !fbDb) return '';
-    const key = phoneLinkKey(phone);
-    if(!key) return '';
-    const snap = await fbDb.ref(`iot_phone_links/${key}`).once('value');
-    return String(snap.val() || '');
-}
+    async function readPhoneOwner(phone) {
+      if (!fbReady || !fbDb) return '';
+      const key = phoneLinkKey(phone);
+      if (!key) return '';
+      const snap = await fbDb.ref(`iot_phone_links/${key}`).once('value');
+      return String(snap.val() || '');
+    }
 
-async function claimPhoneLink(phone) {
-    if(!fbReady || !fbDb) throw new Error('FIREBASE_NOT_READY');
-    const uid = getCurrentUid();
-    if(!uid) throw new Error('UNAUTHENTICATED');
+    async function claimPhoneLink(phone) {
+      if (!fbReady || !fbDb) throw new Error('FIREBASE_NOT_READY');
+      const uid = getCurrentUid();
+      if (!uid) throw new Error('UNAUTHENTICATED');
 
-    const key = phoneLinkKey(phone);
-    if(!key) throw new Error('INVALID_PHONE');
+      const key = phoneLinkKey(phone);
+      if (!key) throw new Error('INVALID_PHONE');
 
-    const ref = fbDb.ref(`iot_phone_links/${key}`);
-    let tx;
-    try {
-      tx = await ref.transaction((current) => {
-          if(current === null || current === uid) return uid;
+      const ref = fbDb.ref(`iot_phone_links/${key}`);
+      let tx;
+      try {
+        tx = await ref.transaction((current) => {
+          if (current === null || current === uid) return uid;
           return; // abort nếu đã thuộc uid khác
-      }, undefined, false);
-    } catch (err) {
-      // Thường gặp: PERMISSION_DENIED do Firebase Rules
-      throw err;
-    }
+        }, undefined, false);
+      } catch (err) {
+        // Thường gặp: PERMISSION_DENIED do Firebase Rules
+        throw err;
+      }
 
-    if(!tx.committed) throw new Error('PHONE_ALREADY_LINKED');
+      if (!tx.committed) throw new Error('PHONE_ALREADY_LINKED');
 
-    // Mirror thông tin dễ tra cứu trên UI (email hiện tại)
-    const email = firebase.auth().currentUser?.email || '';
-    await fbDb.ref(`iot_phone_link_profiles/${key}`).set({
+      // Mirror thông tin dễ tra cứu trên UI (email hiện tại)
+      const email = firebase.auth().currentUser?.email || '';
+      await fbDb.ref(`iot_phone_link_profiles/${key}`).set({
         uid,
         email,
         phone: normalizePhone(phone),
         updatedAt: Date.now()
-    });
+      });
 
-    return true;
-}
+      return true;
+    }
 
-async function releasePhoneLink(phone) {
-    if(!fbReady || !fbDb) return;
-    const uid = getCurrentUid();
-    if(!uid) return;
+    async function releasePhoneLink(phone) {
+      if (!fbReady || !fbDb) return;
+      const uid = getCurrentUid();
+      if (!uid) return;
 
-    const key = phoneLinkKey(phone);
-    if(!key) return;
+      const key = phoneLinkKey(phone);
+      if (!key) return;
 
-    const ref = fbDb.ref(`iot_phone_links/${key}`);
-    await ref.transaction((current) => {
-        if(current === uid) return null;
+      const ref = fbDb.ref(`iot_phone_links/${key}`);
+      await ref.transaction((current) => {
+        if (current === uid) return null;
         return current;
-    }, undefined, false);
+      }, undefined, false);
 
-    const ownerNow = await readPhoneOwner(phone);
-    if(!ownerNow) {
-      await fbDb.ref(`iot_phone_link_profiles/${key}`).remove();
+      const ownerNow = await readPhoneOwner(phone);
+      if (!ownerNow) {
+        await fbDb.ref(`iot_phone_link_profiles/${key}`).remove();
+      }
     }
-}
 
-async function ensurePhoneOwnership(phone) {
-    const uid = getCurrentUid();
-    const owner = await readPhoneOwner(phone);
-    if(owner && uid && owner !== uid) {
+    async function ensurePhoneOwnership(phone) {
+      const uid = getCurrentUid();
+      const owner = await readPhoneOwner(phone);
+      if (owner && uid && owner !== uid) {
         throw new Error('PHONE_OWNERSHIP_MISMATCH');
+      }
+      return true;
     }
-    return true;
-}
 
-async function getPhoneOwnerProfile(phone) {
-    if(!fbReady || !fbDb) return null;
-    const key = phoneLinkKey(phone);
-    if(!key) return null;
-    const snap = await fbDb.ref(`iot_phone_link_profiles/${key}`).once('value');
-    return snap.val() || null;
-}
+    async function getPhoneOwnerProfile(phone) {
+      if (!fbReady || !fbDb) return null;
+      const key = phoneLinkKey(phone);
+      if (!key) return null;
+      const snap = await fbDb.ref(`iot_phone_link_profiles/${key}`).once('value');
+      return snap.val() || null;
+    }
 
-function aliasKey(id) {
-    return safeKey(id);
-}
+    function aliasKey(id) {
+      return safeKey(id);
+    }
 
-function getDisplayName(id) {
-    return deviceAliases[aliasKey(id)] || String(id || '').toUpperCase();
-}
+    function getDisplayName(id) {
+      return deviceAliases[aliasKey(id)] || String(id || '').toUpperCase();
+    }
 
-function getOrderOf(id) {
-    const v = deviceOrders[aliasKey(id)];
-    return Number.isFinite(v) ? v : 99999;
-}
+    function getOrderOf(id) {
+      const v = deviceOrders[aliasKey(id)];
+      return Number.isFinite(v) ? v : 99999;
+    }
 
-function usernameToEmail(username) {
-    const cleaned = String(username || '').trim().replace(/[^a-zA-Z0-9]/g, '');
-    return `${cleaned}@iot.local`;
-}
+    function usernameToEmail(username) {
+      const cleaned = String(username || '').trim().replace(/[^a-zA-Z0-9]/g, '');
+      return `${cleaned}@iot.local`;
+    }
 
-function fbUpdate(path, data) {
-    if(!fbReady || !fbDb) return;
-    fbDb.ref(path).update(data).catch(err => console.error('[Firebase] update error:', err));
-}
+    function fbUpdate(path, data) {
+      if (!fbReady || !fbDb) return;
+      fbDb.ref(path).update(data).catch(err => console.error('[Firebase] update error:', err));
+    }
 
-function fbSet(path, data) {
-    if(!fbReady || !fbDb) return;
-    fbDb.ref(path).set(data).catch(err => console.error('[Firebase] set error:', err));
-}
+    function fbSet(path, data) {
+      if (!fbReady || !fbDb) return;
+      fbDb.ref(path).set(data).catch(err => console.error('[Firebase] set error:', err));
+    }
 
-function syncDeviceToFirebase(devId) {
-    if(!fbReady || !fbDb) return;
-    const dev = window.devices[devId];
-    if(!dev) return;
+    function syncDeviceToFirebase(devId) {
+      if (!fbReady || !fbDb) return;
+      const dev = window.devices[devId];
+      if (!dev) return;
 
-    const userKey = getOwnerKey();
-    const devKey = safeKey(devId);
-    fbSet(`iot/${userKey}/devices/${devKey}`, {
+      const userKey = getOwnerKey();
+      const devKey = safeKey(devId);
+      fbSet(`iot/${userKey}/devices/${devKey}`, {
         ...dev,
         updatedAt: Date.now()
-    });
-}
+      });
+    }
 
-function fbLogCommand(devId, method, params) {
-    if(!fbReady || !fbDb) return;
-    const userKey = getOwnerKey();
-    const devKey = safeKey(devId);
-    fbDb.ref(`iot/${userKey}/commands/${devKey}`).push({
+    function fbLogCommand(devId, method, params) {
+      if (!fbReady || !fbDb) return;
+      const userKey = getOwnerKey();
+      const devKey = safeKey(devId);
+      fbDb.ref(`iot/${userKey}/commands/${devKey}`).push({
         method,
         params,
         ts: Date.now()
-    }).catch(err => console.error('[Firebase] push error:', err));
-}
+      }).catch(err => console.error('[Firebase] push error:', err));
+    }
 
-async function loadDeviceAliases() {
-    if(!fbReady || !fbDb) return;
-    try {
+    async function loadDeviceAliases() {
+      if (!fbReady || !fbDb) return;
+      try {
         const snap = await fbDb.ref(`iot/${getOwnerKey()}/device_aliases`).once('value');
         deviceAliases = snap.val() || {};
-    } catch(e) {
+      } catch (e) {
         console.warn('Không tải được device aliases', e);
         deviceAliases = {};
+      }
     }
-}
 
-async function loadDeviceOrders() {
-    if(!fbReady || !fbDb) return;
-    try {
+    async function loadDeviceOrders() {
+      if (!fbReady || !fbDb) return;
+      try {
         const snap = await fbDb.ref(`iot/${getOwnerKey()}/device_orders`).once('value');
         deviceOrders = snap.val() || {};
-    } catch(e) {
+      } catch (e) {
         console.warn('Không tải được device orders', e);
         deviceOrders = {};
+      }
     }
-}
 
-async function loadAccountProfile() {
-    if(!fbReady || !fbDb) return;
-    try {
+    async function loadAccountProfile() {
+      if (!fbReady || !fbDb) return;
+      try {
         const snap = await fbDb.ref(`iot/${getOwnerKey()}/profile`).once('value');
         const p = snap.val() || {};
         linkedPhone = normalizePhone(p.linked_phone || '');
 
-        if(linkedPhone) {
-            const owner = await readPhoneOwner(linkedPhone);
-            linkedPhoneOwnerUid = owner;
-            if(owner && owner !== getCurrentUid()) {
-                // Profile cũ bị trùng, khóa lại để không dùng nhầm topic của tài khoản khác
-                linkedPhone = '';
-                showToast('SĐT trong profile đã thuộc tài khoản khác. Vui lòng liên kết SĐT mới.');
-            }
+        if (linkedPhone) {
+          const owner = await readPhoneOwner(linkedPhone);
+          linkedPhoneOwnerUid = owner;
+          if (owner && owner !== getCurrentUid()) {
+            // Profile cũ bị trùng, khóa lại để không dùng nhầm topic của tài khoản khác
+            linkedPhone = '';
+            showToast('SĐT trong profile đã thuộc tài khoản khác. Vui lòng liên kết SĐT mới.');
+          }
         } else {
-            linkedPhoneOwnerUid = '';
+          linkedPhoneOwnerUid = '';
         }
 
-        if(document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone;
+        if (document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone;
         const mail = firebase.auth().currentUser?.email || '';
-        if(document.getElementById('accEmail')) document.getElementById('accEmail').value = mail;
-    } catch(e) {
+        if (document.getElementById('accEmail')) document.getElementById('accEmail').value = mail;
+      } catch (e) {
         linkedPhone = '';
+      }
     }
-}
 
-async function saveDeviceAlias() {
-    if(!currentSelectedId || !fbReady || !fbDb) return;
-    const input = document.getElementById('deviceAliasInput');
-    if(!input) return;
+    async function saveDeviceAlias() {
+      if (!currentSelectedId || !fbReady || !fbDb) return;
+      const input = document.getElementById('deviceAliasInput');
+      if (!input) return;
 
-    const val = input.value.trim();
-    const key = aliasKey(currentSelectedId);
-    try {
-        if(val) {
-            await fbDb.ref(`iot/${getOwnerKey()}/device_aliases/${key}`).set(val);
-            deviceAliases[key] = val;
+      const val = input.value.trim();
+      const key = aliasKey(currentSelectedId);
+      try {
+        if (val) {
+          await fbDb.ref(`iot/${getOwnerKey()}/device_aliases/${key}`).set(val);
+          deviceAliases[key] = val;
         } else {
-            await fbDb.ref(`iot/${getOwnerKey()}/device_aliases/${key}`).remove();
-            delete deviceAliases[key];
+          await fbDb.ref(`iot/${getOwnerKey()}/device_aliases/${key}`).remove();
+          delete deviceAliases[key];
         }
         updateDeviceCard(currentSelectedId);
         document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
         showToast('Đã lưu tên hiển thị');
-    } catch(e) {
+      } catch (e) {
         showToast('Lưu tên thất bại');
+      }
     }
-}
 
-function getAllKnownDeviceIds() {
-    const ids = new Set(Object.keys(window.devices || {}));
-    Object.keys(deviceAliases || {}).forEach(k => ids.add(k));
-    Object.keys(deviceOrders || {}).forEach(k => ids.add(k));
-    return Array.from(ids);
-}
+    function getAllKnownDeviceIds() {
+      const ids = new Set(Object.keys(window.devices || {}));
+      Object.keys(deviceAliases || {}).forEach(k => ids.add(k));
+      Object.keys(deviceOrders || {}).forEach(k => ids.add(k));
+      return Array.from(ids);
+    }
 
-function sortDeviceIds(ids) {
-    return [...ids].sort((a,b) => {
+    function sortDeviceIds(ids) {
+      return [...ids].sort((a, b) => {
         const oa = getOrderOf(a), ob = getOrderOf(b);
-        if(oa !== ob) return oa - ob;
+        if (oa !== ob) return oa - ob;
         return String(getDisplayName(a)).localeCompare(String(getDisplayName(b)), 'vi');
-    });
-}
+      });
+    }
 
-function applyCardOrder(id) {
-    const card = document.getElementById('card-' + id);
-    if(card) card.style.order = String(getOrderOf(id));
-}
+    function applyCardOrder(id) {
+      const card = document.getElementById('card-' + id);
+      if (card) card.style.order = String(getOrderOf(id));
+    }
 
-function renderDeviceManager() {
-    const box = document.getElementById('dmList');
-    if(!box) return;
-    const sorted = sortDeviceIds(getAllKnownDeviceIds());
-    if(sorted.length === 0) {
+    function renderDeviceManager() {
+      const box = document.getElementById('dmList');
+      if (!box) return;
+      const sorted = sortDeviceIds(getAllKnownDeviceIds());
+      if (sorted.length === 0) {
         box.innerHTML = `<div style="color:#64748b; text-align:center; padding:16px">Chưa có thiết bị để quản lý</div>`;
         return;
-    }
-    box.innerHTML = sorted.map((id, idx) => `
+      }
+      box.innerHTML = sorted.map((id, idx) => `
       <div class="dm-item">
-        <input class="dm-input" data-dev="${id}" value="${(deviceAliases[aliasKey(id)] || '').replace(/"/g,'&quot;')}" placeholder="Tên hiển thị cho ${id}">
+        <input class="dm-input" data-dev="${id}" value="${(deviceAliases[aliasKey(id)] || '').replace(/"/g, '&quot;')}" placeholder="Tên hiển thị cho ${id}">
         <button class="dm-btn" onclick="moveDeviceOrder('${id}', -1)">↑</button>
         <button class="dm-btn" onclick="moveDeviceOrder('${id}', 1)">↓</button>
       </div>
     `).join('');
-}
+    }
 
-function openDeviceManager() {
-    document.getElementById('deviceManagerModal').style.display = 'flex';
-    renderDeviceManager();
-}
+    function openDeviceManager() {
+      document.getElementById('deviceManagerModal').style.display = 'flex';
+      renderDeviceManager();
+    }
 
-function closeDeviceManager() {
-    document.getElementById('deviceManagerModal').style.display = 'none';
-}
+    function closeDeviceManager() {
+      document.getElementById('deviceManagerModal').style.display = 'none';
+    }
 
-function ensureDefaultOrders() {
-    const sorted = sortDeviceIds(getAllKnownDeviceIds());
-    sorted.forEach((id, idx) => {
-        if(!Number.isFinite(deviceOrders[aliasKey(id)])) deviceOrders[aliasKey(id)] = idx;
-    });
-}
+    function ensureDefaultOrders() {
+      const sorted = sortDeviceIds(getAllKnownDeviceIds());
+      sorted.forEach((id, idx) => {
+        if (!Number.isFinite(deviceOrders[aliasKey(id)])) deviceOrders[aliasKey(id)] = idx;
+      });
+    }
 
-function moveDeviceOrder(id, delta) {
-    ensureDefaultOrders();
-    const sorted = sortDeviceIds(getAllKnownDeviceIds());
-    const from = sorted.indexOf(id);
-    if(from < 0) return;
-    const to = from + delta;
-    if(to < 0 || to >= sorted.length) return;
-    const temp = sorted[from];
-    sorted[from] = sorted[to];
-    sorted[to] = temp;
-    sorted.forEach((devId, idx) => { deviceOrders[aliasKey(devId)] = idx; applyCardOrder(devId); });
-    renderDeviceManager();
-}
+    function moveDeviceOrder(id, delta) {
+      ensureDefaultOrders();
+      const sorted = sortDeviceIds(getAllKnownDeviceIds());
+      const from = sorted.indexOf(id);
+      if (from < 0) return;
+      const to = from + delta;
+      if (to < 0 || to >= sorted.length) return;
+      const temp = sorted[from];
+      sorted[from] = sorted[to];
+      sorted[to] = temp;
+      sorted.forEach((devId, idx) => { deviceOrders[aliasKey(devId)] = idx; applyCardOrder(devId); });
+      renderDeviceManager();
+    }
 
-async function saveDeviceManagerChanges() {
-    if(!fbReady || !fbDb) return;
-    const inputs = document.querySelectorAll('#dmList input[data-dev]');
-    const aliasesNext = {};
-    inputs.forEach(el => {
+    async function saveDeviceManagerChanges() {
+      if (!fbReady || !fbDb) return;
+      const inputs = document.querySelectorAll('#dmList input[data-dev]');
+      const aliasesNext = {};
+      inputs.forEach(el => {
         const dev = el.getAttribute('data-dev');
         const name = (el.value || '').trim();
-        if(name) aliasesNext[aliasKey(dev)] = name;
-    });
-    deviceAliases = aliasesNext;
-    ensureDefaultOrders();
-    try {
+        if (name) aliasesNext[aliasKey(dev)] = name;
+      });
+      deviceAliases = aliasesNext;
+      ensureDefaultOrders();
+      try {
         const base = `iot/${getOwnerKey()}`;
         await Promise.all([
-            fbDb.ref(base + '/device_aliases').set(deviceAliases),
-            fbDb.ref(base + '/device_orders').set(deviceOrders)
+          fbDb.ref(base + '/device_aliases').set(deviceAliases),
+          fbDb.ref(base + '/device_orders').set(deviceOrders)
         ]);
         Object.keys(window.devices || {}).forEach(id => { updateDeviceCard(id); applyCardOrder(id); });
-        if(currentSelectedId) document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
+        if (currentSelectedId) document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
         showToast('Đã lưu tên & vị trí thiết bị');
         closeDeviceManager();
-    } catch(e) {
+      } catch (e) {
         showToast('Lưu thất bại');
+      }
     }
-}
 
-function resetDeviceOrder() {
-    const sorted = Object.keys(window.devices || {}).sort((a,b) => String(a).localeCompare(String(b), 'vi'));
-    sorted.forEach((id, idx) => {
+    function resetDeviceOrder() {
+      const sorted = Object.keys(window.devices || {}).sort((a, b) => String(a).localeCompare(String(b), 'vi'));
+      sorted.forEach((id, idx) => {
         deviceOrders[aliasKey(id)] = idx;
         applyCardOrder(id);
-    });
-    renderDeviceManager();
-}
-
-initFirebase();
-
-/* ========= INIT & LOGIN ========= */
-window.onload = async function() {
-    const savedUser = localStorage.getItem("current_user");
-    const key = localStorage.getItem("gemini_api_key");
-    if(key) document.getElementById("geminiKey").value = key;
-
-    if(savedUser) {
-        document.getElementById("loginUser").value = savedUser;
+      });
+      renderDeviceManager();
     }
-    // Giữ ẩn login overlay cho tới khi Firebase trả về trạng thái auth đầu tiên,
-    // tránh hiện thoáng bảng đăng nhập khi F5 dù phiên vẫn còn.
-    document.getElementById("loginOverlay").style.display = "none";
 
-    // Giữ phiên đăng nhập qua F5/đóng mở tab
-    await ensureAuthPersistence();
+    initFirebase();
 
-    // Tự khôi phục phiên đăng nhập (đặc biệt Google) sau khi F5
-    firebase.auth().onAuthStateChanged(async (user) => {
-        if(user) {
-            if(isManualLoginFlow || autoLoginHandled) return;
-            autoLoginHandled = true;
+    /* ========= INIT & LOGIN ========= */
+    window.onload = async function () {
+      const savedUser = localStorage.getItem("current_user");
+      const key = localStorage.getItem("gemini_api_key");
+      if (key) document.getElementById("geminiKey").value = key;
 
-            const saved = (localStorage.getItem("current_user") || '').trim();
-            const emailPrefix = String(user.email || '').split('@')[0] || '';
-            const resolvedUser = saved || emailPrefix || 'google_user';
-            const provider = (user.providerData || []).some(p => p.providerId === 'google.com') ? 'google' : 'password';
+      if (savedUser) {
+        document.getElementById("loginUser").value = savedUser;
+      }
+      // Giữ ẩn login overlay cho tới khi Firebase trả về trạng thái auth đầu tiên,
+      // tránh hiện thoáng bảng đăng nhập khi F5 dù phiên vẫn còn.
+      document.getElementById("loginOverlay").style.display = "none";
 
-            document.getElementById("loginUser").value = resolvedUser;
-            await finalizeLogin(resolvedUser, provider);
-            showToast('Đã tự đăng nhập từ phiên trước');
-            return;
+      // Giữ phiên đăng nhập qua F5/đóng mở tab
+      await ensureAuthPersistence();
+
+      // Tự khôi phục phiên đăng nhập (đặc biệt Google) sau khi F5
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+          if (isManualLoginFlow || autoLoginHandled) return;
+          autoLoginHandled = true;
+
+          const saved = (localStorage.getItem("current_user") || '').trim();
+          const emailPrefix = String(user.email || '').split('@')[0] || '';
+          const resolvedUser = saved || emailPrefix || 'google_user';
+          const provider = (user.providerData || []).some(p => p.providerId === 'google.com') ? 'google' : 'password';
+
+          document.getElementById("loginUser").value = resolvedUser;
+          await finalizeLogin(resolvedUser, provider);
+          showToast('Đã tự đăng nhập từ phiên trước');
+          return;
         }
 
         autoLoginHandled = false;
         document.getElementById("loginOverlay").style.display = "flex";
-    });
-};
+      });
+    };
 
-async function performLogin() {
-    isManualLoginFlow = true;
-    const u = document.getElementById("loginUser").value.trim();
-    const p = document.getElementById("loginPass").value;
-    if(!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
-    if(!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
+    async function performLogin() {
+      isManualLoginFlow = true;
+      const u = document.getElementById("loginUser").value.trim();
+      const p = document.getElementById("loginPass").value;
+      if (!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
+      if (!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
 
-    const email = usernameToEmail(u);
-    try {
+      const email = usernameToEmail(u);
+      try {
         await firebase.auth().signInWithEmailAndPassword(email, p);
-    } catch(err) {
+      } catch (err) {
         showToast("Sai tài khoản hoặc mật khẩu");
         return;
+      }
+
+      await finalizeLogin(u, "password");
+      isManualLoginFlow = false;
     }
 
-    await finalizeLogin(u, "password");
-    isManualLoginFlow = false;
-}
-
-async function performGoogleLogin() {
-    try {
+    async function performGoogleLogin() {
+      try {
         isManualLoginFlow = true;
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
@@ -938,224 +1695,224 @@ async function performGoogleLogin() {
         await finalizeLogin(resolvedUser, "google");
         showToast("Đăng nhập Google thành công");
         isManualLoginFlow = false;
-    } catch(err) {
+      } catch (err) {
         console.error('Google login error:', err);
         showToast("Không thể đăng nhập Google");
         isManualLoginFlow = false;
+      }
     }
-}
 
-async function finalizeLogin(u, provider) {
-    loginProvider = provider || 'password';
-    currentUser = u;
-    localStorage.setItem("current_user", u);
-    document.getElementById("loginOverlay").style.display = "none";
+    async function finalizeLogin(u, provider) {
+      loginProvider = provider || 'password';
+      currentUser = u;
+      localStorage.setItem("current_user", u);
+      document.getElementById("loginOverlay").style.display = "none";
 
-    await loadDeviceAliases();
-    await loadDeviceOrders();
-    await loadAccountProfile();
+      await loadDeviceAliases();
+      await loadDeviceOrders();
+      await loadAccountProfile();
 
-    // Flow chuẩn: nếu login Google thì bắt buộc bind SĐT trước khi connect MQTT
-    if(loginProvider === 'google') {
+      // Flow chuẩn: nếu login Google thì bắt buộc bind SĐT trước khi connect MQTT
+      if (loginProvider === 'google') {
         mqttUserId = linkedPhone || "";
-    } else {
+      } else {
         mqttUserId = linkedPhone || u;
-    }
+      }
 
-    fbUpdate(`iot/${getOwnerKey()}/meta`, {
+      fbUpdate(`iot/${getOwnerKey()}/meta`, {
         lastLoginAt: Date.now(),
         source: "backup3.html",
         provider: provider || "unknown"
-    });
-    
-    // Clear old data
-    window.devices = {};
-    document.getElementById("grid").innerHTML = "";
+      });
 
-    if(!mqttUserId) {
+      // Clear old data
+      window.devices = {};
+      document.getElementById("grid").innerHTML = "";
+
+      if (!mqttUserId) {
         updateCounter();
         openAccountManager();
         showToast('Hãy liên kết SĐT để truy cập đúng topic MQTT');
         return;
+      }
+
+      connect();
     }
 
-    connect();
-}
+    async function registerAccount() {
+      const u = document.getElementById("loginUser").value.trim();
+      const p = document.getElementById("loginPass").value;
+      if (!u) { alert("Nhập username trước"); return; }
+      if (!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
 
-async function registerAccount() {
-    const u = document.getElementById("loginUser").value.trim();
-    const p = document.getElementById("loginPass").value;
-    if(!u) { alert("Nhập username trước"); return; }
-    if(!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
-
-    const email = usernameToEmail(u);
-    try {
+      const email = usernameToEmail(u);
+      try {
         await firebase.auth().createUserWithEmailAndPassword(email, p);
         showToast("Tạo tài khoản thành công, đang đăng nhập...");
         await performLogin();
-    } catch(err) {
-        if(err.code === 'auth/email-already-in-use') showToast("Tài khoản đã tồn tại, hãy đăng nhập");
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use') showToast("Tài khoản đã tồn tại, hãy đăng nhập");
         else showToast("Không tạo được tài khoản: " + (err.message || err.code));
+      }
     }
-}
 
-function logout() {
-    firebase.auth().signOut().finally(() => {
-      localStorage.removeItem("current_user");
-      deviceAliases = {};
-      deviceOrders = {};
-      mqttTopicRoot = "";
-      location.reload();
-    });
-}
+    function logout() {
+      firebase.auth().signOut().finally(() => {
+        localStorage.removeItem("current_user");
+        deviceAliases = {};
+        deviceOrders = {};
+        mqttTopicRoot = "";
+        location.reload();
+      });
+    }
 
-function toBase64UrlFromBytes(bytes) {
-  let binary = '';
-  const len = bytes.byteLength || bytes.length;
-  for(let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
+    function toBase64UrlFromBytes(bytes) {
+      let binary = '';
+      const len = bytes.byteLength || bytes.length;
+      for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
 
-function toBase64UrlFromString(str) {
-  return btoa(unescape(encodeURIComponent(str)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '');
-}
+    function toBase64UrlFromString(str) {
+      return btoa(unescape(encodeURIComponent(str)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/g, '');
+    }
 
-async function buildEmqxJwtHs256() {
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: 'HS256', typ: 'JWT' };
-  const payload = {
-    sub: mqttUserId,
-    username: mqttUserId,
-    iat: now,
-    exp: now + 24 * 60 * 60
-  };
+    async function buildEmqxJwtHs256() {
+      const now = Math.floor(Date.now() / 1000);
+      const header = { alg: 'HS256', typ: 'JWT' };
+      const payload = {
+        sub: mqttUserId,
+        username: mqttUserId,
+        iat: now,
+        exp: now + 24 * 60 * 60
+      };
 
-  const h = toBase64UrlFromString(JSON.stringify(header));
-  const p = toBase64UrlFromString(JSON.stringify(payload));
-  const message = `${h}.${p}`;
+      const h = toBase64UrlFromString(JSON.stringify(header));
+      const p = toBase64UrlFromString(JSON.stringify(payload));
+      const message = `${h}.${p}`;
 
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(SECURITY_CONFIG.emqxJwtSecret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw',
+        enc.encode(SECURITY_CONFIG.emqxJwtSecret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
 
-  const sigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-  const sig = toBase64UrlFromBytes(new Uint8Array(sigBuffer));
-  return `${message}.${sig}`;
-}
+      const sigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+      const sig = toBase64UrlFromBytes(new Uint8Array(sigBuffer));
+      return `${message}.${sig}`;
+    }
 
-async function connect() {
-  if(!mqttUserId) {
-    showToast('Chưa có MQTT User ID');
-    return;
-  }
-
-  try {
-    await ensurePhoneOwnership(mqttUserId);
-  } catch(err) {
-    console.error('Phone ownership mismatch:', err);
-    showToast('SĐT này không thuộc tài khoản hiện tại');
-    return;
-  }
-
-  const url = `${DEFAULT_MQTT.protocol}://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}${DEFAULT_MQTT.path || '/mqtt'}`;
-  mqttTopicRoot = `users/${mqttUserId}/devices`;
-  if(!mqttTopicRoot) {
-    showToast('MQTT topicRoot không hợp lệ');
-    return;
-  }
-
-  if(client) client.end();
-
-  let jwtToken = '';
-  try {
-    jwtToken = await buildEmqxJwtHs256();
-  } catch(err) {
-    console.error('JWT build error:', err);
-    showToast('Không tạo được JWT từ secret.');
-    return;
-  }
-
-  const mqttUsername = SECURITY_CONFIG.jwtPlacement === 'username' ? jwtToken : mqttUserId;
-  const mqttPassword = SECURITY_CONFIG.jwtPlacement === 'password' ? jwtToken : '';
-  
-  client = mqtt.connect(url, {
-    // Dùng JWT tạo từ secret hardcode theo yêu cầu
-    username: mqttUsername,
-    password: mqttPassword,
-    clientId: "eco_ai_" + Math.random().toString(16).slice(2, 8)
-  });
-
-  client.on("connect", () => {
-    showToast("Đã kết nối Server MQTT");
-    const baseTopic = mqttTopicRoot;
-    client.subscribe(`${baseTopic}/+/telemetry`);
-    client.subscribe(`${baseTopic}/+/rpc/response/+`);
-    console.log('[MQTT] connected, topic root:', baseTopic, '| userId:', mqttUserId);
-
-    fbUpdate(`iot/${getOwnerKey()}/meta`, {
-      mqttConnected: true,
-      lastMqttConnectAt: Date.now()
-    });
-  });
-
-  client.on("message", (topic, payload) => {
-    const parts = topic.split('/');
-    const devId = parts[3];
-    if(!devId) return;
-
-    try {
-      const data = JSON.parse(payload.toString());
-      
-      if(!window.devices[devId]) { 
-        window.devices[devId] = { id: devId }; 
-        createDeviceCard(devId);
-        requestDeviceSync(devId);
+    async function connect() {
+      if (!mqttUserId) {
+        showToast('Chưa có MQTT User ID');
+        return;
       }
-      
-      if(data.pause_json) {
-          if(typeof data.pause_json === 'string') {
-              try { data.pause_json = JSON.parse(data.pause_json); } catch(e){}
+
+      try {
+        await ensurePhoneOwnership(mqttUserId);
+      } catch (err) {
+        console.error('Phone ownership mismatch:', err);
+        showToast('SĐT này không thuộc tài khoản hiện tại');
+        return;
+      }
+
+      const url = `${DEFAULT_MQTT.protocol}://${DEFAULT_MQTT.host}:${DEFAULT_MQTT.port}${DEFAULT_MQTT.path || '/mqtt'}`;
+      mqttTopicRoot = `users/${mqttUserId}/devices`;
+      if (!mqttTopicRoot) {
+        showToast('MQTT topicRoot không hợp lệ');
+        return;
+      }
+
+      if (client) client.end();
+
+      let jwtToken = '';
+      try {
+        jwtToken = await buildEmqxJwtHs256();
+      } catch (err) {
+        console.error('JWT build error:', err);
+        showToast('Không tạo được JWT từ secret.');
+        return;
+      }
+
+      const mqttUsername = SECURITY_CONFIG.jwtPlacement === 'username' ? jwtToken : mqttUserId;
+      const mqttPassword = SECURITY_CONFIG.jwtPlacement === 'password' ? jwtToken : '';
+
+      client = mqtt.connect(url, {
+        // Dùng JWT tạo từ secret hardcode theo yêu cầu
+        username: mqttUsername,
+        password: mqttPassword,
+        clientId: "eco_ai_" + Math.random().toString(16).slice(2, 8)
+      });
+
+      client.on("connect", () => {
+        showToast("Đã kết nối Server MQTT");
+        const baseTopic = mqttTopicRoot;
+        client.subscribe(`${baseTopic}/+/telemetry`);
+        client.subscribe(`${baseTopic}/+/rpc/response/+`);
+        console.log('[MQTT] connected, topic root:', baseTopic, '| userId:', mqttUserId);
+
+        fbUpdate(`iot/${getOwnerKey()}/meta`, {
+          mqttConnected: true,
+          lastMqttConnectAt: Date.now()
+        });
+      });
+
+      client.on("message", (topic, payload) => {
+        const parts = topic.split('/');
+        const devId = parts[3];
+        if (!devId) return;
+
+        try {
+          const data = JSON.parse(payload.toString());
+
+          if (!window.devices[devId]) {
+            window.devices[devId] = { id: devId };
+            createDeviceCard(devId);
+            requestDeviceSync(devId);
           }
-      }
 
-      Object.assign(window.devices[devId], data);
-      window.devices[devId].lastSeen = Date.now();
-      updateDeviceCard(devId);
-      syncDeviceToFirebase(devId);
-      
-      if(currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
-          if(document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
-          if(document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
-      }
-    } catch(e) { console.error("Data error", e); }
-  });
+          if (data.pause_json) {
+            if (typeof data.pause_json === 'string') {
+              try { data.pause_json = JSON.parse(data.pause_json); } catch (e) { }
+            }
+          }
 
-  client.on('error', (err) => {
-    console.error('[MQTT] error:', err);
-    showToast('MQTT lỗi xác thực/kết nối. Xem Console (F12).');
-  });
+          Object.assign(window.devices[devId], data);
+          window.devices[devId].lastSeen = Date.now();
+          updateDeviceCard(devId);
+          syncDeviceToFirebase(devId);
 
-  client.on('close', () => {
-    console.warn('[MQTT] connection closed');
-  });
-}
+          if (currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
+            if (document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
+            if (document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
+          }
+        } catch (e) { console.error("Data error", e); }
+      });
 
-/* ========= OPTIMIZED RENDER ========= */
-function createDeviceCard(id) {
-    const grid = document.getElementById("grid");
-    const card = document.createElement("div");
-    card.id = "card-" + id;
-    card.className = "device-card";
-    card.onclick = () => openPanel(id);
-    card.innerHTML = `
+      client.on('error', (err) => {
+        console.error('[MQTT] error:', err);
+        showToast('MQTT lỗi xác thực/kết nối. Xem Console (F12).');
+      });
+
+      client.on('close', () => {
+        console.warn('[MQTT] connection closed');
+      });
+    }
+
+    /* ========= OPTIMIZED RENDER ========= */
+    function createDeviceCard(id) {
+      const grid = document.getElementById("grid");
+      const card = document.createElement("div");
+      card.id = "card-" + id;
+      card.className = "device-card";
+      card.onclick = () => openPanel(id);
+      card.innerHTML = `
       <div class="card-top">
         <span class="card-id" id="label-${id}">${getDisplayName(id)}</span>
         <div class="card-right">
@@ -1177,45 +1934,45 @@ function createDeviceCard(id) {
         <div class="mini-time" id="time-${id}">--:--</div>
       </div>
     `;
-    grid.appendChild(card);
-    applyCardOrder(id);
-    updateCounter();
-}
+      grid.appendChild(card);
+      applyCardOrder(id);
+      updateCounter();
+    }
 
-function updateDeviceCard(id) {
-    const dev = window.devices[id];
-    if(!dev) return;
+    function updateDeviceCard(id) {
+      const dev = window.devices[id];
+      if (!dev) return;
 
-    const isOnline = (Date.now() - dev.lastSeen < 30000);
-    const card = document.getElementById("card-" + id);
-    const dot = document.getElementById("dot-" + id);
-    const modeBadge = document.getElementById("mode-" + id);
-    const runIcon = document.getElementById("runicon-" + id);
-    const valOff = document.getElementById("val-off-" + id);
-    const valOn = document.getElementById("val-on-" + id);
-    const time = document.getElementById("time-" + id);
-    const label = document.getElementById("label-" + id);
+      const isOnline = (Date.now() - dev.lastSeen < 30000);
+      const card = document.getElementById("card-" + id);
+      const dot = document.getElementById("dot-" + id);
+      const modeBadge = document.getElementById("mode-" + id);
+      const runIcon = document.getElementById("runicon-" + id);
+      const valOff = document.getElementById("val-off-" + id);
+      const valOn = document.getElementById("val-on-" + id);
+      const time = document.getElementById("time-" + id);
+      const label = document.getElementById("label-" + id);
 
-    const statusText = String(dev.status || '').toUpperCase();
-    const isRunning = isOnline && (statusText.includes('RUN') || statusText.includes('ON') || statusText.includes('CHẠY'));
+      const statusText = String(dev.status || '').toUpperCase();
+      const isRunning = isOnline && (statusText.includes('RUN') || statusText.includes('ON') || statusText.includes('CHẠY'));
 
-    if(runIcon) runIcon.classList.toggle('run-spin', isRunning);
+      if (runIcon) runIcon.classList.toggle('run-spin', isRunning);
 
-    if(card) {
-        if(isOnline) card.classList.remove('offline');
+      if (card) {
+        if (isOnline) card.classList.remove('offline');
         else card.classList.add('offline');
-    }
-    if(dot) {
-        if(isOnline) dot.classList.add('on');
+      }
+      if (dot) {
+        if (isOnline) dot.classList.add('on');
         else dot.classList.remove('on');
-    }
+      }
 
-    if(valOff) valOff.innerHTML = `${dev.off_min !== undefined ? dev.off_min : '--'}<span class="stat-unit">P</span>`;
-    if(valOn) valOn.innerHTML = `${dev.on_sec !== undefined ? dev.on_sec : '--'}<span class="stat-unit">S</span>`;
-    if(time) time.innerText = dev.time_rem || '--:--';
-    if(label) label.innerText = getDisplayName(id);
+      if (valOff) valOff.innerHTML = `${dev.off_min !== undefined ? dev.off_min : '--'}<span class="stat-unit">P</span>`;
+      if (valOn) valOn.innerHTML = `${dev.on_sec !== undefined ? dev.on_sec : '--'}<span class="stat-unit">S</span>`;
+      if (time) time.innerText = dev.time_rem || '--:--';
+      if (label) label.innerText = getDisplayName(id);
 
-    if(modeBadge) {
+      if (modeBadge) {
         let m = Number(
           dev.maintenance_mode ??
           dev.maint_mode ??
@@ -1224,161 +1981,161 @@ function updateDeviceCard(id) {
           dev.mode_maint
         );
 
-        if(!Number.isFinite(m)) {
-            const s = String(dev.status || '').toUpperCase();
-            const mt = s.match(/(?:MAINT|BẢO\s*TRÌ)\s*[:\- ]?\s*(\d)/i);
-            if(mt) m = Number(mt[1]);
+        if (!Number.isFinite(m)) {
+          const s = String(dev.status || '').toUpperCase();
+          const mt = s.match(/(?:MAINT|BẢO\s*TRÌ)\s*[:\- ]?\s*(\d)/i);
+          if (mt) m = Number(mt[1]);
         }
 
-        if(Number.isFinite(m) && m >= 1 && m <= 6) {
-            modeBadge.style.display = 'inline-flex';
-            const modeTextMap = {
-              1: '7p',
-              2: '15p',
-              3: '30p',
-              4: '50p',
-              5: '80p',
-              6: '∞'
-            };
-            modeBadge.textContent = modeTextMap[m] || '';
+        if (Number.isFinite(m) && m >= 1 && m <= 6) {
+          modeBadge.style.display = 'inline-flex';
+          const modeTextMap = {
+            1: '7p',
+            2: '15p',
+            3: '30p',
+            4: '50p',
+            5: '80p',
+            6: '∞'
+          };
+          modeBadge.textContent = modeTextMap[m] || '';
         } else {
-            modeBadge.style.display = 'none';
+          modeBadge.style.display = 'none';
         }
+      }
     }
-}
 
-function updateCounter() {
-    const count = Object.keys(window.devices).length;
-    const ns = (mqttUserId || currentUser || '').toUpperCase();
-    document.getElementById("deviceCount").innerText = `MQTT USER: ${ns} | ${count} THIẾT BỊ`;
-}
+    function updateCounter() {
+      const count = Object.keys(window.devices).length;
+      const ns = (mqttUserId || currentUser || '').toUpperCase();
+      document.getElementById("deviceCount").innerText = `MQTT USER: ${ns} | ${count} THIẾT BỊ`;
+    }
 
-// Watchdog để cập nhật trạng thái Offline mà không cần tin nhắn mới
-setInterval(() => {
-    Object.keys(window.devices).forEach(id => updateDeviceCard(id));
-}, 10000);
+    // Watchdog để cập nhật trạng thái Offline mà không cần tin nhắn mới
+    setInterval(() => {
+      Object.keys(window.devices).forEach(id => updateDeviceCard(id));
+    }, 10000);
 
 
-/* ========= PANEL CONTROLS ========= */
-function openPanel(id) {
-  currentSelectedId = id;
-  const dev = window.devices[id];
-  document.getElementById("panelTitle").innerText = getDisplayName(id);
-  document.getElementById("panelId").innerText = `ID: ${id.toUpperCase()} | Last Update: ` + new Date(dev.lastSeen).toLocaleTimeString();
-  
-  const isOnline = (Date.now() - dev.lastSeen < 30000);
-  const badge = document.getElementById("panelStatusBadge");
-  badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
-  badge.style.background = isOnline ? "var(--success)" : "#334155";
+    /* ========= PANEL CONTROLS ========= */
+    function openPanel(id) {
+      currentSelectedId = id;
+      const dev = window.devices[id];
+      document.getElementById("panelTitle").innerText = getDisplayName(id);
+      document.getElementById("panelId").innerText = `ID: ${id.toUpperCase()} | Last Update: ` + new Date(dev.lastSeen).toLocaleTimeString();
 
-  document.getElementById("offMin").value = dev.off_min !== undefined ? dev.off_min : 0;
-  document.getElementById("onSec").value = dev.on_sec !== undefined ? dev.on_sec : 0;
+      const isOnline = (Date.now() - dev.lastSeen < 30000);
+      const badge = document.getElementById("panelStatusBadge");
+      badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
+      badge.style.background = isOnline ? "var(--success)" : "#334155";
 
-  document.getElementById("panelOverlay").style.display = "flex";
-  setTimeout(() => document.getElementById("mainPanel").classList.add("show"), 10);
-  
-  requestDeviceSync(id);
-  rpcSend(id, "getPauseJson", {});
-}
+      document.getElementById("offMin").value = dev.off_min !== undefined ? dev.off_min : 0;
+      document.getElementById("onSec").value = dev.on_sec !== undefined ? dev.on_sec : 0;
 
-function requestDeviceSync(id) {
-    if(!client) return;
-    rpcSend(id, "setOffMin", {});
-    rpcSend(id, "setOnSec", {});
-}
+      document.getElementById("panelOverlay").style.display = "flex";
+      setTimeout(() => document.getElementById("mainPanel").classList.add("show"), 10);
 
-function closePanel(e) {
-  if(e.target.id === "panelOverlay" || e.target.className === "handle") {
-    document.getElementById("mainPanel").classList.remove("show");
-    setTimeout(() => document.getElementById("panelOverlay").style.display = "none", 400);
-    currentSelectedId = null;
-  }
-}
+      requestDeviceSync(id);
+      rpcSend(id, "getPauseJson", {});
+    }
 
-function adjustValue(id, d) {
-    const el = document.getElementById(id);
-    let val = parseInt(el.value) || 0;
-    val += d;
-    if(val < 0) val = 0;
-    el.value = val;
-}
+    function requestDeviceSync(id) {
+      if (!client) return;
+      rpcSend(id, "setOffMin", {});
+      rpcSend(id, "setOnSec", {});
+    }
 
-function applyPreset(m, s) {
-    document.getElementById("offMin").value = m;
-    document.getElementById("onSec").value = s;
-    saveSettings();
-}
+    function closePanel(e) {
+      if (e.target.id === "panelOverlay" || e.target.className === "handle") {
+        document.getElementById("mainPanel").classList.remove("show");
+        setTimeout(() => document.getElementById("panelOverlay").style.display = "none", 400);
+        currentSelectedId = null;
+      }
+    }
 
-function saveSettings() {
-    if(!currentSelectedId || !client) return;
-    const m = parseInt(document.getElementById("offMin").value);
-    const s = parseInt(document.getElementById("onSec").value);
-    rpcSend(currentSelectedId, "setOffMin", m);
-    rpcSend(currentSelectedId, "setOnSec", s);
-    rpcSend(currentSelectedId, "save", 1);
-    showToast(`Đã gửi cài đặt tới ${currentSelectedId}`);
-}
+    function adjustValue(id, d) {
+      const el = document.getElementById(id);
+      let val = parseInt(el.value) || 0;
+      val += d;
+      if (val < 0) val = 0;
+      el.value = val;
+    }
 
-function setMaint(mode) {
-    if(!currentSelectedId || !client) return;
-    rpcSend(currentSelectedId, "setMaintenance", mode);
-    showToast(`Gửi lệnh bảo trì tới ${currentSelectedId}`);
-}
+    function applyPreset(m, s) {
+      document.getElementById("offMin").value = m;
+      document.getElementById("onSec").value = s;
+      saveSettings();
+    }
 
-function forceRun() {
-    if(!currentSelectedId || !client) return;
-    rpcSend(currentSelectedId, "forceRun", 1);
-    showToast(`Đã gửi FORCE RUN tới ${currentSelectedId}`);
-}
+    function saveSettings() {
+      if (!currentSelectedId || !client) return;
+      const m = parseInt(document.getElementById("offMin").value);
+      const s = parseInt(document.getElementById("onSec").value);
+      rpcSend(currentSelectedId, "setOffMin", m);
+      rpcSend(currentSelectedId, "setOnSec", s);
+      rpcSend(currentSelectedId, "save", 1);
+      showToast(`Đã gửi cài đặt tới ${currentSelectedId}`);
+    }
 
-function rpcSend(id, method, params) {
-    if(!mqttTopicRoot) {
+    function setMaint(mode) {
+      if (!currentSelectedId || !client) return;
+      rpcSend(currentSelectedId, "setMaintenance", mode);
+      showToast(`Gửi lệnh bảo trì tới ${currentSelectedId}`);
+    }
+
+    function forceRun() {
+      if (!currentSelectedId || !client) return;
+      rpcSend(currentSelectedId, "forceRun", 1);
+      showToast(`Đã gửi FORCE RUN tới ${currentSelectedId}`);
+    }
+
+    function rpcSend(id, method, params) {
+      if (!mqttTopicRoot) {
         showToast('Chưa có MQTT topicRoot hợp lệ');
         return;
+      }
+      const topic = `${mqttTopicRoot}/${id}/rpc/request/${Date.now()}`;
+      fbLogCommand(id, method, params);
+      client.publish(topic, JSON.stringify({ method: method, params: params }));
     }
-    const topic = `${mqttTopicRoot}/${id}/rpc/request/${Date.now()}`;
-    fbLogCommand(id, method, params);
-    client.publish(topic, JSON.stringify({ method: method, params: params }));
-}
 
-/* ========= SCHEDULE LOGIC ========= */
-function openSchedule() {
-    if(!currentSelectedId) return;
-    document.getElementById("scheduleModal").style.display = "flex";
-    document.getElementById("schedDevId").innerText = "THIẾT BỊ: " + currentSelectedId.toUpperCase();
-    
-    const dev = window.devices[currentSelectedId];
-    if(dev && Array.isArray(dev.pause_json)) {
+    /* ========= SCHEDULE LOGIC ========= */
+    function openSchedule() {
+      if (!currentSelectedId) return;
+      document.getElementById("scheduleModal").style.display = "flex";
+      document.getElementById("schedDevId").innerText = "THIẾT BỊ: " + currentSelectedId.toUpperCase();
+
+      const dev = window.devices[currentSelectedId];
+      if (dev && Array.isArray(dev.pause_json)) {
         tempSchedule = JSON.parse(JSON.stringify(dev.pause_json));
-    } else {
+      } else {
         tempSchedule = [];
+      }
+      renderScheduleList();
     }
-    renderScheduleList();
-}
 
-function closeSchedule() { document.getElementById("scheduleModal").style.display = "none"; }
+    function closeSchedule() { document.getElementById("scheduleModal").style.display = "none"; }
 
-function renderScheduleList() {
-    const list = document.getElementById("schedList");
-    list.innerHTML = "";
-    if(tempSchedule.length === 0) {
+    function renderScheduleList() {
+      const list = document.getElementById("schedList");
+      list.innerHTML = "";
+      if (tempSchedule.length === 0) {
         list.innerHTML = `<div style="text-align:center; color:#64748b; padding:20px;">Chưa có lịch hẹn nào</div>`;
         return;
-    }
+      }
 
-    tempSchedule.forEach((item, idx) => {
+      tempSchedule.forEach((item, idx) => {
         const s = item.s || "12:00";
         const e = item.e || "13:00";
         const on = item.on == 1;
         const w = item.w === undefined ? 127 : item.w;
-        
-        const days = ["CN","T2","T3","T4","T5","T6","T7"];
+
+        const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
         let daysHtml = "";
-        const order = [1,2,3,4,5,6,0]; 
-        
+        const order = [1, 2, 3, 4, 5, 6, 0];
+
         order.forEach(d => {
-            const isActive = (w & (1 << d));
-            daysHtml += `<div class="d-btn ${isActive?'act':''}" onclick="toggleSchedDay(${idx}, ${d})">${days[d]}</div>`;
+          const isActive = (w & (1 << d));
+          daysHtml += `<div class="d-btn ${isActive ? 'act' : ''}" onclick="toggleSchedDay(${idx}, ${d})">${days[d]}</div>`;
         });
 
         const div = document.createElement("div");
@@ -1391,7 +2148,7 @@ function renderScheduleList() {
                 </div>
                 <div style="display:flex; gap:10px; align-items:center">
                     <label class="sw">
-                        <input type="checkbox" ${on?'checked':''} onchange="updateSched(${idx}, 'on', this.checked?1:0)">
+                        <input type="checkbox" ${on ? 'checked' : ''} onchange="updateSched(${idx}, 'on', this.checked?1:0)">
                         <span class="sl"></span>
                     </label>
                     <button onclick="removeSched(${idx})" style="background:#ef4444; border:none; color:white; border-radius:4px; width:20px; height:20px; cursor:pointer;">&times;</button>
@@ -1400,94 +2157,94 @@ function renderScheduleList() {
             <div class="day-select">${daysHtml}</div>
         `;
         list.appendChild(div);
-    });
-}
+      });
+    }
 
-function addScheduleItem() {
-    tempSchedule.push({ s:"12:00", e:"13:00", on:1, w:127 });
-    renderScheduleList();
-}
+    function addScheduleItem() {
+      tempSchedule.push({ s: "12:00", e: "13:00", on: 1, w: 127 });
+      renderScheduleList();
+    }
 
-function removeSched(idx) {
-    tempSchedule.splice(idx, 1);
-    renderScheduleList();
-}
+    function removeSched(idx) {
+      tempSchedule.splice(idx, 1);
+      renderScheduleList();
+    }
 
-function updateSched(idx, field, val) {
-    if(tempSchedule[idx]) {
+    function updateSched(idx, field, val) {
+      if (tempSchedule[idx]) {
         tempSchedule[idx][field] = val;
+      }
     }
-}
 
-function toggleSchedDay(idx, dayBit) {
-    if(!tempSchedule[idx]) return;
-    let w = tempSchedule[idx].w === undefined ? 127 : tempSchedule[idx].w;
-    const mask = 1 << dayBit;
-    if(w & mask) w &= ~mask;
-    else w |= mask;
-    tempSchedule[idx].w = w;
-    renderScheduleList();
-}
+    function toggleSchedDay(idx, dayBit) {
+      if (!tempSchedule[idx]) return;
+      let w = tempSchedule[idx].w === undefined ? 127 : tempSchedule[idx].w;
+      const mask = 1 << dayBit;
+      if (w & mask) w &= ~mask;
+      else w |= mask;
+      tempSchedule[idx].w = w;
+      renderScheduleList();
+    }
 
-function saveSchedule() {
-    if(!currentSelectedId) return;
-    rpcSend(currentSelectedId, "setPauseJson", tempSchedule);
-    showToast("Đã lưu lịch trình!");
-    closeSchedule();
-}
+    function saveSchedule() {
+      if (!currentSelectedId) return;
+      rpcSend(currentSelectedId, "setPauseJson", tempSchedule);
+      showToast("Đã lưu lịch trình!");
+      closeSchedule();
+    }
 
-/* ========= AI INTELLIGENCE ========= */
-function openAI() { document.getElementById("aiModal").style.display = "flex"; }
-function closeAI() { document.getElementById("aiModal").style.display = "none"; }
-function openGuide() { document.getElementById("guideModal").style.display = "flex"; }
-function closeGuide() { document.getElementById("guideModal").style.display = "none"; }
-function openAccountManager() {
-    document.getElementById('accountModal').style.display = 'flex';
-    if(document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone || '';
-    if(document.getElementById('accEmail')) document.getElementById('accEmail').value = firebase.auth().currentUser?.email || '';
-    const info = document.getElementById('phoneOwnerInfo');
-    if(info) info.innerText = 'Chưa kiểm tra chủ sở hữu SĐT';
-}
-function closeAccountManager() { document.getElementById('accountModal').style.display = 'none'; }
+    /* ========= AI INTELLIGENCE ========= */
+    function openAI() { document.getElementById("aiModal").style.display = "flex"; }
+    function closeAI() { document.getElementById("aiModal").style.display = "none"; }
+    function openGuide() { document.getElementById("guideModal").style.display = "flex"; }
+    function closeGuide() { document.getElementById("guideModal").style.display = "none"; }
+    function openAccountManager() {
+      document.getElementById('accountModal').style.display = 'flex';
+      if (document.getElementById('linkedPhone')) document.getElementById('linkedPhone').value = linkedPhone || '';
+      if (document.getElementById('accEmail')) document.getElementById('accEmail').value = firebase.auth().currentUser?.email || '';
+      const info = document.getElementById('phoneOwnerInfo');
+      if (info) info.innerText = 'Chưa kiểm tra chủ sở hữu SĐT';
+    }
+    function closeAccountManager() { document.getElementById('accountModal').style.display = 'none'; }
 
-async function checkPhoneOwnerInfo() {
-    const phone = normalizePhone(document.getElementById('linkedPhone')?.value || linkedPhone || '');
-    const info = document.getElementById('phoneOwnerInfo');
-    if(!phone) {
-        if(info) info.innerText = 'Nhập SĐT trước khi kiểm tra';
+    async function checkPhoneOwnerInfo() {
+      const phone = normalizePhone(document.getElementById('linkedPhone')?.value || linkedPhone || '');
+      const info = document.getElementById('phoneOwnerInfo');
+      if (!phone) {
+        if (info) info.innerText = 'Nhập SĐT trước khi kiểm tra';
         return;
-    }
+      }
 
-    try {
+      try {
         const ownerUid = await readPhoneOwner(phone);
         const profile = await getPhoneOwnerProfile(phone);
 
-        if(!ownerUid) {
-            if(info) info.innerText = `SĐT ${phone} chưa liên kết tài khoản nào`;
-            return;
+        if (!ownerUid) {
+          if (info) info.innerText = `SĐT ${phone} chưa liên kết tài khoản nào`;
+          return;
         }
 
         const email = profile?.email || '(không có email mirror)';
-        if(info) info.innerText = `SĐT ${phone} đang thuộc: ${email}`;
+        if (info) info.innerText = `SĐT ${phone} đang thuộc: ${email}`;
         showToast(`SĐT ${phone} => ${email}`);
-    } catch(err) {
+      } catch (err) {
         console.error('checkPhoneOwnerInfo error:', err);
-        if(info) info.innerText = 'Không kiểm tra được chủ sở hữu SĐT';
+        if (info) info.innerText = 'Không kiểm tra được chủ sở hữu SĐT';
         showToast('Lỗi kiểm tra chủ sở hữu SĐT');
+      }
     }
-}
 
-async function saveLinkedPhone() {
-    if(!fbReady || !fbDb) return;
-    const phone = normalizePhone(document.getElementById('linkedPhone')?.value || '');
-    if(!phone) { showToast('Nhập SĐT cần liên kết'); return; }
+    async function saveLinkedPhone() {
+      if (!fbReady || !fbDb) return;
+      const phone = normalizePhone(document.getElementById('linkedPhone')?.value || '');
+      if (!phone) { showToast('Nhập SĐT cần liên kết'); return; }
 
-    const prevPhone = linkedPhone;
-    try {
+      const prevPhone = linkedPhone;
+      try {
         await claimPhoneLink(phone);
 
-        if(prevPhone && prevPhone !== phone) {
-            try { await releasePhoneLink(prevPhone); } catch(_) {}
+        if (prevPhone && prevPhone !== phone) {
+          try { await releasePhoneLink(prevPhone); } catch (_) { }
         }
 
         await fbDb.ref(`iot/${getOwnerKey()}/profile/linked_phone`).set(phone);
@@ -1506,162 +2263,163 @@ async function saveLinkedPhone() {
         closeAccountManager();
 
         showToast('Đã lưu liên kết SĐT và tự reconnect MQTT');
-    } catch(e) {
+      } catch (e) {
         console.error('saveLinkedPhone error:', e);
         const code = String(e?.code || '');
         const msg = String(e?.message || '');
 
-        if(String(e?.message || '').includes('PHONE_ALREADY_LINKED')) {
-            showToast('SĐT này đã liên kết với tài khoản khác');
-            return;
+        if (String(e?.message || '').includes('PHONE_ALREADY_LINKED')) {
+          showToast('SĐT này đã liên kết với tài khoản khác');
+          return;
         }
-        if(msg.includes('UNAUTHENTICATED')) {
-            showToast('Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại');
-            return;
+        if (msg.includes('UNAUTHENTICATED')) {
+          showToast('Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại');
+          return;
         }
-        if(code.includes('PERMISSION_DENIED') || msg.includes('PERMISSION_DENIED')) {
-            showToast('Firebase Rules đang chặn ghi iot_phone_links / iot_phone_link_profiles');
-            return;
+        if (code.includes('PERMISSION_DENIED') || msg.includes('PERMISSION_DENIED')) {
+          showToast('Firebase Rules đang chặn ghi iot_phone_links / iot_phone_link_profiles');
+          return;
         }
         showToast('Lưu liên kết thất bại: ' + (code || msg || 'UNKNOWN_ERROR'));
+      }
     }
-}
 
-async function reconnectByLinkedPhone() {
-    const inputPhone = normalizePhone(document.getElementById('linkedPhone')?.value || '');
+    async function reconnectByLinkedPhone() {
+      const inputPhone = normalizePhone(document.getElementById('linkedPhone')?.value || '');
 
-    // Không cho bypass bằng cách nhập SĐT rồi reconnect thẳng
-    if(inputPhone && inputPhone !== linkedPhone) {
+      // Không cho bypass bằng cách nhập SĐT rồi reconnect thẳng
+      if (inputPhone && inputPhone !== linkedPhone) {
         await saveLinkedPhone();
-    }
+      }
 
-    if(!linkedPhone) { showToast('Chưa có SĐT liên kết để reconnect'); return; }
+      if (!linkedPhone) { showToast('Chưa có SĐT liên kết để reconnect'); return; }
 
-    try {
+      try {
         await ensurePhoneOwnership(linkedPhone);
-    } catch(_) {
+      } catch (_) {
         showToast('SĐT này thuộc tài khoản khác, không thể reconnect');
         return;
+      }
+
+      mqttUserId = linkedPhone;
+
+      window.devices = {};
+      document.getElementById('grid').innerHTML = '';
+      updateCounter();
+      connect();
     }
 
-    mqttUserId = linkedPhone;
-
-    window.devices = {};
-    document.getElementById('grid').innerHTML = '';
-    updateCounter();
-    connect();
-}
-
-async function changePasswordInApp() {
-    const p1 = document.getElementById('newPassword')?.value || '';
-    const p2 = document.getElementById('confirmPassword')?.value || '';
-    if(p1.length < 6) { showToast('Mật khẩu mới tối thiểu 6 ký tự'); return; }
-    if(p1 !== p2) { showToast('Xác nhận mật khẩu không khớp'); return; }
-    const user = firebase.auth().currentUser;
-    if(!user) { showToast('Chưa đăng nhập'); return; }
-    try {
+    async function changePasswordInApp() {
+      const p1 = document.getElementById('newPassword')?.value || '';
+      const p2 = document.getElementById('confirmPassword')?.value || '';
+      if (p1.length < 6) { showToast('Mật khẩu mới tối thiểu 6 ký tự'); return; }
+      if (p1 !== p2) { showToast('Xác nhận mật khẩu không khớp'); return; }
+      const user = firebase.auth().currentUser;
+      if (!user) { showToast('Chưa đăng nhập'); return; }
+      try {
         await user.updatePassword(p1);
         showToast('Đổi mật khẩu thành công');
         document.getElementById('newPassword').value = '';
         document.getElementById('confirmPassword').value = '';
-    } catch(err) {
-        if(String(err.code || '').includes('requires-recent-login')) {
-            showToast('Phiên đăng nhập cũ, hãy đăng nhập lại rồi đổi mật khẩu');
+      } catch (err) {
+        if (String(err.code || '').includes('requires-recent-login')) {
+          showToast('Phiên đăng nhập cũ, hãy đăng nhập lại rồi đổi mật khẩu');
         } else {
-            showToast('Không đổi được mật khẩu');
+          showToast('Không đổi được mật khẩu');
         }
+      }
     }
-}
 
-async function sendResetEmailFromApp() {
-    const email = (document.getElementById('accEmail')?.value || firebase.auth().currentUser?.email || '').trim();
-    if(!email) { showToast('Không có email để gửi reset'); return; }
-    try {
+    async function sendResetEmailFromApp() {
+      const email = (document.getElementById('accEmail')?.value || firebase.auth().currentUser?.email || '').trim();
+      if (!email) { showToast('Không có email để gửi reset'); return; }
+      try {
         await firebase.auth().sendPasswordResetEmail(email);
         showToast('Đã gửi email reset mật khẩu');
-    } catch(e) {
+      } catch (e) {
         showToast('Gửi email reset thất bại');
+      }
     }
-}
-function saveGeminiKey(val) { localStorage.setItem("gemini_api_key", val.trim()); showToast("Đã lưu API Key"); }
+    function saveGeminiKey(val) { localStorage.setItem("gemini_api_key", val.trim()); showToast("Đã lưu API Key"); }
 
-function startVoice(btn) {
-    if(!('webkitSpeechRecognition' in window)) { alert("Trình duyệt không hỗ trợ giọng nói"); return; }
-    const r = new webkitSpeechRecognition();
-    r.lang = 'vi-VN';
-    r.start();
-    btn.classList.add('listening');
-    r.onresult = (e) => {
+    function startVoice(btn) {
+      if (!('webkitSpeechRecognition' in window)) { alert("Trình duyệt không hỗ trợ giọng nói"); return; }
+      const r = new webkitSpeechRecognition();
+      r.lang = 'vi-VN';
+      r.start();
+      btn.classList.add('listening');
+      r.onresult = (e) => {
         document.getElementById("aiCommand").value = e.results[0][0].transcript;
         btn.classList.remove('listening');
         executeAI();
+      }
+      r.onerror = () => btn.classList.remove('listening');
+      r.onspeechend = () => btn.classList.remove('listening');
     }
-    r.onerror = () => btn.classList.remove('listening');
-    r.onspeechend = () => btn.classList.remove('listening');
-}
 
-async function executeAI() {
-    const cmd = document.getElementById("aiCommand").value;
-    const key = document.getElementById("geminiKey").value;
-    const resBox = document.getElementById("aiResponse");
-    
-    if(!cmd || !key) { showToast("Nhập lệnh và API Key!"); return; }
-    resBox.style.display = "block";
-    resBox.innerHTML = "🤖 Đang suy nghĩ...";
+    async function executeAI() {
+      const cmd = document.getElementById("aiCommand").value;
+      const key = document.getElementById("geminiKey").value;
+      const resBox = document.getElementById("aiResponse");
 
-    const context = JSON.stringify(window.devices);
-    const prompt = `Trợ lý IoT. Devices: ${context}. User: "${cmd}". 
+      if (!cmd || !key) { showToast("Nhập lệnh và API Key!"); return; }
+      resBox.style.display = "block";
+      resBox.innerHTML = "🤖 Đang suy nghĩ...";
+
+      const context = JSON.stringify(window.devices);
+      const prompt = `Trợ lý IoT. Devices: ${context}. User: "${cmd}". 
     JSON Output: { "target": "dev_id"|"ALL", "action": "config"|"maint", "params": {...}, "message": "..." }`;
 
-    try {
+      try {
         const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-            method: "POST", headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const d = await resp.json();
         const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
         const logic = JSON.parse(raw);
         resBox.innerHTML = `🤖 ${logic.message}`;
-        
-        if(logic.action) {
-            const targets = (logic.target === "ALL") ? Object.keys(window.devices) : [logic.target];
-            targets.forEach(id => {
-                if(window.devices[id]) {
-                    if(logic.action === "config") {
-                        rpcSend(id, "setOffMin", logic.params.off);
-                        rpcSend(id, "setOnSec", logic.params.on);
-                        rpcSend(id, "save", 1);
-                    }
-                    if(logic.action === "maint") rpcSend(id, "setMaintenance", logic.mode);
-                }
-            });
-        }
-    } catch(e) { resBox.innerHTML = "❌ Lỗi AI"; }
-}
 
-async function analyzeSystem() {
-    const key = document.getElementById("geminiKey").value;
-    if(!key) { showToast("Cần API Key"); return; }
-    const context = JSON.stringify(window.devices);
-    const prompt = `Phân tích IoT: ${context}. Báo cáo ngắn gọn các bất thường (nhiệt/dòng/kết nối).`;
-    
-    document.getElementById("aiResponse").style.display = "block";
-    document.getElementById("aiResponse").innerHTML = "🔍 Đang khám...";
-    try {
+        if (logic.action) {
+          const targets = (logic.target === "ALL") ? Object.keys(window.devices) : [logic.target];
+          targets.forEach(id => {
+            if (window.devices[id]) {
+              if (logic.action === "config") {
+                rpcSend(id, "setOffMin", logic.params.off);
+                rpcSend(id, "setOnSec", logic.params.on);
+                rpcSend(id, "save", 1);
+              }
+              if (logic.action === "maint") rpcSend(id, "setMaintenance", logic.mode);
+            }
+          });
+        }
+      } catch (e) { resBox.innerHTML = "❌ Lỗi AI"; }
+    }
+
+    async function analyzeSystem() {
+      const key = document.getElementById("geminiKey").value;
+      if (!key) { showToast("Cần API Key"); return; }
+      const context = JSON.stringify(window.devices);
+      const prompt = `Phân tích IoT: ${context}. Báo cáo ngắn gọn các bất thường (nhiệt/dòng/kết nối).`;
+
+      document.getElementById("aiResponse").style.display = "block";
+      document.getElementById("aiResponse").innerHTML = "🔍 Đang khám...";
+      try {
         const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-            method: "POST", headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const d = await resp.json();
         document.getElementById("aiResponse").innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
-    } catch(e) { alert("Lỗi AI"); }
-}
+      } catch (e) { alert("Lỗi AI"); }
+    }
 
-function showToast(m) {
-  const t = document.getElementById("toast");
-  t.innerText = m; t.style.display = "block";
-  setTimeout(() => t.style.display = "none", 3000);
-}
-</script>
+    function showToast(m) {
+      const t = document.getElementById("toast");
+      t.innerText = m; t.style.display = "block";
+      setTimeout(() => t.style.display = "none", 3000);
+    }
+  </script>
 </body>
+
 </html>
