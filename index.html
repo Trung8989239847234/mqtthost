@@ -655,28 +655,7 @@
             margin-top: 12px;
         }
 
-        /* === AI FAB & TOAST === */
-        .ai-fab {
-            position: fixed;
-            right: 25px;
-            bottom: 25px;
-            width: 56px;
-            height: 56px;
-            background: var(--ai-gradient);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
-            z-index: 900;
-            transition: transform 0.2s;
-        }
 
-        .ai-fab:active {
-            transform: scale(0.9);
-        }
 
         #toast {
             position: fixed;
@@ -694,132 +673,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* === AI MODAL === */
-        #aiModal {
-            display: none;
-            z-index: 1100;
-            align-items: center;
-            justify-content: center;
-        }
 
-        .ai-content {
-            width: 90%;
-            max-width: 400px;
-            background: #1e293b;
-            border-radius: 24px;
-            padding: 25px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            position: relative;
-        }
-
-        .ai-title {
-            font-size: 16px;
-            font-weight: 800;
-            background: var(--ai-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            margin: 0;
-        }
-
-        .ai-input-group {
-            position: relative;
-        }
-
-        .ai-input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
-            color: #fff;
-            padding: 12px;
-            padding-right: 40px;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .ai-input:focus {
-            border-color: #8b5cf6;
-            outline: none;
-        }
-
-        .btn-mic {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-            transition: 0.2s;
-        }
-
-        .btn-mic.listening {
-            background: rgba(239, 68, 68, 0.2);
-            animation: pulse 1.5s infinite;
-        }
-
-        .ai-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .btn-ai {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 12px;
-            color: #fff;
-            transition: 0.2s;
-        }
-
-        .btn-ai-send {
-            background: var(--ai-gradient);
-        }
-
-        .btn-ai-analyze {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-ai-analyze:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .ai-response {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 13px;
-            color: #e2e8f0;
-            line-height: 1.5;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            border-left: 3px solid #8b5cf6;
-        }
-
-        .ai-key-input {
-            font-size: 11px;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: #94a3b8;
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 5px;
-        }
 
         /* === SCHEDULE MODAL STYLES === */
         #scheduleModal {
@@ -1151,28 +1005,7 @@
         </div>
     </div>
 
-    <!-- AI MODAL -->
-    <div id="aiModal" class="panel-overlay" onclick="if(event.target.id==='aiModal') closeAI()">
-        <div class="ai-content">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-                <h3 class="ai-title">✨ TRUNG TÂM AI</h3>
-                <button onclick="closeAI()"
-                    style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
-            </div>
-            <input type="password" id="geminiKey" class="ai-key-input"
-                placeholder="Dán Gemini API Key vào đây (Lưu tự động)" onchange="saveGeminiKey(this.value)">
-            <div class="ai-input-group">
-                <input type="text" id="aiCommand" class="ai-input"
-                    placeholder="Nhập lệnh hoặc hỏi (VD: Bật máy 1 10 phút)">
-                <button class="btn-mic" onclick="startVoice(this)">🎤</button>
-            </div>
-            <div class="ai-actions">
-                <button class="btn-ai btn-ai-send" onclick="executeAI()">🚀 GỬI LỆNH</button>
-                <button class="btn-ai btn-ai-analyze" onclick="analyzeSystem()">🏥 KHÁM BỆNH</button>
-            </div>
-            <div id="aiResponse" class="ai-response"></div>
-        </div>
-    </div>
+
 
     <!-- SCHEDULE MODAL -->
     <div id="scheduleModal" class="panel-overlay" onclick="if(event.target.id==='scheduleModal') closeSchedule()">
@@ -1377,7 +1210,7 @@
         <div class="device-grid" id="grid"></div>
     </div>
 
-    <div class="ai-fab" onclick="openAI()">✨</div>
+
 
     <script>
         /* ========= CONFIG ========= */
@@ -2381,9 +2214,7 @@
             closeSchedule();
         }
 
-        /* ========= AI INTELLIGENCE ========= */
-        function openAI() { document.getElementById("aiModal").style.display = "flex"; }
-        function closeAI() { document.getElementById("aiModal").style.display = "none"; }
+
         /* ========= UNIFIED SETTINGS ========= */
         function openSettings() {
             document.getElementById("settingsModal").style.display = "flex";
@@ -2572,79 +2403,7 @@
                 showToast('Gửi email reset thất bại');
             }
         }
-        function saveGeminiKey(val) { localStorage.setItem("gemini_api_key", val.trim()); showToast("Đã lưu API Key"); }
 
-        function startVoice(btn) {
-            if (!('webkitSpeechRecognition' in window)) { alert("Trình duyệt không hỗ trợ giọng nói"); return; }
-            const r = new webkitSpeechRecognition();
-            r.lang = 'vi-VN';
-            r.start();
-            btn.classList.add('listening');
-            r.onresult = (e) => {
-                document.getElementById("aiCommand").value = e.results[0][0].transcript;
-                btn.classList.remove('listening');
-                executeAI();
-            }
-            r.onerror = () => btn.classList.remove('listening');
-            r.onspeechend = () => btn.classList.remove('listening');
-        }
-
-        async function executeAI() {
-            const cmd = document.getElementById("aiCommand").value;
-            const key = document.getElementById("geminiKey").value;
-            const resBox = document.getElementById("aiResponse");
-
-            if (!cmd || !key) { showToast("Nhập lệnh và API Key!"); return; }
-            resBox.style.display = "block";
-            resBox.innerHTML = "🤖 Đang suy nghĩ...";
-
-            const context = JSON.stringify(window.devices);
-            const prompt = `Trợ lý IoT. Devices: ${context}. User: "${cmd}". 
-    JSON Output: { "target": "dev_id"|"ALL", "action": "config"|"maint", "params": {...}, "message": "..." }`;
-
-            try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const d = await resp.json();
-                const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-                const logic = JSON.parse(raw);
-                resBox.innerHTML = `🤖 ${logic.message}`;
-
-                if (logic.action) {
-                    const targets = (logic.target === "ALL") ? Object.keys(window.devices) : [logic.target];
-                    targets.forEach(id => {
-                        if (window.devices[id]) {
-                            if (logic.action === "config") {
-                                rpcSend(id, "setOffMin", logic.params.off);
-                                rpcSend(id, "setOnSec", logic.params.on);
-                                rpcSend(id, "save", 1);
-                            }
-                            if (logic.action === "maint") rpcSend(id, "setMaintenance", logic.mode);
-                        }
-                    });
-                }
-            } catch (e) { resBox.innerHTML = "❌ Lỗi AI"; }
-        }
-
-        async function analyzeSystem() {
-            const key = document.getElementById("geminiKey").value;
-            if (!key) { showToast("Cần API Key"); return; }
-            const context = JSON.stringify(window.devices);
-            const prompt = `Phân tích IoT: ${context}. Báo cáo ngắn gọn các bất thường (nhiệt/dòng/kết nối).`;
-
-            document.getElementById("aiResponse").style.display = "block";
-            document.getElementById("aiResponse").innerHTML = "🔍 Đang khám...";
-            try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const d = await resp.json();
-                document.getElementById("aiResponse").innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
-            } catch (e) { alert("Lỗi AI"); }
-        }
 
         function showToast(m) {
             const t = document.getElementById("toast");
