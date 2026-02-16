@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>IOT ECOSYSTEM v2.0 (Pro)</title>
+    <title>IOT ECOSYSTEM v2.1 (Enhanced)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -1059,12 +1059,12 @@
 
                         <div
                             style="margin: 20px 0 10px; font-size:12px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
-                            Đổi mật khẩu</div>
+                            Tạo / Đổi mật khẩu</div>
                         <input id="newPassword" class="dm-input" type="password" placeholder="Mật khẩu mới (>= 6 ký tự)"
                             style="margin-bottom:8px">
                         <input id="confirmPassword" class="dm-input" type="password" placeholder="Nhập lại mật khẩu mới"
                             style="margin-bottom:8px">
-                        <button class="dm-btn" onclick="changePasswordInApp()">🔐 ĐỔI MẬT KHẨU</button>
+                        <button class="dm-btn" onclick="changePasswordInApp()">🔐 CẬP NHẬT MẬT KHẨU</button>
                     </div>
 
                     <!-- TAB DEVICES -->
@@ -1426,15 +1426,39 @@
             });
         }
 
-        function fbLogCommand(devId, method, params) {
+        async function fbLogCommand(devId, method, params) {
             if (!fbReady || !fbDb) return;
             const userKey = getOwnerKey();
             const devKey = safeKey(devId);
-            fbDb.ref(`iot/${userKey}/commands/${devKey}`).push({
-                method,
-                params,
-                ts: Date.now()
-            }).catch(err => console.error('[Firebase] push error:', err));
+            const ref = fbDb.ref(`iot/${userKey}/commands/${devKey}`);
+
+            try {
+                // 1. Ghi log mới
+                await ref.push({
+                    method,
+                    params,
+                    ts: Date.now()
+                });
+
+                // 2. Giới hạn 20 dòng (Cleanup)
+                const snap = await ref.orderByKey().once('value');
+                const data = snap.val();
+                if (!data) return;
+
+                const keys = Object.keys(data);
+                if (keys.length > 20) {
+                    const toDelete = keys.length - 20;
+                    const updates = {};
+                    // Xóa các key cũ nhất (đầu mảng)
+                    for (let i = 0; i < toDelete; i++) {
+                        updates[keys[i]] = null;
+                    }
+                    await ref.update(updates);
+                    // console.log(`[Cleanup] Deleted ${toDelete} old logs for ${devId}`);
+                }
+            } catch (err) {
+                console.error('[Firebase] log error:', err);
+            }
         }
 
         async function loadDeviceAliases() {
@@ -1658,11 +1682,13 @@
             if (!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
             if (!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
 
-            const email = usernameToEmail(u);
+            const email = u.includes('@') ? u : usernameToEmail(u);
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, p);
             } catch (err) {
-                showToast("Sai tài khoản hoặc mật khẩu");
+                console.error("Login error:", err);
+                showToast("Lỗi: " + (err.message || "Sai tài khoản/mật khẩu"));
+                isManualLoginFlow = false;
                 return;
             }
 
@@ -1702,6 +1728,7 @@
             await loadDeviceAliases();
             await loadDeviceOrders();
             await loadAccountProfile();
+            await loadKnownDevices(); // [New] Load offline devices
 
             // Flow chuẩn: nếu login Google thì bắt buộc bind SĐT trước khi connect MQTT
             if (loginProvider === 'google') {
@@ -1755,6 +1782,29 @@
                 mqttTopicRoot = "";
                 location.reload();
             });
+        }
+
+        // [New Logic] Ghi nhớ thiết bị
+        async function loadKnownDevices() {
+            if (!fbReady || !fbDb || !mqttUserId) return;
+            try {
+                const snap = await fbDb.ref(`iot/${getOwnerKey()}/devices`).once('value');
+                const data = snap.val();
+                if (data) {
+                    Object.keys(data).forEach(devId => {
+                        window.devices[devId] = data[devId];
+                        createDeviceCard(devId);
+                        // Đánh dấu Offline ban đầu
+                        const card = document.getElementById("card-" + devId);
+                        if (card) {
+                            card.classList.add('offline');
+                            // Cập nhật giao diện lần đầu từ data cũ
+                            updateDeviceCard(devId);
+                        }
+                    });
+                    showToast(`Đã khôi phục ${Object.keys(data).length} thiết bị cũ`);
+                }
+            } catch (e) { console.warn('Load devices failed', e); }
         }
 
         function toBase64UrlFromBytes(bytes) {
@@ -2409,6 +2459,29 @@
             const t = document.getElementById("toast");
             t.innerText = m; t.style.display = "block";
             setTimeout(() => t.style.display = "none", 3000);
+        }
+        async function changePasswordInApp() {
+            const p1 = document.getElementById('newPassword').value;
+            const p2 = document.getElementById('confirmPassword').value;
+            if (!p1 || p1.length < 6) { showToast('Mật khẩu phải từ 6 ký tự'); return; }
+            if (p1 !== p2) { showToast('Mật khẩu nhập lại không khớp'); return; }
+
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            try {
+                await user.updatePassword(p1);
+                showToast('Đã cập nhật mật khẩu thành công!');
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch (e) {
+                if (e.code === 'auth/requires-recent-login') {
+                    showToast('Cần đăng nhập lại để đổi mật khẩu');
+                    logout();
+                } else {
+                    showToast('Lỗi: ' + e.message);
+                }
+            }
         }
     </script>
 </body>
