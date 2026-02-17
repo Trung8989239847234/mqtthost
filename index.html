@@ -117,6 +117,47 @@
             margin-top: 10px;
         }
 
+        /* Error Animation & Box */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .login-error {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+            /* Hidden by default */
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .login-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            outline: none;
+        }
+
         /* === HEADER === */
         .container {
             width: 95%;
@@ -994,13 +1035,20 @@
 
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay">
-        <div class="login-box">
+        <div class="login-box" id="loginBox">
             <div class="login-title">IOT LOGIN</div>
-            <p style="color:#94a3b8; font-size:12px">Nhập Mã Khách Hàng để quản lý thiết bị</p>
-            <input type="text" id="loginUser" class="login-input" placeholder="Ví dụ: user01">
-            <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu" value="">
+            <div style="font-size:14px; color:#94a3b8; margin-bottom:20px">Nhập Mã Khách Hàng để quản lý thiết bị</div>
+
+            <div id="loginError" class="login-error"></div>
+
+            <input type="text" id="loginUser" class="login-input" placeholder="Ví dụ: user01" autocomplete="username">
+            <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu" style="margin-top:0"
+                autocomplete="current-password">
+
             <button class="login-btn" onclick="performLogin()">TRUY CẬP HỆ THỐNG</button>
-            <button class="login-btn google" onclick="performGoogleLogin()">ĐĂNG NHẬP BẰNG GOOGLE</button>
+            <button class="login-btn google" onclick="performGoogleLogin()">
+                <span style="font-weight:bold; margin-right:5px">G</span> ĐĂNG NHẬP BẰNG GOOGLE
+            </button>
             <button class="login-btn secondary" onclick="registerAccount()">TẠO TÀI KHOẢN</button>
         </div>
     </div>
@@ -1139,6 +1187,77 @@
                 <div id="panelStatusBadge"
                     style="padding: 4px 10px; background: #334155; border-radius: 20px; font-size: 10px; font-weight: bold;">
                     OFFLINE</div>
+            </div>
+
+            <!-- STATUS BANNERS -->
+            <div id="panelStatusBanner" style="display:none; flex-direction:column; gap:8px; margin-bottom:15px;">
+                <!-- Maintenance Banner -->
+                <div id="maintBanner"
+                    style="display:none; background:rgba(234, 179, 8, 0.2); border:1px solid rgba(234, 179, 8, 0.4); color:#facc15; padding:10px; border-radius:8px; font-size:13px; align-items:center; gap:8px;">
+                    <span>🔧</span> <span id="maintText">ĐANG BẢO TRÌ</span>
+                </div>
+                <!-- Pause Banner -->
+                <div id="pauseBanner"
+                    style="display:none; background:rgba(239, 68, 68, 0.2); border:1px solid rgba(239, 68, 68, 0.4); color:#f87171; padding:10px; border-radius:8px; font-size:13px; align-items:center; gap:8px;">
+                    <span>⏸️</span> <span>LỊCH TRÌNH ĐANG TẠM DỪNG</span>
+                </div>
+            </div>
+
+            <!-- SENSOR DATA GRID -->
+            <style>
+                .sensor-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    margin-bottom: 20px;
+                }
+
+                .sensor-item {
+                    background: rgba(255, 255, 255, 0.03);
+                    padding: 10px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    text-align: center;
+                }
+
+                .sensor-label {
+                    font-size: 10px;
+                    color: #94a3b8;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    margin-bottom: 4px;
+                }
+
+                .sensor-val {
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: #fff;
+                }
+
+                .sensor-unit {
+                    font-size: 10px;
+                    color: #64748b;
+                    font-weight: normal;
+                    margin-left: 2px;
+                }
+            </style>
+            <div class="sensor-grid">
+                <div class="sensor-item">
+                    <div class="sensor-label">💾 RAM FREE</div>
+                    <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">⚡ DÒNG ĐIỆN</div>
+                    <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">🌡️ NHIỆT ĐỘ</div>
+                    <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">🚰 PHAO TRÀN</div>
+                    <div class="sensor-val" id="pPhao" style="color:#94a3b8">--</div>
+                </div>
             </div>
 
             <!-- === NEW BIG CONTROL GROUP === -->
@@ -1677,17 +1796,37 @@
 
         async function performLogin() {
             isManualLoginFlow = true;
+            const errBox = document.getElementById("loginError");
+            const box = document.getElementById("loginBox");
+            errBox.style.display = 'none';
+
             const u = document.getElementById("loginUser").value.trim();
             const p = document.getElementById("loginPass").value;
-            if (!u) { alert("Vui lòng nhập Mã Khách Hàng"); return; }
-            if (!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
+
+            if (!u) {
+                errBox.innerText = "Vui lòng nhập Mã Khách Hàng";
+                errBox.style.display = 'block';
+                return;
+            }
+            if (!p || p.length < 6) {
+                errBox.innerText = "Mật khẩu tối thiểu 6 ký tự";
+                errBox.style.display = 'block';
+                return;
+            }
 
             const email = u.includes('@') ? u : usernameToEmail(u);
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, p);
             } catch (err) {
                 console.error("Login error:", err);
-                showToast("Lỗi: " + (err.message || "Sai tài khoản/mật khẩu"));
+                errBox.innerText = "Sai tài khoản hoặc mật khẩu!";
+                errBox.style.display = 'block';
+
+                // Shake Animation
+                box.classList.remove('shake');
+                void box.offsetWidth; // trigger reflow
+                box.classList.add('shake');
+
                 isManualLoginFlow = false;
                 return;
             }
@@ -2098,6 +2237,58 @@
             const badge = document.getElementById("panelStatusBadge");
             badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
             badge.style.background = isOnline ? "var(--success)" : "#334155";
+
+            // --- STATUS BANNERS LOGIC ---
+            const bannerContainer = document.getElementById("panelStatusBanner");
+            const maintBanner = document.getElementById("maintBanner");
+            const pauseBanner = document.getElementById("pauseBanner");
+            let showBanner = false;
+
+            // 1. Maintenance Check
+            let mMode = Number(dev.maintenance_mode || dev.maint_mode || dev.maintenance || 0);
+            if (!Number.isFinite(mMode) && dev.status) {
+                const mt = String(dev.status).match(/(?:MAINT|BẢO\s*TRÌ)\s*[:\- ]?\s*(\d)/i);
+                if (mt) mMode = Number(mt[1]);
+            }
+            if (mMode > 0) {
+                maintBanner.style.display = 'flex';
+                const map = { 1: '7p', 2: '15p', 3: '30p', 4: '50p', 5: '80p', 6: '∞' };
+                document.getElementById("maintText").innerText = `ĐANG BẢO TRÌ (${map[mMode] || 'unlimited'})`;
+                showBanner = true;
+            } else {
+                maintBanner.style.display = 'none';
+            }
+
+            // 2. Pause Check (Assuming dev.pause or dev.is_paused or dev.pause_sched)
+            // Logic: if value is 1/true -> Paused
+            const isPaused = (dev.pause === 1 || dev.is_paused === 1 || dev.pause_sched === 1);
+            if (isPaused) {
+                pauseBanner.style.display = 'flex';
+                showBanner = true;
+            } else {
+                pauseBanner.style.display = 'none';
+            }
+
+            bannerContainer.style.display = showBanner ? 'flex' : 'none';
+            // -----------------------------
+
+            // Update Sensor Data
+            const heap = dev.free_heap ? (dev.free_heap / 1024).toFixed(1) : '--';
+            document.getElementById("pHeap").innerText = heap;
+            document.getElementById("pAmps").innerText = dev.amps !== undefined ? Number(dev.amps).toFixed(1) : '--';
+            document.getElementById("pTemp").innerText = dev.temp !== undefined ? Number(dev.temp).toFixed(1) : '--';
+
+            const pPhao = document.getElementById("pPhao");
+            if (dev.phao1 === 1) {
+                pPhao.innerText = "ĐẦY";
+                pPhao.style.color = "#22c55e"; // Green
+            } else if (dev.phao1 === 0) {
+                pPhao.innerText = "CẠN";
+                pPhao.style.color = "#ef4444"; // Red
+            } else {
+                pPhao.innerText = "--";
+                pPhao.style.color = "#94a3b8";
+            }
 
             document.getElementById("offMin").value = dev.off_min !== undefined ? dev.off_min : 0;
             document.getElementById("onSec").value = dev.on_sec !== undefined ? dev.on_sec : 0;
