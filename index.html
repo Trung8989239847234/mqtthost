@@ -2099,8 +2099,7 @@
                     syncDeviceToFirebase(devId);
 
                     if (currentSelectedId === devId && document.getElementById("mainPanel").classList.contains("show")) {
-                        if (document.activeElement.id !== "offMin" && data.off_min !== undefined) document.getElementById("offMin").value = data.off_min;
-                        if (document.activeElement.id !== "onSec" && data.on_sec !== undefined) document.getElementById("onSec").value = data.on_sec;
+                        updatePanelDOM(devId);
                     }
                 } catch (e) { console.error("Data error", e); }
             });
@@ -2227,16 +2226,19 @@
 
 
         /* ========= PANEL CONTROLS ========= */
-        function openPanel(id) {
-            currentSelectedId = id;
+        function updatePanelDOM(id) {
             const dev = window.devices[id];
+            if (!dev) return;
+
             document.getElementById("panelTitle").innerText = getDisplayName(id);
             document.getElementById("panelId").innerText = `ID: ${id.toUpperCase()} | Last Update: ` + new Date(dev.lastSeen).toLocaleTimeString();
 
             const isOnline = (Date.now() - dev.lastSeen < 30000);
             const badge = document.getElementById("panelStatusBadge");
-            badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
-            badge.style.background = isOnline ? "var(--success)" : "#334155";
+            if (badge) {
+                badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
+                badge.style.background = isOnline ? "var(--success)" : "#334155";
+            }
 
             // --- STATUS BANNERS LOGIC ---
             const bannerContainer = document.getElementById("panelStatusBanner");
@@ -2259,8 +2261,7 @@
                 maintBanner.style.display = 'none';
             }
 
-            // 2. Pause Check (Assuming dev.pause or dev.is_paused or dev.pause_sched)
-            // Logic: if value is 1/true -> Paused
+            // 2. Pause Check
             const isPaused = (dev.pause === 1 || dev.is_paused === 1 || dev.pause_sched === 1);
             if (isPaused) {
                 pauseBanner.style.display = 'flex';
@@ -2269,8 +2270,7 @@
                 pauseBanner.style.display = 'none';
             }
 
-            bannerContainer.style.display = showBanner ? 'flex' : 'none';
-            // -----------------------------
+            if (bannerContainer) bannerContainer.style.display = showBanner ? 'flex' : 'none';
 
             // Update Sensor Data
             const heap = dev.free_heap ? (dev.free_heap / 1024).toFixed(1) : '--';
@@ -2279,19 +2279,27 @@
             document.getElementById("pTemp").innerText = dev.temp !== undefined ? Number(dev.temp).toFixed(1) : '--';
 
             const pPhao = document.getElementById("pPhao");
-            if (dev.phao1 === 1) {
-                pPhao.innerText = "ĐẦY";
-                pPhao.style.color = "#22c55e"; // Green
-            } else if (dev.phao1 === 0) {
-                pPhao.innerText = "CẠN";
-                pPhao.style.color = "#ef4444"; // Red
-            } else {
-                pPhao.innerText = "--";
-                pPhao.style.color = "#94a3b8";
+            if (pPhao) {
+                if (dev.phao1 === 1) {
+                    pPhao.innerText = "ĐẦY";
+                    pPhao.style.color = "#22c55e"; // Green
+                } else if (dev.phao1 === 0) {
+                    pPhao.innerText = "CẠN";
+                    pPhao.style.color = "#ef4444"; // Red
+                } else {
+                    pPhao.innerText = "--";
+                    pPhao.style.color = "#94a3b8";
+                }
             }
 
-            document.getElementById("offMin").value = dev.off_min !== undefined ? dev.off_min : 0;
-            document.getElementById("onSec").value = dev.on_sec !== undefined ? dev.on_sec : 0;
+            // Inputs (check active element to avoid interrupting user typing)
+            if (document.activeElement.id !== "offMin" && dev.off_min !== undefined) document.getElementById("offMin").value = dev.off_min;
+            if (document.activeElement.id !== "onSec" && dev.on_sec !== undefined) document.getElementById("onSec").value = dev.on_sec;
+        }
+
+        function openPanel(id) {
+            currentSelectedId = id;
+            updatePanelDOM(id);
 
             document.getElementById("panelOverlay").style.display = "flex";
             setTimeout(() => document.getElementById("mainPanel").classList.add("show"), 10);
