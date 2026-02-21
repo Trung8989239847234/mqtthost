@@ -1,1345 +1,515 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>IOT ECOSYSTEM v2.1 (Enhanced)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-
-    <style>
-        /* Tối ưu hiệu năng render bằng contain và will-change */
-        :root {
-            --bg: #020617;
-            /* Deep slate */
-            --card-bg: rgba(30, 41, 59, 0.3);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --accent: #38bdf8;
-            --accent-glow: 0 0 20px rgba(56, 189, 248, 0.3);
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --ai-gradient: linear-gradient(135deg, #a855f7, #ec4899);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom right, #020617, #0f172a, #1e1b4b);
-            background-attachment: fixed;
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Ambient Glow - REMOVED FOR PERFORMANCE
-        body::before { ... }
-        body::after { ... } 
-        */
-
-        /* === LOGIN OVERLAY === */
-        #loginOverlay {
-            position: fixed;
-            inset: 0;
-            background: #0f172a;
-            z-index: 9999;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-box {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 300px;
-        }
-
-        .login-title {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            background: var(--ai-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
-            color: #fff;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            background: var(--accent);
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .login-btn.secondary {
-            background: rgba(148, 163, 184, 0.2);
-            border: 1px solid #475569;
-            margin-top: 10px;
-        }
-
-        .login-btn.google {
-            background: #fff;
-            color: #0f172a;
-            margin-top: 10px;
-        }
-
-        /* Error Animation & Box */
-        @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            75% {
-                transform: translateX(5px);
-            }
-        }
-
-        .shake {
-            animation: shake 0.3s ease-in-out;
-        }
-
-        .login-error {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 15px;
-            display: none;
-            /* Hidden by default */
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .login-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-            outline: none;
-        }
-
-        /* === HEADER === */
-        .container {
-            width: 95%;
-            max-width: 1200px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .logo-area h1 {
-            font-size: 20px;
-            margin: 0;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: #fff;
-        }
-
-        .logo-area span {
-            font-size: 11px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        .btn-circle {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.3s;
-            font-size: 20px;
-        }
-
-        .btn-circle:hover {
-            background: var(--accent);
-        }
-
-        /* === GRID THIẾT BỊ === */
-        .device-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-            contain: layout paint;
-        }
-
-        .device-card {
-            background: rgba(30, 41, 59, 0.6);
-            /* Tăng độ đục để giảm gánh nặng tính toán blur */
-            backdrop-filter: blur(10px);
-            /* Giảm từ 20px xuống 10px */
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 24px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            will-change: transform, opacity;
-            contain: content;
-            /* Tối ưu render */
-        }
-
-        .device-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--accent-glow);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .device-card.offline {
-            opacity: 0.6;
-            filter: grayscale(1);
-        }
-
-        .card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-            pointer-events: none;
-        }
-
-        .card-right {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .card-id {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-dim);
-            text-transform: uppercase;
-        }
-
-        .card-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #334155;
-            transition: background 0.3s;
-        }
-
-        .card-dot.on {
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success);
-        }
-
-        .mode-badge-mini {
-            min-width: 22px;
-            height: 14px;
-            padding: 0 3px;
-            border-radius: 10px;
-            background: #ef4444;
-            color: #fff;
-            font-size: 8px;
-            font-weight: 800;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-
-        .card-main-stats {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex-grow: 1;
-            padding: 10px 0;
-            pointer-events: none;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-icon {
-            font-size: 18px;
-            margin-bottom: -5px;
-            opacity: 0.6;
-        }
-
-        .stat-icon.run-spin {
-            animation: runRotate 1s linear infinite;
-            opacity: 1;
-        }
-
-        .stat-value {
-            font-size: 48px;
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: -1px;
-        }
-
-        .stat-unit {
-            font-size: 12px;
-            font-weight: 700;
-            opacity: 0.5;
-            margin-left: 2px;
-        }
-
-        .stat-item.off .stat-value {
-            color: #94a3b8;
-        }
-
-        .stat-item.on .stat-value {
-            color: var(--warning);
-        }
-
-        .card-timer-mini {
-            margin-top: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            pointer-events: none;
-            text-align: center;
-        }
-
-        .mini-time {
-            font-family: 'Courier New', monospace;
-            font-size: 20px;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: 1px;
-        }
-
-        .mini-status {
-            font-size: 9px;
-            text-transform: uppercase;
-            color: var(--accent);
-            font-weight: 700;
-            margin-top: 2px;
-            display: block;
-        }
-
-        .mini-status.off {
-            color: var(--text-dim);
-        }
-
-        /* === PANEL ĐIỀU KHIỂN CHI TIẾT === */
-        .panel-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .panel {
-            width: 100%;
-            max-width: 500px;
-            background: #1e293b;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            padding: 24px;
-            box-sizing: border-box;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
-            box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.5);
-            max-height: 90vh;
-            overflow-y: auto;
-            will-change: transform;
-        }
-
-        .panel.show {
-            transform: translateY(0);
-        }
-
-        .handle {
-            width: 40px;
-            height: 4px;
-            background: #475569;
-            border-radius: 2px;
-            margin: 0 auto 20px;
-            cursor: pointer;
-        }
-
-        /* === NEW BIG CONTROL GROUP === */
-        .info-group {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 25px 0;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .info-item {
-            text-align: center;
-            flex: 1;
-        }
-
-        .info-label {
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            display: block;
-            letter-spacing: 0.5px;
-        }
-
-        .info-val-input {
-            width: 70px;
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 42px;
-            font-weight: 800;
-            text-align: center;
-            outline: none;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -moz-appearance: textfield;
-            letter-spacing: -1px;
-        }
-
-        .info-val-input::-webkit-outer-spin-button,
-        .info-val-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .info-unit {
-            font-size: 14px;
-            color: #64748b;
-            font-weight: 700;
-            margin-left: 2px;
-        }
-
-        .info-div {
-            width: 1px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-step-big {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: #fff;
-            font-size: 22px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-
-        .btn-step-big:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-step-big:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* PRESETS & BUTTONS */
-        .presets-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .btn-preset {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ccc;
-            border-radius: 12px;
-            padding: 10px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: .2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .btn-preset:active {
-            transform: scale(0.96);
-        }
-
-        .btn-preset span {
-            display: block;
-            font-weight: 800;
-            font-size: 12px;
-            margin-bottom: 4px;
-            color: #fff;
-        }
-
-        .btn-save-main {
-            width: 100%;
-            padding: 16px;
-            border-radius: 16px;
-            border: none;
-            background: var(--accent);
-            color: white;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-save-main:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
-        }
-
-        .maintenance-title {
-            font-size: 11px;
-            font-weight: 800;
-            color: #64748b;
-            margin: 25px 0 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .maintenance-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .btn-m {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #94a3b8;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-m:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-
-        .btn-manual {
-            color: var(--warning);
-            border-color: rgba(245, 158, 11, 0.2);
-        }
-
-        .btn-cancel {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ff453a;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            margin-top: 10px;
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-force {
-            background: rgba(59, 130, 246, 0.18);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            margin-top: 10px;
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-schedule {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 12px;
-        }
-
-        .dm-content {
-            width: 95%;
-            max-width: 520px;
-            background: #1e293b;
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .dm-list {
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .dm-item {
-            display: grid;
-            grid-template-columns: 1fr 70px 70px;
-            gap: 8px;
-            align-items: center;
-            background: rgba(255, 255, 255, .04);
-            border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 12px;
-            padding: 8px;
-        }
-
-        .dm-input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
-            color: #fff;
-            border-radius: 10px;
-            padding: 9px;
-            font-size: 12px;
-            box-sizing: border-box;
-        }
-
-        .dm-btn {
-            background: rgba(59, 130, 246, .2);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, .4);
-            border-radius: 10px;
-            padding: 9px 8px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .dm-btn.warn {
-            background: rgba(245, 158, 11, .2);
-            color: #fbbf24;
-            border-color: rgba(245, 158, 11, .4);
-        }
-
-        .dm-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-
-
-        #toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #334155;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            display: none;
-            z-index: 3000;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-
-
-        /* === SCHEDULE MODAL STYLES === */
-        #scheduleModal {
-            display: none;
-            z-index: 1200;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .schedule-content {
-            width: 95%;
-            max-width: 450px;
-            background: #1e293b;
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .guide-content {
-            width: 95%;
-            max-width: 520px;
-            background: #1e293b;
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .guide-content h4 {
-            margin: 12px 0 8px;
-            color: #93c5fd;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .guide-content ul {
-            margin: 0 0 10px 18px;
-            padding: 0;
-            color: #cbd5e1;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .guide-content li {
-            margin-bottom: 6px;
-        }
-
-        /* === SETTINGS MODAL STYLES === */
-        #settingsModal {
-            display: none;
-            z-index: 1300;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .settings-content {
-            width: 95%;
-            max-width: 600px;
-            background: #1e293b;
-            border-radius: 24px;
-            padding: 0;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            max-height: 85vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .settings-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .settings-body {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            height: 500px;
-        }
-
-        .settings-nav {
-            width: 140px;
-            background: rgba(0, 0, 0, 0.1);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            gap: 5px;
-        }
-
-        .nav-item {
-            padding: 12px 10px;
-            margin-bottom: 2px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            color: #94a3b8;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-        }
-
-        .nav-item.active {
-            background: var(--accent);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-        }
-
-        .settings-main {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .tab-pane {
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        .tab-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            text-transform: uppercase;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Settings */
-        @media (max-width: 600px) {
-            .settings-body {
-                flex-direction: column;
-            }
-
-            .settings-nav {
-                width: 100%;
-                flex-direction: row;
-                overflow-x: auto;
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                padding: 10px;
-                box-sizing: border-box;
-            }
-
-            .nav-item {
-                flex: none;
-                font-size: 11px;
-                padding: 8px 12px;
-            }
-
-            .settings-content {
-                height: 90vh;
-            }
-        }
-
-        .sched-list {
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .sched-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 10px;
-            margin-bottom: 8px;
-        }
-
-        .sched-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .sched-time input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
-            color: #fff;
-            padding: 5px;
-            border-radius: 6px;
-            width: 60px;
-            text-align: center;
-        }
-
-        .day-select {
-            display: flex;
-            gap: 4px;
-            justify-content: space-between;
-        }
-
-        .d-btn {
-            width: 100%;
-            text-align: center;
-            padding: 6px 0;
-            border-radius: 6px;
-            font-size: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            cursor: pointer;
-            color: #94a3b8;
-            font-weight: 700;
-        }
-
-        .d-btn.act {
-            background: rgba(59, 130, 246, 0.3);
-            color: #fff;
-            border: 1px solid rgba(59, 130, 246, 0.5);
-        }
-
-        .sw {
-            position: relative;
-            display: inline-block;
-            width: 34px;
-            height: 20px;
-        }
-
-        .sw input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .sl {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #475569;
-            transition: .2s;
-            border-radius: 20px;
-        }
-
-        .sl:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .2s;
-            border-radius: 50%;
-        }
-
-        input:checked+.sl {
-            background-color: #10b981;
-        }
-
-        input:checked+.sl:before {
-            transform: translateX(14px);
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-
-        @keyframes runRotate {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Smart Home – IoT v2.1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <style>
+    :root{--bg:#F2F2F7;--card:#fff;--accent:#00C853;--accent2:#00A844;--accent-glow:0 8px 24px rgba(0,200,83,.35);--danger:#FF3B30;--warning:#FF9500;--info:#007AFF;--txt:#1C1C1E;--txt2:#6D6D72;--dim:#AEAEB2;--border:#E5E5EA;--shadow:0 2px 12px rgba(0,0,0,.07);--r:18px;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;padding-bottom:80px;}
+    
+    /* HEADER */
+    .app-header{background:#fff;height:60px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);}
+    .app-header h1{font-size:18px;font-weight:800;color:var(--txt);}
+    .hdr-right{display:flex;gap:8px;}
+    .btn-icon{width:38px;height:38px;border-radius:12px;border:none;background:var(--bg);color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:.2s;}
+    .btn-icon:hover{background:var(--border);}
+
+    /* BOTTOM NAV */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:200;}
+    .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--dim);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border:none;background:transparent;transition:.2s;}
+    .nav-tab .ni{font-size:22px;}
+    .nav-tab.active{color:var(--accent);}
+
+    /* DEVICE GRID */
+    .container{padding:16px 14px;}
+    .sec-label{font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+    .status-bar{background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);}
+    .status-bar span{font-size:12px;color:var(--txt2);font-weight:600;}
+    .status-bar b{color:var(--txt);}
+    .device-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}
+
+    /* CARD */
+    .device-card{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;min-height:185px;border:2px solid transparent;position:relative;overflow:hidden;}
+    .device-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border);transition:.3s;}
+    .device-card.is-running::before{background:linear-gradient(90deg,var(--accent),#69F0AE);}
+    .device-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.11);}
+    .device-card.offline{opacity:.5;filter:grayscale(.7);}
+    .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .card-id{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .card-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.3s;flex-shrink:0;}
+    .card-dot.on{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+    .card-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+
+    /* BIG TOGGLE eWeLink style */
+    .card-toggle{width:68px;height:68px;border-radius:50%;background:var(--bg);border:3px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;transition:all .3s ease;position:relative;}
+    .card-toggle.running{background:linear-gradient(135deg,#69F0AE,#00C853);border-color:var(--accent);box-shadow:var(--accent-glow);}
+    .run-spin{animation:spinA 2s linear infinite;}
+    @keyframes spinA{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .card-timer{font-size:17px;font-weight:700;color:var(--txt);font-family:'Courier New',monospace;letter-spacing:1px;}
+    .card-footer{border-top:1px solid var(--border);padding-top:8px;display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+    .card-stats{display:flex;gap:6px;flex-wrap:wrap;}
+    .stat-chip{background:var(--bg);border-radius:7px;padding:3px 7px;font-size:10px;font-weight:700;color:var(--txt2);}
+    .stat-chip b{color:var(--txt);}
+    .mode-badge-mini{background:var(--danger);color:#fff;border-radius:6px;padding:2px 5px;font-size:9px;font-weight:800;display:none;}
+    
+    /* LOGIN */
+    #loginOverlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
+    .login-box{width:100%;max-width:400px;background:#fff;border-radius:28px;padding:32px 26px;box-shadow:0 12px 48px rgba(0,0,0,.12);}
+    .login-brand{text-align:center;margin-bottom:26px;}
+    .login-logo{width:70px;height:70px;border-radius:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 8px 24px rgba(0,200,83,.4);}
+    .login-title{font-size:26px;font-weight:800;color:var(--txt);margin:0 0 4px;}
+    .login-sub{font-size:13px;color:var(--txt2);}
+    .google-btn{width:100%;padding:14px;border-radius:14px;border:1.5px solid var(--border);background:#fff;color:var(--txt);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.06);font-family:inherit;}
+    .google-btn:hover{box-shadow:0 6px 18px rgba(0,0,0,.1);}
+    .login-divider{display:flex;align-items:center;gap:10px;margin:0 0 16px;color:var(--dim);font-size:11px;font-weight:700;}
+    .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .login-field{margin-bottom:12px;}
+    .login-field-label{display:block;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+    .login-input-wrap{display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:0 14px;min-height:50px;transition:.2s;}
+    .login-input-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,83,.15);}
+    .login-icon{font-size:15px;opacity:.6;}
+    .login-input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:var(--txt);font-family:inherit;}
+    .login-input::placeholder{color:var(--dim);}
+    .login-error{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none;}
+    .login-help-row{display:flex;justify-content:flex-end;margin:-4px 0 10px;}
+    .login-link-btn{border:none;background:transparent;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;}
+    .login-btn{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,200,83,.4);transition:.2s;font-family:inherit;}
+    .login-btn:hover{transform:translateY(-1px);}
+    .login-btn.secondary{margin-top:10px;background:var(--bg);color:var(--txt2);box-shadow:none;border:1.5px solid var(--border);}
+    .login-btn.secondary:hover{background:var(--border);}
+    .login-footer{text-align:center;margin-top:14px;font-size:13px;color:var(--txt2);}
+    .login-footer a{color:var(--accent);font-weight:600;text-decoration:none;}
+    .login-terms{margin:8px 0 14px;font-size:12px;color:var(--txt2);}
+    .otp-register-block{display:none;margin-bottom:12px;padding:12px;border-radius:12px;border:1.5px solid rgba(0,200,83,.3);background:rgba(0,200,83,.06);}
+    .otp-register-actions{display:flex;gap:8px;margin-top:8px;}
+    .forgot-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:12000;padding:16px;}
+    .forgot-modal-box{width:100%;max-width:400px;background:#fff;border-radius:20px;padding:20px;box-shadow:0 24px 64px rgba(0,0,0,.2);}
+    .forgot-actions{display:flex;gap:8px;margin-top:12px;}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .shake{animation:shake .3s ease;}
+
+    /* PANEL */
+    .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;justify-content:center;align-items:flex-end;}
+    .panel{width:100%;max-width:520px;background:#fff;border-top-left-radius:28px;border-top-right-radius:28px;padding:20px 20px 34px;transform:translateY(100%);transition:transform .35s cubic-bezier(.33,1,.68,1);max-height:92vh;overflow-y:auto;}
+    .panel.show{transform:translateY(0);}
+    .handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;cursor:pointer;}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+    .panel-head h2{font-size:20px;font-weight:800;color:var(--txt);margin:0;}
+    .panel-head p{color:var(--txt2);font-size:11px;margin:2px 0 0;}
+    .pstatus-badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--border);color:var(--txt2);}
+    .pstatus-badge.online{background:rgba(0,200,83,.15);color:var(--accent);}
+
+    /* Status banners */
+    #panelStatusBanner{display:none;flex-direction:column;gap:8px;margin-bottom:14px;}
+    #maintBanner{display:none;background:rgba(255,149,0,.1);border:1px solid rgba(255,149,0,.3);color:#FF9500;padding:10px 14px;border-radius:12px;font-size:13px;align-items:center;gap:8px;font-weight:600;}
+    #pauseBanner{display:none;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--danger);padding:10px 14px;border-radius:12px;font-size:13px;align-items:center;gap:8px;font-weight:600;}
+
+    /* Sensor grid */
+    .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+    .sensor-item{background:var(--bg);padding:12px;border-radius:14px;text-align:center;}
+    .sensor-label{font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+    .sensor-val{font-size:20px;font-weight:800;color:var(--txt);}
+    .sensor-unit{font-size:11px;color:var(--dim);margin-left:2px;}
+
+    /* Controls */
+    .ctrl-group{background:var(--bg);border-radius:18px;padding:20px;margin-bottom:14px;display:flex;justify-content:space-around;align-items:center;}
+    .ctrl-item{text-align:center;flex:1;}
+    .ctrl-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;}
+    .ctrl-row{display:flex;align-items:center;justify-content:center;gap:8px;}
+    .ctrl-div{width:1px;height:52px;background:var(--border);}
+    .btn-step{width:34px;height:34px;border-radius:10px;background:#fff;border:1.5px solid var(--border);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt);transition:.15s;}
+    .btn-step:active{transform:scale(.9);background:var(--border);}
+    .info-val-input{width:55px;background:transparent;border:none;outline:none;font-size:36px;font-weight:800;text-align:center;color:var(--txt);font-family:inherit;-moz-appearance:textfield;}
+    .info-val-input::-webkit-outer-spin-button,.info-val-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+    .info-unit{font-size:13px;color:var(--txt2);font-weight:600;}
+    .preset-label,.section-title-sm{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
+    .presets-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+    .btn-preset{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:10px 6px;cursor:pointer;text-align:center;font-size:10px;color:var(--txt2);font-weight:600;transition:.2s;font-family:inherit;}
+    .btn-preset span{display:block;font-weight:800;font-size:11px;color:var(--txt);margin-bottom:2px;}
+    .btn-preset:active{transform:scale(.97);}
+    .btn-main{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 16px rgba(0,200,83,.35);margin-bottom:10px;transition:.2s;font-family:inherit;}
+    .btn-main:active{transform:scale(.98);}
+    .btn-outline{width:100%;padding:13px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--txt2);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:.2s;font-family:inherit;}
+    .btn-outline:hover{background:var(--bg);}
+    .btn-outline.blue{border-color:rgba(0,122,255,.4);color:var(--info);}
+    .btn-outline.green{border-color:rgba(0,200,83,.4);color:var(--accent);}
+    .btn-outline.red{border-color:rgba(255,59,48,.4);color:var(--danger);background:rgba(255,59,48,.04);}
+    .maint-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+    .btn-m{background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:10px;color:var(--txt2);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;}
+    .btn-m:hover{background:var(--border);color:var(--txt);}
+    .btn-m.btn-manual{color:var(--warning);border-color:rgba(255,149,0,.3);}
+    .btn-cancel{width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,59,48,.4);background:rgba(255,59,48,.05);color:var(--danger);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+    /* MODALS */
+    #scheduleModal,#settingsModal{display:none;z-index:1200;align-items:center;justify-content:center;}
+    .modal-wrap{width:95%;max-width:480px;background:#fff;border-radius:24px;padding:0;box-shadow:0 24px 64px rgba(0,0,0,.18);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;}
+    .modal-head{padding:17px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+    .modal-head h3{font-size:17px;font-weight:800;color:var(--txt);margin:0;}
+    .modal-close{background:var(--bg);border:none;width:32px;height:32px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;}
+    .modal-body{flex:1;overflow-y:auto;padding:14px 18px 22px;}
+    .settings-tabs{display:flex;gap:4px;padding:10px 14px 0;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+    .settings-tabs::-webkit-scrollbar{display:none;}
+    .s-tab{padding:7px 14px 11px;border-radius:20px 20px 0 0;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border:none;background:transparent;color:var(--txt2);transition:.2s;border-bottom:2px solid transparent;font-family:inherit;}
+    .s-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .tab-pane{display:none;}
+    .tab-pane.active{display:block;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .tab-pane.active{animation:fadeUp .25s ease;}
+
+    /* Form */
+    .form-group{margin-bottom:12px;}
+    .form-label{display:block;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+    .dm-input,.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--txt);border-radius:12px;padding:11px 14px;font-size:14px;box-sizing:border-box;font-family:inherit;outline:none;transition:.2s;}
+    .dm-input:focus,.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,83,.12);}
+    .info-box{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--txt2);}
+    .info-box b{color:var(--txt);}
+    .btn-sm{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:.2s;font-family:inherit;}
+    .btn-sm.green{background:rgba(0,200,83,.1);color:var(--accent);border:1px solid rgba(0,200,83,.3);}
+    .btn-sm.blue{background:rgba(0,122,255,.1);color:var(--info);border:1px solid rgba(0,122,255,.3);}
+    .btn-sm.warn{background:rgba(255,149,0,.1);color:var(--warning);border:1px solid rgba(255,149,0,.3);}
+    .btn-sm.red{background:rgba(255,59,48,.1);color:var(--danger);border:1px solid rgba(255,59,48,.3);}
+    .btn-sm.full{width:100%;}
+    .flex-row{display:flex;gap:8px;}
+    .flex-1{flex:1;}
+    .dm-btn{background:rgba(0,122,255,.1);color:var(--info);border:1px solid rgba(0,122,255,.3);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .dm-btn.warn{background:rgba(255,149,0,.1);color:var(--warning);border-color:rgba(255,149,0,.3);}
+    .dm-list{display:flex;flex-direction:column;gap:8px;}
+    .dm-item{display:grid;grid-template-columns:1fr 40px 40px;gap:8px;align-items:center;background:var(--bg);border-radius:12px;padding:8px;}
+    .sys-card{background:var(--bg);border-radius:14px;padding:14px;margin-bottom:12px;}
+    .sys-card-label{font-size:11px;color:var(--txt2);margin-bottom:8px;font-weight:600;}
+    .sched-list{max-height:280px;overflow-y:auto;margin:10px 0;}
+    .sched-item{background:var(--bg);border-radius:14px;padding:12px;margin-bottom:10px;}
+    .sched-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .sched-time{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2);}
+    .sched-time input{background:#fff;border:1.5px solid var(--border);color:var(--txt);border-radius:8px;padding:4px 6px;width:68px;text-align:center;font-size:12px;}
+    .day-select{display:flex;gap:4px;}
+    .d-btn{flex:1;text-align:center;padding:5px 0;border-radius:7px;font-size:9px;font-weight:700;background:var(--border);cursor:pointer;color:var(--txt2);}
+    .d-btn.act{background:var(--accent);color:#fff;}
+    .sw{position:relative;display:inline-block;width:34px;height:20px;}
+    .sw input{opacity:0;width:0;height:0;}
+    .sl{position:absolute;cursor:pointer;inset:0;background:var(--border);transition:.2s;border-radius:20px;}
+    .sl::before{position:absolute;content:'';height:16px;width:16px;left:2px;bottom:2px;background:#fff;transition:.2s;border-radius:50%;}
+    input:checked+.sl{background:var(--accent);}
+    input:checked+.sl::before{transform:translateX(14px);}
+    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(28,28,30,.92);color:#fff;padding:10px 22px;border-radius:50px;font-size:13px;font-weight:600;display:none;z-index:5000;white-space:nowrap;backdrop-filter:blur(10px);}
+    #forgotPhoneOtpBlock{display:none;margin-top:10px;border:1.5px solid rgba(0,200,83,.3);border-radius:12px;padding:12px;background:rgba(0,200,83,.05);}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    @media(max-width:480px){.device-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
 </head>
-
 <body>
 
-    <div id="toast">Thông báo</div>
+<div id="toast">Thông báo</div>
 
-    <!-- LOGIN OVERLAY -->
-    <div id="loginOverlay">
-        <div class="login-box" id="loginBox">
-            <div class="login-title">IOT LOGIN</div>
-            <div style="font-size:14px; color:#94a3b8; margin-bottom:20px">Nhập Mã Khách Hàng để quản lý thiết bị</div>
+<!-- LOGIN -->
+<div id="loginOverlay">
+  <div class="login-box" id="loginBox">
+    <div class="login-brand">
+      <div class="login-logo">🏠</div>
+      <h2 class="login-title">Smart Home</h2>
+      <p class="login-sub">Anh Trung IoT Ecosystem</p>
+    </div>
+    <button type="button" class="google-btn" onclick="performGoogleLogin()">
+      <span style="font-size:20px;font-weight:900;background:linear-gradient(45deg,#4285F4,#34A853,#FBBC05,#EA4335);-webkit-background-clip:text;background-clip:text;color:transparent;">G</span>
+      Đăng nhập bằng Google
+    </button>
+    <div class="login-divider">HOẶC</div>
+    <div id="loginError" class="login-error"></div>
+    <div class="login-field">
+      <label class="login-field-label" for="loginUser">Email hoặc tên đăng nhập</label>
+      <div class="login-input-wrap">
+        <span class="login-icon">📧</span>
+        <input type="text" id="loginUser" class="login-input" placeholder="Nhập email / username" autocomplete="username">
+      </div>
+    </div>
+    <div class="login-field">
+      <label class="login-field-label" for="loginPass">Mật khẩu</label>
+      <div class="login-input-wrap">
+        <span class="login-icon">🔒</span>
+        <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu" autocomplete="current-password">
+        <span class="login-icon">👁️</span>
+      </div>
+    </div>
+    <div class="login-help-row">
+      <button type="button" class="login-link-btn" onclick="openForgotPasswordModal()">Quên mật khẩu?</button>
+    </div>
+    <div class="login-field" id="confirmPassField" style="display:none;">
+      <label class="login-field-label" for="loginPassConfirm">Nhập lại mật khẩu</label>
+      <div class="login-input-wrap">
+        <span class="login-icon">🔐</span>
+        <input type="password" id="loginPassConfirm" class="login-input" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+      </div>
+    </div>
+    <div id="otpRegisterBlock" class="otp-register-block">
+      <div style="font-size:12px;color:var(--accent);margin-bottom:6px;font-weight:600;">Xác minh SĐT bằng OTP</div>
+      <div class="login-input-wrap" style="min-height:44px;">
+        <span class="login-icon">🔢</span>
+        <input type="text" id="otpCodeInput" class="login-input" placeholder="Nhập mã OTP" inputmode="numeric">
+      </div>
+      <div class="otp-register-actions">
+        <button type="button" class="btn-sm blue flex-1" onclick="sendRegisterOtp()">Gửi OTP</button>
+        <button type="button" class="btn-sm green flex-1" onclick="verifyRegisterOtp()">Xác nhận OTP</button>
+      </div>
+    </div>
+    <p class="login-terms">Bằng đăng nhập, bạn đồng ý với <a href="#" style="color:var(--accent);">Điều khoản</a> và <a href="#" style="color:var(--accent);">Chính sách</a>.</p>
+    <button class="login-btn" onclick="performLogin()">ĐĂNG NHẬP</button>
+    <button class="login-btn secondary" id="registerBtn" onclick="handleRegisterAction()">ĐĂNG KÝ</button>
+  </div>
+</div>
 
-            <div id="loginError" class="login-error"></div>
+<!-- FORGOT PASSWORD -->
+<div id="forgotPasswordModal" class="forgot-modal" onclick="if(event.target.id==='forgotPasswordModal') closeForgotPasswordModal()">
+  <div class="forgot-modal-box">
+    <div style="font-size:17px;font-weight:800;color:var(--txt);margin-bottom:6px;">Đặt lại mật khẩu</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:12px;">Nhập email hoặc SĐT đã đăng ký</div>
+    <input id="forgotAccountInput" class="dm-input" type="text" placeholder="Email hoặc SĐT/username" style="margin-bottom:10px;">
+    <div id="forgotPhoneOtpBlock">
+      <div style="font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:600;">Khôi phục qua SĐT — nhập OTP</div>
+      <input id="forgotOtpInput" class="dm-input" type="text" placeholder="Mã OTP" inputmode="numeric" style="margin-bottom:8px;">
+      <input id="forgotNewPass" class="dm-input" type="password" placeholder="Mật khẩu mới (≥ 6 ký tự)" style="margin-bottom:8px;">
+      <input id="forgotNewPass2" class="dm-input" type="password" placeholder="Nhập lại mật khẩu mới" style="margin-bottom:8px;">
+      <div class="flex-row">
+        <button class="btn-sm blue flex-1" onclick="sendForgotPhoneOtp()">Gửi OTP SĐT</button>
+        <button class="btn-sm green flex-1" onclick="verifyForgotPhoneOtp()">Xác minh OTP</button>
+      </div>
+      <button class="btn-sm green full" onclick="submitPhonePasswordReset()" style="margin-top:8px;">Đặt lại mật khẩu</button>
+    </div>
+    <div class="forgot-actions">
+      <button class="btn-sm blue flex-1" onclick="submitForgotPassword()">Gửi link reset</button>
+      <button class="btn-sm warn flex-1" onclick="closeForgotPasswordModal()">Đóng</button>
+    </div>
+  </div>
+</div>
+<div id="recaptcha-container" style="position:fixed;bottom:8px;right:8px;z-index:13000;"></div>
 
-            <input type="text" id="loginUser" class="login-input" placeholder="Ví dụ: user01" autocomplete="username">
-            <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu" style="margin-top:0"
-                autocomplete="current-password">
+<!-- SCHEDULE MODAL -->
+<div id="scheduleModal" class="panel-overlay" onclick="if(event.target.id='scheduleModal') closeSchedule()">
+  <div class="modal-wrap">
+    <div class="modal-head">
+      <h3>📅 Hẹn giờ nghỉ</h3>
+      <button class="modal-close" onclick="closeSchedule()">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="schedDevId" style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Thiết bị: --</p>
+      <div class="sched-list" id="schedList"></div>
+      <div class="flex-row" style="margin-top:8px;">
+        <button class="btn-sm blue flex-1" onclick="addScheduleItem()">+ Thêm mốc</button>
+        <button class="btn-sm green flex-1" onclick="saveSchedule()">💾 Lưu lịch</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            <button class="login-btn" onclick="performLogin()">TRUY CẬP HỆ THỐNG</button>
-            <button class="login-btn google" onclick="performGoogleLogin()">
-                <span style="font-weight:bold; margin-right:5px">G</span> ĐĂNG NHẬP BẰNG GOOGLE
-            </button>
-            <button class="login-btn secondary" onclick="registerAccount()">TẠO TÀI KHOẢN</button>
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="panel-overlay" onclick="if(event.target.id='settingsModal') closeSettings()">
+  <div class="modal-wrap" style="max-width:540px;">
+    <div class="modal-head">
+      <h3>⚙️ Cài đặt</h3>
+      <button class="modal-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="settings-tabs">
+      <button class="s-tab active" onclick="switchTab('tab-account',this)">👤 Tài khoản</button>
+      <button class="s-tab" onclick="switchTab('tab-devices',this)">🗂️ Thiết bị</button>
+      <button class="s-tab" onclick="switchTab('tab-system',this)">🛠️ Hệ thống</button>
+      <button class="s-tab" onclick="switchTab('tab-guide',this)">📘 Hướng dẫn</button>
+    </div>
+    <div class="modal-body">
+      <!-- TAB ACCOUNT -->
+      <div id="tab-account" class="tab-pane active">
+        <div class="info-box">Email: <b id="uiEmail">...</b><br>SĐT liên kết: <b id="uiPhone" style="color:var(--accent);">...</b></div>
+        <div class="form-group">
+          <label class="form-label">Liên kết SĐT</label>
+          <input id="linkedPhone" class="form-input" type="text" placeholder="Ví dụ: 0907888111">
         </div>
-    </div>
-
-
-
-    <!-- SCHEDULE MODAL -->
-    <div id="scheduleModal" class="panel-overlay" onclick="if(event.target.id==='scheduleModal') closeSchedule()">
-        <div class="schedule-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                <h3 style="margin:0; color:#fff">📅 HẸN GIỜ NGHỈ</h3>
-                <button onclick="closeSchedule()"
-                    style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
-            </div>
-            <p id="schedDevId" style="font-size:11px; color:#94a3b8; margin-top:-10px">ID: --</p>
-
-            <div class="sched-list" id="schedList"></div>
-
-            <div style="display:flex; gap:10px; margin-top:20px">
-                <button class="btn-m" style="flex:1" onclick="addScheduleItem()">+ THÊM MỐC</button>
-                <button class="btn-save-main" style="flex:1; margin:0; padding: 12px; font-size:12px;"
-                    onclick="saveSchedule()">LƯU LỊCH</button>
-            </div>
+        <button class="btn-sm green full" onclick="saveLinkedPhone()" style="margin-bottom:16px;">🔗 Lưu liên kết SĐT</button>
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px;font-size:12px;color:var(--txt2);">Tạo / Đổi mật khẩu</div>
+        <input id="newPassword" class="form-input" type="password" placeholder="Mật khẩu mới (≥ 6 ký tự)" style="margin-bottom:8px;">
+        <input id="confirmPassword" class="form-input" type="password" placeholder="Nhập lại mật khẩu mới" style="margin-bottom:10px;">
+        <button class="btn-sm blue full" onclick="changePasswordInApp()">🔐 Cập nhật mật khẩu</button>
+      </div>
+      <!-- TAB DEVICES -->
+      <div id="tab-devices" class="tab-pane">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:10px;">Dùng ↑ ↓ để sắp xếp vị trí hiển thị.</div>
+        <div id="dmList" class="dm-list" style="max-height:300px;overflow-y:auto;margin-bottom:12px;"></div>
+        <div class="flex-row">
+          <button class="btn-sm green flex-1" onclick="saveDeviceManagerChanges()">💾 Lưu</button>
+          <button class="btn-sm warn flex-1" onclick="resetDeviceOrder()">↺ Reset</button>
         </div>
-    </div>
-
-    <!-- SETTINGS MODAL (Unified) -->
-    <div id="settingsModal" class="panel-overlay" onclick="if(event.target.id==='settingsModal') closeSettings()">
-        <div class="settings-content">
-            <div class="settings-header">
-                <h3 style="margin:0; font-size:16px; color:#fff">⚙️ CÀI ĐẶT HỆ THỐNG</h3>
-                <button onclick="closeSettings()"
-                    style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
-            </div>
-
-            <div class="settings-body">
-                <div class="settings-nav">
-                    <div class="nav-item active" onclick="switchTab('tab-account', this)">👤 Tài khoản</div>
-                    <div class="nav-item" onclick="switchTab('tab-devices', this)">🗂️ Thiết bị</div>
-                    <div class="nav-item" onclick="switchTab('tab-system', this)">🛠️ Hệ thống</div>
-                    <div class="nav-item" onclick="switchTab('tab-guide', this)">📘 Hướng dẫn</div>
-                </div>
-
-                <div class="settings-main">
-
-                    <!-- TAB ACCOUNT -->
-                    <div id="tab-account" class="tab-pane active">
-                        <div class="tab-title">Liên kết & Bảo mật</div>
-                        <div style="margin-bottom:15px; font-size:12px; color:#94a3b8;">
-                            Email: <b id="uiEmail" style="color:#fff">...</b><br>
-                            SĐT Liên kết: <b id="uiPhone" style="color:var(--accent)">...</b>
-                        </div>
-                        <input id="linkedPhone" class="dm-input" type="text" placeholder="Nhập SĐT, ví dụ: 0907888111"
-                            style="margin-bottom:10px">
-                        <button class="dm-btn" onclick="saveLinkedPhone()">🔗 LƯU LIÊN KẾT SĐT</button>
-
-                        <div
-                            style="margin: 20px 0 10px; font-size:12px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
-                            Tạo / Đổi mật khẩu</div>
-                        <input id="newPassword" class="dm-input" type="password" placeholder="Mật khẩu mới (>= 6 ký tự)"
-                            style="margin-bottom:8px">
-                        <input id="confirmPassword" class="dm-input" type="password" placeholder="Nhập lại mật khẩu mới"
-                            style="margin-bottom:8px">
-                        <button class="dm-btn" onclick="changePasswordInApp()">🔐 CẬP NHẬT MẬT KHẨU</button>
-                    </div>
-
-                    <!-- TAB DEVICES -->
-                    <div id="tab-devices" class="tab-pane">
-                        <div class="tab-title">Quản lý tên & Thứ tự</div>
-                        <div style="font-size:12px; color:#94a3b8; margin-bottom:10px">
-                            Dùng mũi tên ↑ ↓ để sắp xếp vị trí hiển thị.
-                        </div>
-                        <div id="dmList" class="dm-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px">
-                        </div>
-                        <div style="display:flex; gap:10px">
-                            <button class="dm-btn" onclick="saveDeviceManagerChanges()" style="flex:1">💾 LƯU</button>
-                            <button class="dm-btn warn" onclick="resetDeviceOrder()" style="flex:1">↺ RESET</button>
-                        </div>
-                    </div>
-
-                    <!-- TAB SYSTEM -->
-                    <div id="tab-system" class="tab-pane">
-                        <div class="tab-title">Tiện ích & Đăng xuất</div>
-
-                        <div
-                            style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:15px">
-                            <div style="font-size:12px; color:#94a3b8; margin-bottom:5px">Xóa Cache Local</div>
-                            <button class="dm-btn warn"
-                                onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}"
-                                style="width:100%">
-                                ↻ XÓA DATA & TẢI LẠI
-                            </button>
-                        </div>
-
-                        <div style="background:rgba(239, 68, 68, 0.1); padding:15px; border-radius:12px;">
-                            <div style="font-size:12px; color:#ef4444; margin-bottom:5px">Khu vực nguy hiểm</div>
-                            <button class="dm-btn" style="width:100%; background:#ef4444; color:#fff; border:none;"
-                                onclick="logout()">
-                                🔓 ĐĂNG XUẤT (LOGOUT)
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- TAB GUIDE -->
-                    <div id="tab-guide" class="tab-pane">
-                        <div class="tab-title">Hướng dẫn sử dụng</div>
-                        <div class="guide-content" style="box-shadow:none; padding:0; background:none;">
-                            <h4>1) Điều khiển thiết bị</h4>
-                            <ul>
-                                <li>Bấm vào thẻ để mở panel chi tiết.</li>
-                                <li>Cài đặt thời gian nghỉ/chạy rồi bấm Lưu.</li>
-                            </ul>
-                            <h4>2) PWA & Tiện ích</h4>
-                            <ul>
-                                <li>Thêm vào màn hình chính để dùng như App.</li>
-                                <li>Bấm icon ✨ để gọi AI trợ lý.</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+      </div>
+      <!-- TAB SYSTEM -->
+      <div id="tab-system" class="tab-pane">
+        <div class="sys-card">
+          <div class="sys-card-label">Kiểm tra kết nối MQTT</div>
+          <button class="btn-sm blue full" onclick="testMqttConfig()" style="margin-bottom:8px;">🧪 Test MQTT Config</button>
+          <button class="btn-sm green full" onclick="testWsPreflight()">🌐 WS Preflight Test</button>
+          <div id="mqttTestResult" style="font-size:11px;color:var(--txt2);margin-top:8px;white-space:pre-wrap;"></div>
         </div>
-    </div>
-
-    <!-- PANEL ĐIỀU KHIỂN CHI TIẾT -->
-    <div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
-        <div class="panel" id="mainPanel">
-            <div class="handle" onclick="closePanel({target:{id:'panelOverlay'}})"></div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div>
-                    <h2 id="panelTitle" style="margin:0; color: #fff; font-size: 18px;">TIMER CONTROL</h2>
-                    <p id="panelId" style="color: var(--text-dim); font-size: 11px; margin: 0;">ID: --</p>
-                </div>
-                <div id="panelStatusBadge"
-                    style="padding: 4px 10px; background: #334155; border-radius: 20px; font-size: 10px; font-weight: bold;">
-                    OFFLINE</div>
-            </div>
-
-            <!-- STATUS BANNERS -->
-            <div id="panelStatusBanner" style="display:none; flex-direction:column; gap:8px; margin-bottom:15px;">
-                <!-- Maintenance Banner -->
-                <div id="maintBanner"
-                    style="display:none; background:rgba(234, 179, 8, 0.2); border:1px solid rgba(234, 179, 8, 0.4); color:#facc15; padding:10px; border-radius:8px; font-size:13px; align-items:center; gap:8px;">
-                    <span>🔧</span> <span id="maintText">ĐANG BẢO TRÌ</span>
-                </div>
-                <!-- Pause Banner -->
-                <div id="pauseBanner"
-                    style="display:none; background:rgba(239, 68, 68, 0.2); border:1px solid rgba(239, 68, 68, 0.4); color:#f87171; padding:10px; border-radius:8px; font-size:13px; align-items:center; gap:8px;">
-                    <span>⏸️</span> <span>LỊCH TRÌNH ĐANG TẠM DỪNG</span>
-                </div>
-            </div>
-
-            <!-- SENSOR DATA GRID -->
-            <style>
-                .sensor-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 8px;
-                    margin-bottom: 20px;
-                }
-
-                .sensor-item {
-                    background: rgba(255, 255, 255, 0.03);
-                    padding: 10px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    text-align: center;
-                }
-
-                .sensor-label {
-                    font-size: 10px;
-                    color: #94a3b8;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    margin-bottom: 4px;
-                }
-
-                .sensor-val {
-                    font-size: 16px;
-                    font-weight: 800;
-                    color: #fff;
-                }
-
-                .sensor-unit {
-                    font-size: 10px;
-                    color: #64748b;
-                    font-weight: normal;
-                    margin-left: 2px;
-                }
-            </style>
-            <div class="sensor-grid">
-                <div class="sensor-item">
-                    <div class="sensor-label">💾 RAM FREE</div>
-                    <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">⚡ DÒNG ĐIỆN</div>
-                    <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">🌡️ NHIỆT ĐỘ</div>
-                    <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">🚰 PHAO TRÀN</div>
-                    <div class="sensor-val" id="pPhao" style="color:#94a3b8">--</div>
-                </div>
-            </div>
-
-            <!-- === NEW BIG CONTROL GROUP === -->
-            <div class="info-group">
-                <div class="info-item">
-                    <span class="info-label">CÀI ĐẶT NGHỈ</span>
-                    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
-                        <button class="btn-step-big" onclick="adjustValue('offMin',-1)">−</button>
-                        <div style="display:flex; align-items:baseline; gap:2px">
-                            <input type="number" id="offMin" class="info-val-input" value="0">
-                            <span class="info-unit">P</span>
-                        </div>
-                        <button class="btn-step-big" onclick="adjustValue('offMin',1)">+</button>
-                    </div>
-                </div>
-                <div class="info-div"></div>
-                <div class="info-item">
-                    <span class="info-label">CÀI ĐẶT CHẠY</span>
-                    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px">
-                        <button class="btn-step-big" onclick="adjustValue('onSec',-1)">−</button>
-                        <div style="display:flex; align-items:baseline; gap:2px">
-                            <input type="number" id="onSec" class="info-val-input" value="0">
-                            <span class="info-unit">S</span>
-                        </div>
-                        <button class="btn-step-big" onclick="adjustValue('onSec',1)">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRESETS -->
-            <div style="text-align:left;font-size:11px;color:#8e8e93;font-weight:bold;margin-bottom:8px">CẤU HÌNH NHANH
-            </div>
-            <div class="presets-container">
-                <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
-                <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
-                <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
-            </div>
-
-            <button class="btn-save-main" onclick="saveSettings()">LƯU CÀI ĐẶT MỚI</button>
-            <button class="btn-schedule" onclick="openSchedule()">📅 CÀI ĐẶT LỊCH NGHỈ (SCHEDULE)</button>
-            <button class="btn-force" onclick="forceRun()">⚡ FORCE RUN</button>
-
-            <div class="maintenance-title">🔧 Chế độ bảo trì</div>
-            <div class="maintenance-grid">
-                <button class="btn-m" onclick="setMaint(1)">7p</button>
-                <button class="btn-m" onclick="setMaint(2)">15p</button>
-                <button class="btn-m" onclick="setMaint(3)">30p</button>
-                <button class="btn-m" onclick="setMaint(4)">50p</button>
-                <button class="btn-m" onclick="setMaint(5)">80p</button>
-                <button class="btn-m btn-manual" onclick="setMaint(6)">∞</button>
-            </div>
-            <button class="btn-cancel" onclick="setMaint(0)">HỦY BẢO TRÌ</button>
-
-            <div style="height: 30px;"></div>
+        <div class="sys-card">
+          <div class="sys-card-label">Xóa Cache Local</div>
+          <button class="btn-sm warn full" onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻ Xóa Data &amp; Tải lại</button>
         </div>
+        <div class="sys-card" style="border:1.5px solid rgba(255,59,48,.2);">
+          <div class="sys-card-label" style="color:var(--danger);">Khu vực nguy hiểm</div>
+          <button class="btn-sm red full" onclick="logout()">🔓 Đăng xuất (Logout)</button>
+        </div>
+      </div>
+      <!-- TAB GUIDE -->
+      <div id="tab-guide" class="tab-pane">
+        <div style="font-size:13px;color:var(--txt2);line-height:1.7;">
+          <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">1) Điều khiển thiết bị</p>
+          <ul style="margin:0 0 12px 16px;"><li>Bấm vào thẻ để mở bảng điều khiển chi tiết.</li><li>Cài thời gian nghỉ/chạy rồi bấm Lưu.</li></ul>
+          <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">2) PWA</p>
+          <ul style="margin:0 0 12px 16px;"><li>Thêm vào màn hình chính để dùng như App.</li></ul>
+          <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">3) Bảo trì</p>
+          <ul style="margin:0 16px;"><li>Mở panel → chọn thời lượng bảo trì.</li><li>Thiết bị chạy liên tục trong thời gian đó.</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROL PANEL BOTTOM SHEET -->
+<div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
+  <div class="panel" id="mainPanel">
+    <div class="handle" onclick="closePanel({target:{id:'panelOverlay'}})"></div>
+    <div class="panel-head">
+      <div>
+        <h2 id="panelTitle">TIMER CONTROL</h2>
+        <p id="panelId">ID: --</p>
+      </div>
+      <div id="panelStatusBadge" class="pstatus-badge">OFFLINE</div>
     </div>
 
-    <div class="container">
-        <header>
-            <div class="logo-area">
-                <h1>IOT ECOSYSTEM v1.9</h1>
-                <span id="deviceCount">ĐANG CHỜ ĐĂNG NHẬP...</span>
-            </div>
-            <div class="header-actions">
-                <button class="btn-circle" onclick="openSettings()">⚙️</button>
-            </div>
-        </header>
-
-        <div class="device-grid" id="grid"></div>
+    <!-- STATUS BANNERS -->
+    <div id="panelStatusBanner">
+      <div id="maintBanner"><span>🔧</span><span id="maintText">ĐANG BẢO TRÌ</span></div>
+      <div id="pauseBanner"><span>⏸️</span><span>LỊCH TRÌNH ĐANG TẠM DỪNG</span></div>
     </div>
 
+    <!-- SENSOR DATA -->
+    <div class="sensor-grid">
+      <div class="sensor-item">
+        <div class="sensor-label">💾 RAM Free</div>
+        <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
+      </div>
+      <div class="sensor-item">
+        <div class="sensor-label">⚡ Dòng điện</div>
+        <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
+      </div>
+      <div class="sensor-item">
+        <div class="sensor-label">🌡️ Nhiệt độ</div>
+        <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
+      </div>
+      <div class="sensor-item">
+        <div class="sensor-label">🚰 Phao tràn</div>
+        <div class="sensor-val" id="pPhao" style="color:var(--txt2);">--</div>
+      </div>
+    </div>
 
+    <!-- TIMER CONTROLS -->
+    <div class="ctrl-group">
+      <div class="ctrl-item">
+        <span class="ctrl-label">Cài đặt nghỉ</span>
+        <div class="ctrl-row">
+          <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
+          <div style="display:flex;align-items:baseline;gap:2px;">
+            <input type="number" id="offMin" class="info-val-input" value="0">
+            <span class="info-unit">P</span>
+          </div>
+          <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
+        </div>
+      </div>
+      <div class="ctrl-div"></div>
+      <div class="ctrl-item">
+        <span class="ctrl-label">Cài đặt chạy</span>
+        <div class="ctrl-row">
+          <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
+          <div style="display:flex;align-items:baseline;gap:2px;">
+            <input type="number" id="onSec" class="info-val-input" value="0">
+            <span class="info-unit">S</span>
+          </div>
+          <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
+        </div>
+      </div>
+    </div>
 
-    <script>
+    <!-- PRESETS -->
+    <div class="preset-label">Cấu hình nhanh</div>
+    <div class="presets-grid">
+      <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
+      <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
+      <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
+    </div>
+
+    <button class="btn-main" onclick="saveSettings()">💾 LƯU CÀI ĐẶT MỚI</button>
+    <button class="btn-outline green" onclick="openSchedule()">📅 Cài đặt lịch nghỉ (Schedule)</button>
+    <button class="btn-outline blue" onclick="forceRun()">⚡ Force Run</button>
+
+    <div class="section-title-sm">🔧 Chế độ bảo trì</div>
+    <div class="maint-grid">
+      <button class="btn-m" onclick="setMaint(1)">7p</button>
+      <button class="btn-m" onclick="setMaint(2)">15p</button>
+      <button class="btn-m" onclick="setMaint(3)">30p</button>
+      <button class="btn-m" onclick="setMaint(4)">50p</button>
+      <button class="btn-m" onclick="setMaint(5)">80p</button>
+      <button class="btn-m btn-manual" onclick="setMaint(6)">∞</button>
+    </div>
+    <button class="btn-cancel" onclick="setMaint(0)">Hủy bảo trì</button>
+    <div style="height:28px;"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-header">
+  <h1>🏠 IoT Ecosystem</h1>
+  <div class="hdr-right">
+    <button class="btn-icon" onclick="openSettings()" title="Cài đặt">⚙️</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="status-bar">
+    <span id="deviceCount">ĐANG CHỜ ĐĂNG NHẬP...</span>
+    <span id="mqttStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;"></span>
+  </div>
+  <div class="sec-label">Thiết bị của tôi</div>
+  <div class="device-grid" id="grid"></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-tab active">
+    <span class="ni">🏠</span>
+    Trang chủ
+  </button>
+  <button class="nav-tab">
+    <span class="ni">🔔</span>
+    Cảnh báo
+  </button>
+  <button class="nav-tab" onclick="openSettings()">
+    <span class="ni">⚙️</span>
+    Cài đặt
+  </button>
+</div>
+
+<script>
         /* ========= CONFIG ========= */
         const DEFAULT_MQTT = {
-            host: "",
-            // Cấu hình gốc đã bị xóa để bảo mật.
-            // App sẽ tải cấu hình từ Firebase iot/system_config/mqtt
-            port: "",
-            protocol: "",
-            path: ""
+            // Fallback mặc định theo hạ tầng hiện tại (Nginx + SSL)
+            // Nếu Firebase có iot/system_config/mqtt thì sẽ ghi đè lên các giá trị này.
+            host: "mqtt.anhtrung.cloud",
+            port: "443",
+            protocol: "wss",
+            path: "/mqtt"
         };
 
         const SECURITY_CONFIG = {
@@ -1377,6 +547,19 @@
         let mqttTopicRoot = "";
         let isManualLoginFlow = false;
         let autoLoginHandled = false;
+        let isRegisterMode = false;
+        let panelManualOverrideUntil = 0;
+        let otpApp = null;
+        let otpAuth = null;
+        let otpVerifier = null;
+        let otpConfirmationResult = null;
+        let otpPendingPhone = '';
+        let otpVerifiedPhone = '';
+        let otpVerifiedAt = 0;
+        let forgotOtpConfirmationResult = null;
+        let forgotOtpPendingPhone = '';
+        let forgotOtpVerifiedPhone = '';
+        const PHONE_PASSWORD_RESET_ENDPOINT = '';
 
         async function ensureAuthPersistence() {
             try {
@@ -1402,6 +585,115 @@
 
             } catch (err) {
                 console.error('[Firebase] Init error:', err);
+            }
+        }
+
+        function initOtpAuth() {
+            try {
+                otpApp = firebase.apps.find(a => a.name === 'otpApp') || firebase.initializeApp(FIREBASE_CONFIG, 'otpApp');
+                otpAuth = otpApp.auth();
+            } catch (e) {
+                console.warn('initOtpAuth failed:', e);
+            }
+        }
+
+        function normalizeToE164VN(phone) {
+            const p = normalizePhone(phone);
+            if (p.startsWith('+84')) return p;
+            if (p.startsWith('84')) return '+' + p;
+            if (p.startsWith('0')) return '+84' + p.slice(1);
+            if (/^\d{9,10}$/.test(p)) return '+84' + p;
+            return p;
+        }
+
+        function isOtpVerifiedForPhone(phone) {
+            const normalized = normalizePhone(phone);
+            if (!normalized || !otpVerifiedPhone) return false;
+            if (normalized !== otpVerifiedPhone) return false;
+            return (Date.now() - otpVerifiedAt) < 10 * 60 * 1000;
+        }
+
+        function resetOtpState() {
+            otpConfirmationResult = null;
+            otpPendingPhone = '';
+            otpVerifiedPhone = '';
+            otpVerifiedAt = 0;
+            const otpInput = document.getElementById('otpCodeInput');
+            if (otpInput) otpInput.value = '';
+        }
+
+        function resetForgotOtpState() {
+            forgotOtpConfirmationResult = null;
+            forgotOtpPendingPhone = '';
+            forgotOtpVerifiedPhone = '';
+            const otp = document.getElementById('forgotOtpInput');
+            const p1 = document.getElementById('forgotNewPass');
+            const p2 = document.getElementById('forgotNewPass2');
+            if (otp) otp.value = '';
+            if (p1) p1.value = '';
+            if (p2) p2.value = '';
+            const block = document.getElementById('forgotPhoneOtpBlock');
+            if (block) block.style.display = 'none';
+        }
+
+        function updateRegisterOtpUI() {
+            const block = document.getElementById('otpRegisterBlock');
+            const u = document.getElementById('loginUser')?.value || '';
+            const shouldShow = isRegisterMode && isPhoneLikeInput(u);
+            if (block) block.style.display = shouldShow ? 'block' : 'none';
+        }
+
+        function ensureOtpVerifier() {
+            if (!otpAuth) initOtpAuth();
+            if (!otpAuth) throw new Error('OTP_AUTH_NOT_READY');
+            if (otpVerifier) return otpVerifier;
+            otpVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                size: 'invisible'
+            }, otpApp);
+            return otpVerifier;
+        }
+
+        async function sendRegisterOtp() {
+            const u = String(document.getElementById('loginUser')?.value || '').trim();
+            if (!isPhoneLikeInput(u)) {
+                showLoginError('Nhập SĐT hợp lệ để gửi OTP');
+                return;
+            }
+            const e164 = normalizeToE164VN(u);
+            if (!/^\+84\d{9,10}$/.test(e164)) {
+                showLoginError('SĐT chưa đúng định dạng VN (ví dụ: 09xxxxxxxx)');
+                return;
+            }
+            try {
+                const verifier = ensureOtpVerifier();
+                otpConfirmationResult = await otpAuth.signInWithPhoneNumber(e164, verifier);
+                otpPendingPhone = normalizePhone(u);
+                showLoginError('Đã gửi OTP. Vui lòng kiểm tra SMS và nhập mã.');
+            } catch (e) {
+                console.error('sendRegisterOtp error:', e);
+                showLoginError('Không gửi được OTP. Kiểm tra reCAPTCHA, hạn mức hoặc thử lại sau.');
+            }
+        }
+
+        async function verifyRegisterOtp() {
+            const code = String(document.getElementById('otpCodeInput')?.value || '').trim();
+            if (!otpConfirmationResult) {
+                showLoginError('Bạn chưa gửi OTP');
+                return;
+            }
+            if (!code || code.length < 6) {
+                showLoginError('Nhập mã OTP hợp lệ');
+                return;
+            }
+            try {
+                await otpConfirmationResult.confirm(code);
+                otpVerifiedPhone = otpPendingPhone;
+                otpVerifiedAt = Date.now();
+                showLoginError('✅ Xác minh OTP thành công. Bạn có thể bấm XÁC NHẬN ĐĂNG KÝ.');
+                try { await otpAuth.signOut(); } catch (_) { }
+            } catch (e) {
+                console.error('verifyRegisterOtp error:', e);
+                showLoginError('Mã OTP không đúng hoặc đã hết hạn');
             }
         }
 
@@ -1520,6 +812,55 @@
         function usernameToEmail(username) {
             const cleaned = String(username || '').trim().replace(/[^a-zA-Z0-9]/g, '');
             return `${cleaned}@iot.local`;
+        }
+
+        // Nếu user nhập email thật thì dùng luôn email đó,
+        // nếu chỉ nhập username thì map về username@iot.local để tương thích dữ liệu cũ.
+        function resolveAuthEmail(input) {
+            const v = String(input || '').trim();
+            if (v.includes('@')) return v.toLowerCase();
+            return usernameToEmail(v);
+        }
+
+        function isPhoneLikeInput(input) {
+            const raw = String(input || '').trim();
+            if (!raw || raw.includes('@')) return false;
+            const normalized = normalizePhone(raw);
+            return /^\+?\d{8,15}$/.test(normalized);
+        }
+
+        async function waitForFirebaseReady(timeoutMs = 6000) {
+            const start = Date.now();
+            while (!(fbReady && fbDb)) {
+                if (Date.now() - start > timeoutMs) return false;
+                await new Promise(r => setTimeout(r, 120));
+            }
+            return true;
+        }
+
+        async function readPhoneOwnerWithRetry(phone, maxAttempts = 3, delayMs = 250) {
+            let lastErr = null;
+            for (let i = 0; i < maxAttempts; i++) {
+                try {
+                    return await readPhoneOwner(phone);
+                } catch (e) {
+                    lastErr = e;
+                    if (i < maxAttempts - 1) {
+                        await new Promise(r => setTimeout(r, delayMs));
+                    }
+                }
+            }
+            throw lastErr || new Error('PHONE_OWNER_CHECK_FAILED');
+        }
+
+        function isFirebasePermissionOrNetworkError(err) {
+            const code = String(err?.code || '');
+            const msg = String(err?.message || '');
+            return code.includes('PERMISSION_DENIED')
+                || code.includes('NETWORK')
+                || msg.includes('PERMISSION_DENIED')
+                || msg.includes('Client is offline')
+                || msg.includes('network');
         }
 
         function fbUpdate(path, data) {
@@ -1755,6 +1096,7 @@
         }
 
         initFirebase();
+        initOtpAuth();
 
         /* ========= INIT & LOGIN ========= */
         window.onload = async function () {
@@ -1762,9 +1104,16 @@
             const key = localStorage.getItem("gemini_api_key");
             if (key) document.getElementById("geminiKey").value = key;
 
+            const markPanelManualEditing = () => {
+                panelManualOverrideUntil = Date.now() + 10000;
+            };
+            document.getElementById("offMin")?.addEventListener("input", markPanelManualEditing);
+            document.getElementById("onSec")?.addEventListener("input", markPanelManualEditing);
+
             if (savedUser) {
                 document.getElementById("loginUser").value = savedUser;
             }
+            document.getElementById("loginUser")?.addEventListener('input', updateRegisterOtpUI);
             // Giữ ẩn login overlay cho tới khi Firebase trả về trạng thái auth đầu tiên,
             // tránh hiện thoáng bảng đăng nhập khi F5 dù phiên vẫn còn.
             document.getElementById("loginOverlay").style.display = "none";
@@ -1799,12 +1148,13 @@
             const errBox = document.getElementById("loginError");
             const box = document.getElementById("loginBox");
             errBox.style.display = 'none';
+            setRegisterMode(false);
 
             const u = document.getElementById("loginUser").value.trim();
             const p = document.getElementById("loginPass").value;
 
             if (!u) {
-                errBox.innerText = "Vui lòng nhập Mã Khách Hàng";
+                errBox.innerText = "Vui lòng nhập email hoặc tên đăng nhập";
                 errBox.style.display = 'block';
                 return;
             }
@@ -1814,7 +1164,7 @@
                 return;
             }
 
-            const email = u.includes('@') ? u : usernameToEmail(u);
+            const email = resolveAuthEmail(u);
             try {
                 await firebase.auth().signInWithEmailAndPassword(email, p);
             } catch (err) {
@@ -1835,9 +1185,205 @@
             isManualLoginFlow = false;
         }
 
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            const input = document.getElementById('forgotAccountInput');
+            const loginInput = String(document.getElementById("loginUser")?.value || '').trim();
+            if (input) input.value = loginInput;
+            if (modal) modal.style.display = 'flex';
+            setTimeout(() => input?.focus(), 0);
+        }
+
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) modal.style.display = 'none';
+            resetForgotOtpState();
+        }
+
+        async function sendForgotPhoneOtp() {
+            const input = String(document.getElementById("forgotAccountInput")?.value || '').trim();
+            if (!isPhoneLikeInput(input)) {
+                showLoginError('Nhập SĐT hợp lệ để gửi OTP');
+                return;
+            }
+            const e164 = normalizeToE164VN(input);
+            if (!/^\+84\d{9,10}$/.test(e164)) {
+                showLoginError('SĐT chưa đúng định dạng VN (ví dụ: 09xxxxxxxx)');
+                return;
+            }
+            try {
+                const verifier = ensureOtpVerifier();
+                forgotOtpConfirmationResult = await otpAuth.signInWithPhoneNumber(e164, verifier);
+                forgotOtpPendingPhone = normalizePhone(input);
+                showLoginError('Đã gửi OTP khôi phục. Nhập mã để xác minh.');
+            } catch (e) {
+                console.error('sendForgotPhoneOtp error:', e);
+                showLoginError('Không gửi được OTP khôi phục. Vui lòng thử lại sau.');
+            }
+        }
+
+        async function verifyForgotPhoneOtp() {
+            const code = String(document.getElementById('forgotOtpInput')?.value || '').trim();
+            if (!forgotOtpConfirmationResult) {
+                showLoginError('Bạn chưa gửi OTP khôi phục');
+                return;
+            }
+            if (!code || code.length < 6) {
+                showLoginError('Nhập mã OTP hợp lệ');
+                return;
+            }
+            try {
+                await forgotOtpConfirmationResult.confirm(code);
+                forgotOtpVerifiedPhone = forgotOtpPendingPhone;
+                showLoginError('✅ OTP hợp lệ. Bây giờ bạn có thể đặt mật khẩu mới.');
+                try { await otpAuth.signOut(); } catch (_) { }
+            } catch (e) {
+                console.error('verifyForgotPhoneOtp error:', e);
+                showLoginError('Mã OTP không đúng hoặc đã hết hạn');
+            }
+        }
+
+        async function submitPhonePasswordReset() {
+            const input = String(document.getElementById("forgotAccountInput")?.value || '').trim();
+            const phone = normalizePhone(input);
+            const p1 = String(document.getElementById('forgotNewPass')?.value || '');
+            const p2 = String(document.getElementById('forgotNewPass2')?.value || '');
+
+            if (!isPhoneLikeInput(input)) {
+                showLoginError('Nhập SĐT trước khi đặt lại mật khẩu');
+                return;
+            }
+            if (forgotOtpVerifiedPhone !== phone) {
+                showLoginError('Bạn cần xác minh OTP cho đúng SĐT trước');
+                return;
+            }
+            if (p1.length < 6) {
+                showLoginError('Mật khẩu mới tối thiểu 6 ký tự');
+                return;
+            }
+            if (p1 !== p2) {
+                showLoginError('Xác nhận mật khẩu không khớp');
+                return;
+            }
+
+            if (!PHONE_PASSWORD_RESET_ENDPOINT) {
+                showLoginError('Chưa cấu hình backend reset theo SĐT. Tạm thời dùng reset qua email hoặc triển khai Cloud Function.');
+                return;
+            }
+
+            try {
+                const res = await fetch(PHONE_PASSWORD_RESET_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, newPassword: p1 })
+                });
+                if (!res.ok) throw new Error('RESET_ENDPOINT_FAILED');
+
+                showLoginError('Đã đặt lại mật khẩu thành công. Bạn có thể đăng nhập lại.');
+                closeForgotPasswordModal();
+            } catch (e) {
+                console.error('submitPhonePasswordReset error:', e);
+                showLoginError('Đặt lại mật khẩu bằng SĐT thất bại. Vui lòng thử lại hoặc dùng reset email.');
+            }
+        }
+
+        async function submitForgotPassword() {
+            const input = String(document.getElementById("forgotAccountInput")?.value || '').trim();
+            if (!input) {
+                showLoginError("Nhập email/SĐT trước để nhận link đặt lại mật khẩu");
+                return;
+            }
+
+            let email = '';
+
+            // Nếu user nhập SĐT thì cố gắng tra profile liên kết để lấy email thật.
+            // Lưu ý: nếu account được tạo từ SĐT/username thì email thường là *.iot.local
+            // => không có hộp thư thật để nhận reset mail.
+            if (isPhoneLikeInput(input)) {
+                const otpBlock = document.getElementById('forgotPhoneOtpBlock');
+                if (otpBlock) otpBlock.style.display = 'block';
+                showLoginError('Đã bật chế độ khôi phục bằng SĐT. Bấm “Gửi OTP SĐT” để tiếp tục.');
+
+                const ready = await waitForFirebaseReady(4000);
+                if (!ready) {
+                    showLoginError("Firebase chưa sẵn sàng, vui lòng thử lại");
+                    return;
+                }
+                try {
+                    const profile = await getPhoneOwnerProfile(input);
+                    email = String(profile?.email || '').trim().toLowerCase();
+                } catch (e) {
+                    console.warn('Lookup phone owner profile failed:', e);
+                }
+
+                if (!email) {
+                    showLoginError("SĐT này chưa có email khôi phục. Hãy nhập email đăng nhập để reset.");
+                    return;
+                }
+
+                if (email.endsWith('@iot.local')) {
+                    showLoginError("Tài khoản này dùng email nội bộ (iot.local) nên không nhận mail được. Hãy liên kết email thật để dùng quên mật khẩu.");
+                    return;
+                }
+            } else {
+                email = resolveAuthEmail(input);
+            }
+
+            try {
+                await firebase.auth().sendPasswordResetEmail(email);
+                showLoginError(`Đã gửi email đặt lại mật khẩu tới ${email}. Vui lòng kiểm tra Inbox/Spam.`);
+                closeForgotPasswordModal();
+            } catch (err) {
+                const code = String(err?.code || '');
+                if (code.includes('auth/user-not-found')) {
+                    showLoginError("Không tìm thấy tài khoản với thông tin bạn nhập");
+                    return;
+                }
+                if (code.includes('auth/invalid-email')) {
+                    showLoginError("Email không hợp lệ để gửi reset mật khẩu");
+                    return;
+                }
+                if (code.includes('auth/too-many-requests')) {
+                    showLoginError("Bạn thao tác quá nhiều lần. Vui lòng đợi vài phút rồi thử lại.");
+                    return;
+                }
+                showLoginError("Không gửi được email reset mật khẩu, vui lòng thử lại");
+            }
+        }
+
+        function showLoginError(message) {
+            const errBox = document.getElementById("loginError");
+            if (!errBox) return;
+            errBox.innerText = message;
+            errBox.style.display = 'block';
+        }
+
+        function setRegisterMode(enabled) {
+            isRegisterMode = !!enabled;
+            const confirmField = document.getElementById("confirmPassField");
+            const registerBtn = document.getElementById("registerBtn");
+            const confirmInput = document.getElementById("loginPassConfirm");
+
+            if (confirmField) confirmField.style.display = isRegisterMode ? 'block' : 'none';
+            if (registerBtn) registerBtn.innerText = isRegisterMode ? 'XÁC NHẬN ĐĂNG KÝ' : 'ĐĂNG KÝ';
+            if (!isRegisterMode && confirmInput) confirmInput.value = '';
+            if (!isRegisterMode) resetOtpState();
+            updateRegisterOtpUI();
+        }
+
+        function handleRegisterAction() {
+            if (!isRegisterMode) {
+                setRegisterMode(true);
+                showLoginError("Vui lòng nhập lại mật khẩu để xác nhận đăng ký");
+                return;
+            }
+            registerAccount();
+        }
+
         async function performGoogleLogin() {
             try {
                 isManualLoginFlow = true;
+                setRegisterMode(false);
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.setCustomParameters({ prompt: 'select_account' });
                 const cred = await firebase.auth().signInWithPopup(provider);
@@ -1897,19 +1443,97 @@
         }
 
         async function registerAccount() {
+            const errBox = document.getElementById("loginError");
+            if (errBox) errBox.style.display = 'none';
+
             const u = document.getElementById("loginUser").value.trim();
             const p = document.getElementById("loginPass").value;
-            if (!u) { alert("Nhập username trước"); return; }
-            if (!p || p.length < 6) { alert("Mật khẩu tối thiểu 6 ký tự"); return; }
+            const p2 = document.getElementById("loginPassConfirm")?.value || '';
+            if (!u) { showLoginError("Vui lòng nhập email/username"); return; }
+            if (!p || p.length < 6) { showLoginError("Mật khẩu tối thiểu 6 ký tự"); return; }
+            if (!p2) { showLoginError("Vui lòng nhập lại mật khẩu"); return; }
+            if (p !== p2) { showLoginError("Mật khẩu nhập lại không khớp"); return; }
+            const phoneForAutoLink = isPhoneLikeInput(u) ? normalizePhone(u) : '';
 
-            const email = usernameToEmail(u);
+            if (phoneForAutoLink && !isOtpVerifiedForPhone(phoneForAutoLink)) {
+                showLoginError("Vui lòng xác minh OTP cho SĐT trước khi đăng ký");
+                return;
+            }
+
+            if (phoneForAutoLink) {
+                const ready = await waitForFirebaseReady();
+                if (!ready) {
+                    showLoginError("Không thể kết nối Firebase để kiểm tra SĐT, vui lòng thử lại");
+                    return;
+                }
+                try {
+                    const ownerUid = await readPhoneOwnerWithRetry(phoneForAutoLink, 3, 300);
+                    if (ownerUid) {
+                        showLoginError("SĐT này đã liên kết với tài khoản khác, vui lòng dùng SĐT khác");
+                        return;
+                    }
+                } catch (e) {
+                    // Nếu Rules/network chặn đọc pre-check thì không chặn đăng ký,
+                    // để bước claimPhoneLink quyết định cuối cùng.
+                    if (isFirebasePermissionOrNetworkError(e)) {
+                        console.warn('Phone pre-check skipped (permission/network). Will verify at claim step:', e);
+                    } else {
+                        console.error('Phone pre-check hard-fail:', e);
+                        showLoginError("Không kiểm tra được trạng thái liên kết SĐT, vui lòng thử lại");
+                        return;
+                    }
+                }
+            }
+
+            const email = resolveAuthEmail(u);
             try {
                 await firebase.auth().createUserWithEmailAndPassword(email, p);
+
+                // Nếu đăng ký bằng SĐT thì tự động link luôn vào profile để dùng ngay
+                if (phoneForAutoLink) {
+                    try {
+                        await claimPhoneLink(phoneForAutoLink);
+                        await fbDb.ref(`iot/${getOwnerKey()}/profile/linked_phone`).set(phoneForAutoLink);
+                        linkedPhone = phoneForAutoLink;
+                        linkedPhoneOwnerUid = getCurrentUid();
+                        mqttUserId = phoneForAutoLink;
+                        localStorage.setItem('linked_phone', phoneForAutoLink);
+                    } catch (linkErr) {
+                        console.error('Auto link phone after register failed:', linkErr);
+
+                        // Nếu claim báo đã có chủ thì rollback user vừa tạo để giữ đúng kỳ vọng nghiệp vụ.
+                        if (String(linkErr?.message || '').includes('PHONE_ALREADY_LINKED')) {
+                            try {
+                                if (firebase.auth().currentUser) {
+                                    await firebase.auth().currentUser.delete();
+                                }
+                            } catch (delErr) {
+                                console.warn('Rollback created auth user failed:', delErr);
+                            }
+                            try { await firebase.auth().signOut(); } catch (_) { }
+
+                            showLoginError("SĐT này đã liên kết với tài khoản khác, vui lòng dùng SĐT khác");
+                            return;
+                        }
+
+                        showToast('Đăng ký thành công nhưng auto-link SĐT thất bại, bạn có thể liên kết trong Cài đặt');
+                    }
+                }
+
+                setRegisterMode(false);
+                resetOtpState();
                 showToast("Tạo tài khoản thành công, đang đăng nhập...");
                 await performLogin();
             } catch (err) {
-                if (err.code === 'auth/email-already-in-use') showToast("Tài khoản đã tồn tại, hãy đăng nhập");
-                else showToast("Không tạo được tài khoản: " + (err.message || err.code));
+                if (err.code === 'auth/email-already-in-use') {
+                    showLoginError("Email này đã được sử dụng. Vui lòng đăng nhập.");
+                } else if (err.code === 'auth/invalid-email') {
+                    showLoginError("Email không hợp lệ");
+                } else if (err.code === 'auth/weak-password') {
+                    showLoginError("Mật khẩu quá yếu (tối thiểu 6 ký tự)");
+                } else {
+                    showLoginError("Không tạo được tài khoản: " + (err.message || err.code));
+                }
             }
         }
 
@@ -1975,12 +1599,63 @@
             return null;
         }
 
-        async function buildEmqxJwtHs256(secretOverride) {
+        function normalizeMqttConfig(raw) {
+            const cfg = { ...raw };
+            let host = String(cfg.host || '').trim();
+            let protocol = String(cfg.protocol || '').trim().toLowerCase();
+            let port = String(cfg.port || '').trim();
+            let path = String(cfg.path || '/mqtt').trim() || '/mqtt';
+
+            // Chống nhập nhầm "wws" -> tự sửa thành "wss"
+            if (protocol === 'wws') protocol = 'wss';
+
+            // Nếu user lỡ nhập full URL vào host (vd https://tomthe.duckdns.org:8084)
+            // thì tự tách lại cho đúng.
+            if (/^https?:\/\//i.test(host) || /^wss?:\/\//i.test(host)) {
+                try {
+                    const u = new URL(host);
+                    const scheme = u.protocol.replace(':', '').toLowerCase();
+                    host = u.hostname || host;
+                    if (!port && u.port) port = u.port;
+                    if (!protocol && (scheme === 'https' || scheme === 'wss')) protocol = 'wss';
+                    if (!protocol && (scheme === 'http' || scheme === 'ws')) protocol = 'ws';
+                    if ((u.pathname || '').trim() && u.pathname !== '/') path = u.pathname;
+                } catch (_) { }
+            }
+
+            // Nếu host còn dính :port thì bóc tách
+            if (!/^\[.*\]$/.test(host) && host.includes(':')) {
+                const m = host.match(/^(.+):(\d+)$/);
+                if (m) {
+                    host = m[1];
+                    if (!port) port = m[2];
+                }
+            }
+
+            // Default port theo protocol nếu thiếu
+            if (!port) {
+                if (protocol === 'wss') port = '443';
+                else if (protocol === 'ws') port = '80';
+            }
+
+            if (!protocol) protocol = 'wss';
+            if (!path.startsWith('/')) path = '/' + path;
+
+            return {
+                ...cfg,
+                host,
+                protocol,
+                port,
+                path
+            };
+        }
+
+        async function buildEmqxJwtHs256ForSubject(subject, secretOverride) {
             const now = Math.floor(Date.now() / 1000);
             const header = { alg: 'HS256', typ: 'JWT' };
             const payload = {
-                sub: mqttUserId,
-                username: mqttUserId,
+                sub: subject,
+                username: subject,
                 iat: now,
                 exp: now + 24 * 60 * 60
             };
@@ -2003,6 +1678,183 @@
             const sigBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(message));
             const sig = toBase64UrlFromBytes(new Uint8Array(sigBuffer));
             return `${message}.${sig}`;
+        }
+
+        async function buildEmqxJwtHs256(secretOverride) {
+            return buildEmqxJwtHs256ForSubject(mqttUserId, secretOverride);
+        }
+
+        function setMqttTestResult(text, ok = false) {
+            const el = document.getElementById('mqttTestResult');
+            if (!el) return;
+            el.style.color = ok ? '#86efac' : '#cbd5e1';
+            el.innerText = text;
+        }
+
+        async function testMqttConfig() {
+            setMqttTestResult('Đang kiểm tra cấu hình MQTT...');
+            let testClient = null;
+            try {
+                let config = DEFAULT_MQTT;
+                let jwtSecret = SECURITY_CONFIG.emqxJwtSecret;
+                const remoteConfig = await fetchSystemConfig();
+                if (remoteConfig) {
+                    config = { ...DEFAULT_MQTT, ...remoteConfig };
+                    if (remoteConfig.secret) jwtSecret = remoteConfig.secret;
+                }
+                config = normalizeMqttConfig(config);
+
+                if (!config.host || !config.port || !config.protocol) {
+                    throw new Error('CONFIG_MISSING_FIELDS');
+                }
+
+                const candidateUser = (linkedPhone || currentUser || String(document.getElementById('loginUser')?.value || '').trim() || '').trim();
+                if (!candidateUser) {
+                    throw new Error('MISSING_TEST_USER');
+                }
+
+                const mqttTestUserId = isPhoneLikeInput(candidateUser) ? normalizePhone(candidateUser) : candidateUser;
+                const url = `${config.protocol}://${config.host}:${config.port}${config.path || '/mqtt'}`;
+                const jwtToken = await buildEmqxJwtHs256ForSubject(mqttTestUserId, jwtSecret);
+                const mqttUsername = SECURITY_CONFIG.jwtPlacement === 'username' ? jwtToken : mqttTestUserId;
+                const mqttPassword = SECURITY_CONFIG.jwtPlacement === 'password' ? jwtToken : '';
+
+                const detail = [
+                    `Host: ${config.host}`,
+                    `Port: ${config.port}`,
+                    `Protocol: ${config.protocol}`,
+                    `Path: ${config.path || '/mqtt'}`,
+                    `JWT placement: ${SECURITY_CONFIG.jwtPlacement}`,
+                    `Test user: ${mqttTestUserId}`
+                ].join('\n');
+                setMqttTestResult(`Đang kết nối thử...\n${detail}`);
+
+                await new Promise((resolve, reject) => {
+                    let done = false;
+                    const timeout = setTimeout(() => {
+                        if (done) return;
+                        done = true;
+                        reject(new Error('MQTT_CONNECT_TIMEOUT'));
+                    }, 9000);
+
+                    testClient = mqtt.connect(url, {
+                        username: mqttUsername,
+                        password: mqttPassword,
+                        clientId: 'mqtt_test_' + Math.random().toString(16).slice(2, 8),
+                        reconnectPeriod: 0,
+                        connectTimeout: 7000
+                    });
+
+                    testClient.on('connect', () => {
+                        if (done) return;
+                        done = true;
+                        clearTimeout(timeout);
+                        resolve();
+                    });
+
+                    testClient.on('error', (err) => {
+                        if (done) return;
+                        done = true;
+                        clearTimeout(timeout);
+                        reject(err);
+                    });
+                });
+
+                setMqttTestResult('✅ MQTT OK: Kết nối thành công với cấu hình hiện tại.', true);
+                showToast('MQTT test thành công');
+            } catch (err) {
+                const code = String(err?.code || err?.message || 'UNKNOWN_ERROR');
+                let hint = '';
+                if (code.includes('CONFIG_MISSING_FIELDS')) hint = 'Thiếu host/port/protocol trong iot/system_config/mqtt';
+                else if (code.includes('MISSING_TEST_USER')) hint = 'Chưa có user để ký JWT. Hãy đăng nhập trước.';
+                else if (code.includes('timeout') || code.includes('TIMEOUT')) hint = 'Timeout: kiểm tra port WS/WSS, firewall, TLS cert.';
+                else if (code.includes('Not authorized') || code.includes('AUTH') || code.includes('CONNACK')) hint = 'Sai JWT secret hoặc sai jwtPlacement (username/password).';
+                else hint = 'Kiểm tra CORS/TLS listener của EMQX và cấu hình Firebase mqtt.';
+
+                setMqttTestResult(`❌ MQTT FAIL: ${code}\nGợi ý: ${hint}`);
+                showToast('MQTT test thất bại');
+                console.error('testMqttConfig error:', err);
+            } finally {
+                try { if (testClient) testClient.end(true); } catch (_) { }
+            }
+        }
+
+        async function testWsPreflight() {
+            setMqttTestResult('Đang preflight WebSocket...');
+            try {
+                let config = DEFAULT_MQTT;
+                const remoteConfig = await fetchSystemConfig();
+                if (remoteConfig) config = { ...DEFAULT_MQTT, ...remoteConfig };
+                config = normalizeMqttConfig(config);
+
+                if (!config.host || !config.port || !config.protocol) {
+                    throw new Error('CONFIG_MISSING_FIELDS');
+                }
+
+                const wsUrl = `${config.protocol}://${config.host}:${config.port}${config.path || '/mqtt'}`;
+                setMqttTestResult(`Đang mở WebSocket...\nURL: ${wsUrl}`);
+
+                const result = await new Promise((resolve) => {
+                    let done = false;
+                    let ws = null;
+                    const finish = (ok, msg) => {
+                        if (done) return;
+                        done = true;
+                        try { if (ws && ws.readyState === WebSocket.OPEN) ws.close(1000, 'preflight-done'); } catch (_) { }
+                        resolve({ ok, msg });
+                    };
+
+                    const timeout = setTimeout(() => {
+                        finish(false, 'WS_TIMEOUT');
+                    }, 9000);
+
+                    try {
+                        ws = new WebSocket(wsUrl);
+                    } catch (e) {
+                        clearTimeout(timeout);
+                        finish(false, `WS_CREATE_ERROR: ${String(e?.message || e)}`);
+                        return;
+                    }
+
+                    ws.onopen = () => {
+                        clearTimeout(timeout);
+                        finish(true, 'WS_OPEN_OK');
+                    };
+
+                    ws.onerror = () => {
+                        clearTimeout(timeout);
+                        finish(false, 'WS_ONERROR');
+                    };
+
+                    ws.onclose = (ev) => {
+                        if (done) return;
+                        clearTimeout(timeout);
+                        // 1006 thường là handshake/TLS/proxy/port lỗi
+                        finish(false, `WS_CLOSE code=${ev?.code || 'NA'} reason=${ev?.reason || ''}`.trim());
+                    };
+                });
+
+                if (result.ok) {
+                    setMqttTestResult('✅ WS PREFLIGHT OK: Browser mở được WebSocket tới broker.\nNếu MQTT vẫn fail thì kiểm tra auth/JWT.', true);
+                    showToast('WS preflight thành công');
+                    return;
+                }
+
+                const m = String(result.msg || 'WS_FAIL_UNKNOWN');
+                let hint = '';
+                if (m.includes('WS_TIMEOUT')) hint = 'Timeout: kiểm tra DNS/Cloudflare/Nginx listener 443 và đường dẫn /mqtt.';
+                else if (m.includes('WS_ONERROR')) hint = 'Lỗi handshake mạng/TLS: kiểm tra cert domain, reverse proxy upgrade header.';
+                else if (m.includes('code=1006')) hint = 'Close 1006: thường do TLS cert sai, proxy sai cấu hình WS, hoặc broker không listen đúng path.';
+                else if (m.includes('CONFIG_MISSING_FIELDS')) hint = 'Thiếu host/port/protocol trong iot/system_config/mqtt.';
+                else hint = 'Kiểm tra listener WSS của EMQX và path /mqtt.';
+
+                setMqttTestResult(`❌ WS PREFLIGHT FAIL: ${m}\nGợi ý: ${hint}`);
+                showToast('WS preflight thất bại');
+            } catch (err) {
+                const m = String(err?.message || err || 'WS_PREFLIGHT_EXCEPTION');
+                setMqttTestResult(`❌ WS PREFLIGHT FAIL: ${m}\nGợi ý: kiểm tra lại config và DevTools > Network > WS.`);
+                showToast('WS preflight thất bại');
+            }
         }
 
         async function connect() {
@@ -2031,6 +1883,8 @@
             } else {
                 showToast('Dùng cấu hình mặc định (Source Code)');
             }
+
+            config = normalizeMqttConfig(config);
 
             const url = `${config.protocol}://${config.host}:${config.port}${config.path || '/mqtt'}`;
             mqttTopicRoot = `users/${mqttUserId}/devices`;
@@ -2124,23 +1978,22 @@
             card.innerHTML = `
       <div class="card-top">
         <span class="card-id" id="label-${id}">${getDisplayName(id)}</span>
-        <div class="card-right">
-          <div class="card-dot" id="dot-${id}"></div>
+        <div style="display:flex;align-items:center;gap:5px;">
           <span class="mode-badge-mini" id="mode-${id}">15p</span>
+          <div class="card-dot" id="dot-${id}"></div>
         </div>
       </div>
-      <div class="card-main-stats">
-        <div class="stat-item off">
-           <div class="stat-icon">💤</div>
-           <div class="stat-value" id="val-off-${id}">--<span class="stat-unit">P</span></div>
+      <div class="card-body">
+        <div class="card-toggle" id="toggle-${id}">
+          <span id="runicon-${id}">💤</span>
         </div>
-        <div class="stat-item on">
-           <div class="stat-icon" id="runicon-${id}">⚡</div>
-           <div class="stat-value" id="val-on-${id}">--<span class="stat-unit">S</span></div>
-        </div>
+        <div class="card-timer" id="time-${id}">--:--</div>
       </div>
-      <div class="card-timer-mini">
-        <div class="mini-time" id="time-${id}">--:--</div>
+      <div class="card-footer">
+        <div class="card-stats">
+          <div class="stat-chip">💤 <b id="val-off-${id}">--</b>P</div>
+          <div class="stat-chip">⚡ <b id="val-on-${id}">--</b>S</div>
+        </div>
       </div>
     `;
             grid.appendChild(card);
@@ -2165,19 +2018,25 @@
             const statusText = String(dev.status || '').toUpperCase();
             const isRunning = isOnline && (statusText.includes('RUN') || statusText.includes('ON') || statusText.includes('CHẠY'));
 
-            if (runIcon) runIcon.classList.toggle('run-spin', isRunning);
+            if (runIcon) {
+                runIcon.textContent = isRunning ? '⚡' : '💤';
+                runIcon.classList.toggle('run-spin', isRunning);
+            }
+            const toggleBtn = document.getElementById('toggle-' + id);
+            if (toggleBtn) toggleBtn.classList.toggle('running', isRunning);
 
             if (card) {
                 if (isOnline) card.classList.remove('offline');
                 else card.classList.add('offline');
+                card.classList.toggle('is-running', isRunning);
             }
             if (dot) {
                 if (isOnline) dot.classList.add('on');
                 else dot.classList.remove('on');
             }
 
-            if (valOff) valOff.innerHTML = `${dev.off_min !== undefined ? dev.off_min : '--'}<span class="stat-unit">P</span>`;
-            if (valOn) valOn.innerHTML = `${dev.on_sec !== undefined ? dev.on_sec : '--'}<span class="stat-unit">S</span>`;
+            if (valOff) valOff.textContent = dev.off_min !== undefined ? dev.off_min : '--';
+            if (valOn) valOn.textContent = dev.on_sec !== undefined ? dev.on_sec : '--';
             if (time) time.innerText = dev.time_rem || '--:--';
             if (label) label.innerText = getDisplayName(id);
 
@@ -2292,9 +2151,14 @@
                 }
             }
 
-            // Inputs (check active element to avoid interrupting user typing)
-            if (document.activeElement.id !== "offMin" && dev.off_min !== undefined) document.getElementById("offMin").value = dev.off_min;
-            if (document.activeElement.id !== "onSec" && dev.on_sec !== undefined) document.getElementById("onSec").value = dev.on_sec;
+            // Inputs: tránh bị ghi đè khi user đang bấm +/- hoặc đang chỉnh tay
+            const isManualEditing = Date.now() < panelManualOverrideUntil;
+            if (!isManualEditing && document.activeElement.id !== "offMin" && dev.off_min !== undefined) {
+                document.getElementById("offMin").value = dev.off_min;
+            }
+            if (!isManualEditing && document.activeElement.id !== "onSec" && dev.on_sec !== undefined) {
+                document.getElementById("onSec").value = dev.on_sec;
+            }
         }
 
         function openPanel(id) {
@@ -2328,6 +2192,7 @@
             val += d;
             if (val < 0) val = 0;
             el.value = val;
+            panelManualOverrideUntil = Date.now() + 10000;
         }
 
         function applyPreset(m, s) {
@@ -2474,6 +2339,18 @@
         }
         function closeSettings() { document.getElementById("settingsModal").style.display = "none"; }
 
+        // Backward-compatible wrappers (tránh lỗi thiếu hàm cũ)
+        function openAccountManager() {
+            openSettings();
+            const accountNav = Array.from(document.querySelectorAll('.settings-nav .nav-item'))
+                .find(el => (el.getAttribute('onclick') || '').includes("tab-account"));
+            if (accountNav) switchTab('tab-account', accountNav);
+        }
+
+        function closeAccountManager() {
+            closeSettings();
+        }
+
         function switchTab(tabId, el) {
             // Hide all tabs
             document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
@@ -2486,62 +2363,8 @@
 
             // If Device tab, load devices
             if (tabId === 'tab-devices') {
-                renderDeviceManagerList();
+                renderDeviceManager();
             }
-        }
-
-        // Re-use logic for Device Manager List
-        function renderDeviceManagerList() {
-            const list = document.getElementById("dmList");
-            list.innerHTML = "";
-            let arr = Object.keys(window.devices).sort((a, b) => getOrderOf(a) - getOrderOf(b));
-            arr.forEach(id => {
-                const row = document.createElement("div");
-                row.className = "dm-item";
-                row.innerHTML = `
-                    <div style="display:flex; flex-direction:column; gap:2px">
-                        <div style="font-size:10px; color:#94a3b8; font-weight:800">${id.toUpperCase()}</div>
-                        <input type="text" class="dm-input" value="${getDisplayName(id)}" onchange="updateAlias('${id}', this.value)" placeholder="Đặt tên...">
-                    </div>
-                    <button class="dm-btn" onclick="moveDeviceOrder('${id}', -1)">↑</button>
-                    <button class="dm-btn" onclick="moveDeviceOrder('${id}', 1)">↓</button>
-                `;
-                list.appendChild(row);
-            });
-        }
-
-        // Helper functions from old modals
-        function updateAlias(id, val) { deviceAliases[aliasKey(id)] = val; }
-        function moveDeviceOrder(id, dir) {
-            const arr = Object.keys(window.devices).sort((a, b) => getOrderOf(a) - getOrderOf(b));
-            const idx = arr.indexOf(id);
-            if (idx < 0) return;
-            const newIdx = idx + dir;
-            if (newIdx < 0 || newIdx >= arr.length) return;
-            // Swap
-            const temp = arr[idx];
-            arr[idx] = arr[newIdx];
-            arr[newIdx] = temp;
-            // Update order map
-            arr.forEach((k, i) => deviceOrders[aliasKey(k)] = i);
-            renderDeviceManagerList();
-        }
-        function saveDeviceManagerChanges() {
-            localStorage.setItem("iot_device_aliases", JSON.stringify(deviceAliases));
-            localStorage.setItem("iot_device_orders", JSON.stringify(deviceOrders));
-            Object.keys(window.devices).forEach(id => updateDeviceCard(id));
-            if (currentSelectedId) document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
-            showToast("Đã lưu tên & vị trí thiết bị");
-        }
-        function resetDeviceOrder() {
-            if (!confirm("Mọi tùy chỉnh tên & sai số sẽ về mặc định?")) return;
-            deviceAliases = {};
-            deviceOrders = {};
-            localStorage.removeItem("iot_device_aliases");
-            localStorage.removeItem("iot_device_orders");
-            renderDeviceManagerList();
-            Object.keys(window.devices).forEach(id => updateDeviceCard(id));
-            showToast("Đã reset mặc định");
         }
 
 
@@ -2659,30 +2482,13 @@
             t.innerText = m; t.style.display = "block";
             setTimeout(() => t.style.display = "none", 3000);
         }
-        async function changePasswordInApp() {
-            const p1 = document.getElementById('newPassword').value;
-            const p2 = document.getElementById('confirmPassword').value;
-            if (!p1 || p1.length < 6) { showToast('Mật khẩu phải từ 6 ký tự'); return; }
-            if (p1 !== p2) { showToast('Mật khẩu nhập lại không khớp'); return; }
-
-            const user = firebase.auth().currentUser;
-            if (!user) return;
-
-            try {
-                await user.updatePassword(p1);
-                showToast('Đã cập nhật mật khẩu thành công!');
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-            } catch (e) {
-                if (e.code === 'auth/requires-recent-login') {
-                    showToast('Cần đăng nhập lại để đổi mật khẩu');
-                    logout();
-                } else {
-                    showToast('Lỗi: ' + e.message);
-                }
-            }
-        }
     </script>
-</body>
 
+<script>
+// eWeLink card renderer — ghi đè createDeviceCard để match style mới
+const _origCreate = createDeviceCard;
+// Patch createDeviceCard trực tiếp qua prototype không cần redefine vì là function declaration
+// Ta override bằng cách redefine sau khi script main đã load:
+</script>
+</body>
 </html>
