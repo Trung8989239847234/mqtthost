@@ -1,507 +1,1724 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Smart Home – IoT v2.1</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-  <style>
-    :root{--bg:#F2F2F7;--card:#fff;--accent:#00C853;--accent2:#00A844;--accent-glow:0 8px 24px rgba(0,200,83,.35);--danger:#FF3B30;--warning:#FF9500;--info:#007AFF;--txt:#1C1C1E;--txt2:#6D6D72;--dim:#AEAEB2;--border:#E5E5EA;--shadow:0 2px 12px rgba(0,0,0,.07);--r:18px;}
-    *{box-sizing:border-box;margin:0;padding:0;}
-    html,body{height:100%;}
-    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;padding-bottom:80px;}
-    
-    /* HEADER */
-    .app-header{background:#fff;height:60px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);}
-    .app-header h1{font-size:18px;font-weight:800;color:var(--txt);}
-    .hdr-right{display:flex;gap:8px;}
-    .btn-icon{width:38px;height:38px;border-radius:12px;border:none;background:var(--bg);color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:.2s;}
-    .btn-icon:hover{background:var(--border);}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Smart Home – IoT v2.1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg: #F2F2F7;
+            --card: #fff;
+            --accent: #00C853;
+            --accent2: #00A844;
+            --accent-glow: 0 8px 24px rgba(0, 200, 83, .35);
+            --danger: #FF3B30;
+            --warning: #FF9500;
+            --info: #007AFF;
+            --txt: #1C1C1E;
+            --txt2: #6D6D72;
+            --dim: #AEAEB2;
+            --border: #E5E5EA;
+            --shadow: 0 2px 12px rgba(0, 0, 0, .07);
+            --r: 18px;
+        }
 
-    /* BOTTOM NAV */
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:200;}
-    .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--dim);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border:none;background:transparent;transition:.2s;}
-    .nav-tab .ni{font-size:22px;}
-    .nav-tab.active{color:var(--accent);}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* DEVICE GRID */
-    .container{padding:16px 14px;}
-    .sec-label{font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
-    .status-bar{background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);}
-    .status-bar span{font-size:12px;color:var(--txt2);font-weight:600;}
-    .status-bar b{color:var(--txt);}
-    .device-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}
+        html,
+        body {
+            height: 100%;
+        }
 
-    /* CARD */
-    .device-card{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;min-height:185px;border:2px solid transparent;position:relative;overflow:hidden;}
-    .device-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border);transition:.3s;}
-    .device-card.is-running::before{background:linear-gradient(90deg,var(--accent),#69F0AE);}
-    .device-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.11);}
-    .device-card.offline{opacity:.5;filter:grayscale(.7);}
-    .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-    .card-id{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    .card-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.3s;flex-shrink:0;}
-    .card-dot.on{background:var(--accent);box-shadow:0 0 6px var(--accent);}
-    .card-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
 
-    /* BIG TOGGLE eWeLink style */
-    .card-toggle{width:68px;height:68px;border-radius:50%;background:var(--bg);border:3px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;transition:all .3s ease;position:relative;}
-    .card-toggle.running{background:linear-gradient(135deg,#69F0AE,#00C853);border-color:var(--accent);box-shadow:var(--accent-glow);}
-    .run-spin{animation:spinA 2s linear infinite;}
-    @keyframes spinA{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    .card-timer{font-size:17px;font-weight:700;color:var(--txt);font-family:'Courier New',monospace;letter-spacing:1px;}
-    .card-footer{border-top:1px solid var(--border);padding-top:8px;display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
-    .card-stats{display:flex;gap:6px;flex-wrap:wrap;}
-    .stat-chip{background:var(--bg);border-radius:7px;padding:3px 7px;font-size:10px;font-weight:700;color:var(--txt2);}
-    .stat-chip b{color:var(--txt);}
-    .mode-badge-mini{background:var(--danger);color:#fff;border-radius:6px;padding:2px 5px;font-size:9px;font-weight:800;display:none;}
-    
-    /* LOGIN */
-    #loginOverlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
-    .login-box{width:100%;max-width:400px;background:#fff;border-radius:28px;padding:32px 26px;box-shadow:0 12px 48px rgba(0,0,0,.12);}
-    .login-brand{text-align:center;margin-bottom:26px;}
-    .login-logo{width:70px;height:70px;border-radius:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 8px 24px rgba(0,200,83,.4);}
-    .login-title{font-size:26px;font-weight:800;color:var(--txt);margin:0 0 4px;}
-    .login-sub{font-size:13px;color:var(--txt2);}
-    .google-btn{width:100%;padding:14px;border-radius:14px;border:1.5px solid var(--border);background:#fff;color:var(--txt);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.06);font-family:inherit;}
-    .google-btn:hover{box-shadow:0 6px 18px rgba(0,0,0,.1);}
-    .login-divider{display:flex;align-items:center;gap:10px;margin:0 0 16px;color:var(--dim);font-size:11px;font-weight:700;}
-    .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
-    .login-field{margin-bottom:12px;}
-    .login-field-label{display:block;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
-    .login-input-wrap{display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:0 14px;min-height:50px;transition:.2s;}
-    .login-input-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,83,.15);}
-    .login-icon{font-size:15px;opacity:.6;}
-    .login-input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:var(--txt);font-family:inherit;}
-    .login-input::placeholder{color:var(--dim);}
-    .login-error{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none;}
-    .login-help-row{display:flex;justify-content:flex-end;margin:-4px 0 10px;}
-    .login-link-btn{border:none;background:transparent;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;}
-    .login-btn{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,200,83,.4);transition:.2s;font-family:inherit;}
-    .login-btn:hover{transform:translateY(-1px);}
-    .login-btn.secondary{margin-top:10px;background:var(--bg);color:var(--txt2);box-shadow:none;border:1.5px solid var(--border);}
-    .login-btn.secondary:hover{background:var(--border);}
-    .login-footer{text-align:center;margin-top:14px;font-size:13px;color:var(--txt2);}
-    .login-footer a{color:var(--accent);font-weight:600;text-decoration:none;}
-    .login-terms{margin:8px 0 14px;font-size:12px;color:var(--txt2);}
-    .otp-register-block{display:none;margin-bottom:12px;padding:12px;border-radius:12px;border:1.5px solid rgba(0,200,83,.3);background:rgba(0,200,83,.06);}
-    .otp-register-actions{display:flex;gap:8px;margin-top:8px;}
-    .forgot-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:12000;padding:16px;}
-    .forgot-modal-box{width:100%;max-width:400px;background:#fff;border-radius:20px;padding:20px;box-shadow:0 24px 64px rgba(0,0,0,.2);}
-    .forgot-actions{display:flex;gap:8px;margin-top:12px;}
-    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-    .shake{animation:shake .3s ease;}
+        /* HEADER */
+        .app-header {
+            background: #fff;
+            height: 60px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
 
-    /* PANEL */
-    .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;justify-content:center;align-items:flex-end;}
-    .panel{width:100%;max-width:520px;background:#fff;border-top-left-radius:28px;border-top-right-radius:28px;padding:20px 20px 34px;transform:translateY(100%);transition:transform .35s cubic-bezier(.33,1,.68,1);max-height:92vh;overflow-y:auto;}
-    .panel.show{transform:translateY(0);}
-    .handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;cursor:pointer;}
-    .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-    .panel-head h2{font-size:20px;font-weight:800;color:var(--txt);margin:0;}
-    .panel-head p{color:var(--txt2);font-size:11px;margin:2px 0 0;}
-    .pstatus-badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--border);color:var(--txt2);}
-    .pstatus-badge.online{background:rgba(0,200,83,.15);color:var(--accent);}
+        .app-header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--txt);
+        }
 
-    /* Status banners */
-    #panelStatusBanner{display:none;flex-direction:column;gap:8px;margin-bottom:14px;}
-    #maintBanner{display:none;background:rgba(255,149,0,.1);border:1px solid rgba(255,149,0,.3);color:#FF9500;padding:10px 14px;border-radius:12px;font-size:13px;align-items:center;gap:8px;font-weight:600;}
-    #pauseBanner{display:none;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.2);color:var(--danger);padding:10px 14px;border-radius:12px;font-size:13px;align-items:center;gap:8px;font-weight:600;}
+        .hdr-right {
+            display: flex;
+            gap: 8px;
+        }
 
-    /* Sensor grid */
-    .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-    .sensor-item{background:var(--bg);padding:12px;border-radius:14px;text-align:center;}
-    .sensor-label{font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-    .sensor-val{font-size:20px;font-weight:800;color:var(--txt);}
-    .sensor-unit{font-size:11px;color:var(--dim);margin-left:2px;}
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: none;
+            background: var(--bg);
+            color: var(--txt2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            transition: .2s;
+        }
 
-    /* Controls */
-    .ctrl-group{background:var(--bg);border-radius:18px;padding:20px;margin-bottom:14px;display:flex;justify-content:space-around;align-items:center;}
-    .ctrl-item{text-align:center;flex:1;}
-    .ctrl-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;}
-    .ctrl-row{display:flex;align-items:center;justify-content:center;gap:8px;}
-    .ctrl-div{width:1px;height:52px;background:var(--border);}
-    .btn-step{width:34px;height:34px;border-radius:10px;background:#fff;border:1.5px solid var(--border);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt);transition:.15s;}
-    .btn-step:active{transform:scale(.9);background:var(--border);}
-    .info-val-input{width:55px;background:transparent;border:none;outline:none;font-size:36px;font-weight:800;text-align:center;color:var(--txt);font-family:inherit;-moz-appearance:textfield;}
-    .info-val-input::-webkit-outer-spin-button,.info-val-input::-webkit-inner-spin-button{-webkit-appearance:none;}
-    .info-unit{font-size:13px;color:var(--txt2);font-weight:600;}
-    .preset-label,.section-title-sm{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
-    .presets-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
-    .btn-preset{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:10px 6px;cursor:pointer;text-align:center;font-size:10px;color:var(--txt2);font-weight:600;transition:.2s;font-family:inherit;}
-    .btn-preset span{display:block;font-weight:800;font-size:11px;color:var(--txt);margin-bottom:2px;}
-    .btn-preset:active{transform:scale(.97);}
-    .btn-main{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 16px rgba(0,200,83,.35);margin-bottom:10px;transition:.2s;font-family:inherit;}
-    .btn-main:active{transform:scale(.98);}
-    .btn-outline{width:100%;padding:13px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--txt2);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:.2s;font-family:inherit;}
-    .btn-outline:hover{background:var(--bg);}
-    .btn-outline.blue{border-color:rgba(0,122,255,.4);color:var(--info);}
-    .btn-outline.green{border-color:rgba(0,200,83,.4);color:var(--accent);}
-    .btn-outline.red{border-color:rgba(255,59,48,.4);color:var(--danger);background:rgba(255,59,48,.04);}
-    .maint-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
-    .btn-m{background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:10px;color:var(--txt2);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;}
-    .btn-m:hover{background:var(--border);color:var(--txt);}
-    .btn-m.btn-manual{color:var(--warning);border-color:rgba(255,149,0,.3);}
-    .btn-cancel{width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,59,48,.4);background:rgba(255,59,48,.05);color:var(--danger);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+        .btn-icon:hover {
+            background: var(--border);
+        }
 
-    /* MODALS */
-    #scheduleModal,#settingsModal{display:none;z-index:1200;align-items:center;justify-content:center;}
-    .modal-wrap{width:95%;max-width:480px;background:#fff;border-radius:24px;padding:0;box-shadow:0 24px 64px rgba(0,0,0,.18);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;}
-    .modal-head{padding:17px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
-    .modal-head h3{font-size:17px;font-weight:800;color:var(--txt);margin:0;}
-    .modal-close{background:var(--bg);border:none;width:32px;height:32px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center;}
-    .modal-body{flex:1;overflow-y:auto;padding:14px 18px 22px;}
-    .settings-tabs{display:flex;gap:4px;padding:10px 14px 0;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
-    .settings-tabs::-webkit-scrollbar{display:none;}
-    .s-tab{padding:7px 14px 11px;border-radius:20px 20px 0 0;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border:none;background:transparent;color:var(--txt2);transition:.2s;border-bottom:2px solid transparent;font-family:inherit;}
-    .s-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-    .tab-pane{display:none;}
-    .tab-pane.active{display:block;}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-    .tab-pane.active{animation:fadeUp .25s ease;}
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 72px;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            display: flex;
+            z-index: 200;
+        }
 
-    /* Form */
-    .form-group{margin-bottom:12px;}
-    .form-label{display:block;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
-    .dm-input,.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--txt);border-radius:12px;padding:11px 14px;font-size:14px;box-sizing:border-box;font-family:inherit;outline:none;transition:.2s;}
-    .dm-input:focus,.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,83,.12);}
-    .info-box{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--txt2);}
-    .info-box b{color:var(--txt);}
-    .btn-sm{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:.2s;font-family:inherit;}
-    .btn-sm.green{background:rgba(0,200,83,.1);color:var(--accent);border:1px solid rgba(0,200,83,.3);}
-    .btn-sm.blue{background:rgba(0,122,255,.1);color:var(--info);border:1px solid rgba(0,122,255,.3);}
-    .btn-sm.warn{background:rgba(255,149,0,.1);color:var(--warning);border:1px solid rgba(255,149,0,.3);}
-    .btn-sm.red{background:rgba(255,59,48,.1);color:var(--danger);border:1px solid rgba(255,59,48,.3);}
-    .btn-sm.full{width:100%;}
-    .flex-row{display:flex;gap:8px;}
-    .flex-1{flex:1;}
-    .dm-btn{background:rgba(0,122,255,.1);color:var(--info);border:1px solid rgba(0,122,255,.3);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
-    .dm-btn.warn{background:rgba(255,149,0,.1);color:var(--warning);border-color:rgba(255,149,0,.3);}
-    .dm-list{display:flex;flex-direction:column;gap:8px;}
-    .dm-item{display:grid;grid-template-columns:1fr 40px 40px;gap:8px;align-items:center;background:var(--bg);border-radius:12px;padding:8px;}
-    .sys-card{background:var(--bg);border-radius:14px;padding:14px;margin-bottom:12px;}
-    .sys-card-label{font-size:11px;color:var(--txt2);margin-bottom:8px;font-weight:600;}
-    .sched-list{max-height:280px;overflow-y:auto;margin:10px 0;}
-    .sched-item{background:var(--bg);border-radius:14px;padding:12px;margin-bottom:10px;}
-    .sched-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-    .sched-time{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2);}
-    .sched-time input{background:#fff;border:1.5px solid var(--border);color:var(--txt);border-radius:8px;padding:4px 6px;width:68px;text-align:center;font-size:12px;}
-    .day-select{display:flex;gap:4px;}
-    .d-btn{flex:1;text-align:center;padding:5px 0;border-radius:7px;font-size:9px;font-weight:700;background:var(--border);cursor:pointer;color:var(--txt2);}
-    .d-btn.act{background:var(--accent);color:#fff;}
-    .sw{position:relative;display:inline-block;width:34px;height:20px;}
-    .sw input{opacity:0;width:0;height:0;}
-    .sl{position:absolute;cursor:pointer;inset:0;background:var(--border);transition:.2s;border-radius:20px;}
-    .sl::before{position:absolute;content:'';height:16px;width:16px;left:2px;bottom:2px;background:#fff;transition:.2s;border-radius:50%;}
-    input:checked+.sl{background:var(--accent);}
-    input:checked+.sl::before{transform:translateX(14px);}
-    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(28,28,30,.92);color:#fff;padding:10px 22px;border-radius:50px;font-size:13px;font-weight:600;display:none;z-index:5000;white-space:nowrap;backdrop-filter:blur(10px);}
-    #forgotPhoneOtpBlock{display:none;margin-top:10px;border:1.5px solid rgba(0,200,83,.3);border-radius:12px;padding:12px;background:rgba(0,200,83,.05);}
-    ::-webkit-scrollbar{width:4px;}
-    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-    @media(max-width:480px){.device-grid{grid-template-columns:repeat(2,1fr);}}
-  </style>
+        .nav-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            color: var(--dim);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            border: none;
+            background: transparent;
+            transition: .2s;
+        }
+
+        .nav-tab .ni {
+            font-size: 22px;
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+        }
+
+        /* DEVICE GRID */
+        .container {
+            padding: 16px 14px;
+        }
+
+        .sec-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 10px;
+        }
+
+        .status-bar {
+            background: #fff;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+        }
+
+        .status-bar span {
+            font-size: 12px;
+            color: var(--txt2);
+            font-weight: 600;
+        }
+
+        .status-bar b {
+            color: var(--txt);
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 12px;
+        }
+
+        /* CARD */
+        .device-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            display: flex;
+            flex-direction: column;
+            min-height: 185px;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--border);
+            transition: .3s;
+        }
+
+        .device-card.is-running::before {
+            background: linear-gradient(90deg, var(--accent), #69F0AE);
+        }
+
+        .device-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .11);
+        }
+
+        .device-card.offline {
+            opacity: .5;
+            filter: grayscale(.7);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-id {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: .3s;
+            flex-shrink: 0;
+        }
+
+        .card-dot.on {
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* BIG TOGGLE eWeLink style */
+        .card-toggle {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 3px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            transition: all .3s ease;
+            position: relative;
+        }
+
+        .card-toggle.running {
+            background: linear-gradient(135deg, #69F0AE, #00C853);
+            border-color: var(--accent);
+            box-shadow: var(--accent-glow);
+        }
+
+        .run-spin {
+            animation: spinA 2s linear infinite;
+        }
+
+        @keyframes spinA {
+            from {
+                transform: rotate(0deg)
+            }
+
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .card-timer {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--txt);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .card-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            background: var(--bg);
+            border-radius: 7px;
+            padding: 3px 7px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--txt2);
+        }
+
+        .stat-chip b {
+            color: var(--txt);
+        }
+
+        .mode-badge-mini {
+            background: var(--danger);
+            color: #fff;
+            border-radius: 6px;
+            padding: 2px 5px;
+            font-size: 9px;
+            font-weight: 800;
+            display: none;
+        }
+
+        /* LOGIN */
+        #loginOverlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 28px;
+            padding: 32px 26px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, .12);
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 26px;
+        }
+
+        .login-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            box-shadow: 0 8px 24px rgba(0, 200, 83, .4);
+        }
+
+        .login-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--txt);
+            margin: 0 0 4px;
+        }
+
+        .login-sub {
+            font-size: 13px;
+            color: var(--txt2);
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            color: var(--txt);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            transition: .2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+            font-family: inherit;
+        }
+
+        .google-btn:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .1);
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 16px;
+            color: var(--dim);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .login-field {
+            margin-bottom: 12px;
+        }
+
+        .login-field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: 6px;
+        }
+
+        .login-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 0 14px;
+            min-height: 50px;
+            transition: .2s;
+        }
+
+        .login-input-wrap:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 200, 83, .15);
+        }
+
+        .login-icon {
+            font-size: 15px;
+            opacity: .6;
+        }
+
+        .login-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--txt);
+            font-family: inherit;
+        }
+
+        .login-input::placeholder {
+            color: var(--dim);
+        }
+
+        .login-error {
+            background: rgba(255, 59, 48, .08);
+            border: 1px solid rgba(255, 59, 48, .2);
+            color: var(--danger);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .login-help-row {
+            display: flex;
+            justify-content: flex-end;
+            margin: -4px 0 10px;
+        }
+
+        .login-link-btn {
+            border: none;
+            background: transparent;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 200, 83, .4);
+            transition: .2s;
+            font-family: inherit;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .login-btn.secondary {
+            margin-top: 10px;
+            background: var(--bg);
+            color: var(--txt2);
+            box-shadow: none;
+            border: 1.5px solid var(--border);
+        }
+
+        .login-btn.secondary:hover {
+            background: var(--border);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--txt2);
+        }
+
+        .login-footer a {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .login-terms {
+            margin: 8px 0 14px;
+            font-size: 12px;
+            color: var(--txt2);
+        }
+
+        .otp-register-block {
+            display: none;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(0, 200, 83, .3);
+            background: rgba(0, 200, 83, .06);
+        }
+
+        .otp-register-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .forgot-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 12000;
+            padding: 16px;
+        }
+
+        .forgot-modal-box {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .2);
+        }
+
+        .forgot-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-6px)
+            }
+
+            75% {
+                transform: translateX(6px)
+            }
+        }
+
+        .shake {
+            animation: shake .3s ease;
+        }
+
+        /* PANEL */
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .panel {
+            width: 100%;
+            max-width: 520px;
+            background: #fff;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 20px 20px 34px;
+            transform: translateY(100%);
+            transition: transform .35s cubic-bezier(.33, 1, .68, 1);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        .panel.show {
+            transform: translateY(0);
+        }
+
+        .handle {
+            width: 36px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0 auto 18px;
+            cursor: pointer;
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .panel-head h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--txt);
+            margin: 0;
+        }
+
+        .panel-head p {
+            color: var(--txt2);
+            font-size: 11px;
+            margin: 2px 0 0;
+        }
+
+        .pstatus-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--border);
+            color: var(--txt2);
+        }
+
+        .pstatus-badge.online {
+            background: rgba(0, 200, 83, .15);
+            color: var(--accent);
+        }
+
+        /* Status banners */
+        #panelStatusBanner {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        #maintBanner {
+            display: none;
+            background: rgba(255, 149, 0, .1);
+            border: 1px solid rgba(255, 149, 0, .3);
+            color: #FF9500;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        #pauseBanner {
+            display: none;
+            background: rgba(255, 59, 48, .08);
+            border: 1px solid rgba(255, 59, 48, .2);
+            color: var(--danger);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        /* Sensor grid */
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .sensor-item {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .sensor-label {
+            font-size: 10px;
+            color: var(--txt2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 4px;
+        }
+
+        .sensor-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--txt);
+        }
+
+        .sensor-unit {
+            font-size: 11px;
+            color: var(--dim);
+            margin-left: 2px;
+        }
+
+        /* Controls */
+        .ctrl-group {
+            background: var(--bg);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .ctrl-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .ctrl-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .ctrl-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ctrl-div {
+            width: 1px;
+            height: 52px;
+            background: var(--border);
+        }
+
+        .btn-step {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1.5px solid var(--border);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--txt);
+            transition: .15s;
+        }
+
+        .btn-step:active {
+            transform: scale(.9);
+            background: var(--border);
+        }
+
+        .info-val-input {
+            width: 55px;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 36px;
+            font-weight: 800;
+            text-align: center;
+            color: var(--txt);
+            font-family: inherit;
+            -moz-appearance: textfield;
+        }
+
+        .info-val-input::-webkit-outer-spin-button,
+        .info-val-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .info-unit {
+            font-size: 13px;
+            color: var(--txt2);
+            font-weight: 600;
+        }
+
+        .preset-label,
+        .section-title-sm {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin: 14px 0 8px;
+        }
+
+        .presets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .btn-preset {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 10px;
+            color: var(--txt2);
+            font-weight: 600;
+            transition: .2s;
+            font-family: inherit;
+        }
+
+        .btn-preset span {
+            display: block;
+            font-weight: 800;
+            font-size: 11px;
+            color: var(--txt);
+            margin-bottom: 2px;
+        }
+
+        .btn-preset:active {
+            transform: scale(.97);
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 15px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: .5px;
+            box-shadow: 0 4px 16px rgba(0, 200, 83, .35);
+            margin-bottom: 10px;
+            transition: .2s;
+            font-family: inherit;
+        }
+
+        .btn-main:active {
+            transform: scale(.98);
+        }
+
+        .btn-outline {
+            width: 100%;
+            padding: 13px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            color: var(--txt2);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: .2s;
+            font-family: inherit;
+        }
+
+        .btn-outline:hover {
+            background: var(--bg);
+        }
+
+        .btn-outline.blue {
+            border-color: rgba(0, 122, 255, .4);
+            color: var(--info);
+        }
+
+        .btn-outline.green {
+            border-color: rgba(0, 200, 83, .4);
+            color: var(--accent);
+        }
+
+        .btn-outline.red {
+            border-color: rgba(255, 59, 48, .4);
+            color: var(--danger);
+            background: rgba(255, 59, 48, .04);
+        }
+
+        .maint-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-m {
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            padding: 10px;
+            color: var(--txt2);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+            font-family: inherit;
+        }
+
+        .btn-m:hover {
+            background: var(--border);
+            color: var(--txt);
+        }
+
+        .btn-m.btn-manual {
+            color: var(--warning);
+            border-color: rgba(255, 149, 0, .3);
+        }
+
+        .btn-cancel {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(255, 59, 48, .4);
+            background: rgba(255, 59, 48, .05);
+            color: var(--danger);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* MODALS */
+        #scheduleModal,
+        #settingsModal {
+            display: none;
+            z-index: 1200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-wrap {
+            width: 95%;
+            max-width: 480px;
+            background: #fff;
+            border-radius: 24px;
+            padding: 0;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .18);
+            max-height: 88vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-head {
+            padding: 17px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .modal-head h3 {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--txt);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: var(--bg);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--txt2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 18px 22px;
+        }
+
+        .settings-nav {
+            display: flex;
+            gap: 4px;
+            padding: 10px 14px 0;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .settings-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .s-tab {
+            padding: 7px 14px 11px;
+            border-radius: 20px 20px 0 0;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            border: none;
+            background: transparent;
+            color: var(--txt2);
+            transition: .2s;
+            border-bottom: 2px solid transparent;
+            font-family: inherit;
+        }
+
+        .s-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(4px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .tab-pane.active {
+            animation: fadeUp .25s ease;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: 6px;
+        }
+
+        .dm-input,
+        .form-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            color: var(--txt);
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+            outline: none;
+            transition: .2s;
+        }
+
+        .dm-input:focus,
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 200, 83, .12);
+        }
+
+        .info-box {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--txt2);
+        }
+
+        .info-box b {
+            color: var(--txt);
+        }
+
+        .btn-sm {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: .2s;
+            font-family: inherit;
+        }
+
+        .btn-sm.green {
+            background: rgba(0, 200, 83, .1);
+            color: var(--accent);
+            border: 1px solid rgba(0, 200, 83, .3);
+        }
+
+        .btn-sm.blue {
+            background: rgba(0, 122, 255, .1);
+            color: var(--info);
+            border: 1px solid rgba(0, 122, 255, .3);
+        }
+
+        .btn-sm.warn {
+            background: rgba(255, 149, 0, .1);
+            color: var(--warning);
+            border: 1px solid rgba(255, 149, 0, .3);
+        }
+
+        .btn-sm.red {
+            background: rgba(255, 59, 48, .1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 59, 48, .3);
+        }
+
+        .btn-sm.full {
+            width: 100%;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .flex-1 {
+            flex: 1;
+        }
+
+        .dm-btn {
+            background: rgba(0, 122, 255, .1);
+            color: var(--info);
+            border: 1px solid rgba(0, 122, 255, .3);
+            border-radius: 10px;
+            padding: 9px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .dm-btn.warn {
+            background: rgba(255, 149, 0, .1);
+            color: var(--warning);
+            border-color: rgba(255, 149, 0, .3);
+        }
+
+        .dm-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dm-item {
+            display: grid;
+            grid-template-columns: 1fr 40px 40px;
+            gap: 8px;
+            align-items: center;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 8px;
+        }
+
+        .sys-card {
+            background: var(--bg);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .sys-card-label {
+            font-size: 11px;
+            color: var(--txt2);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .sched-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .sched-item {
+            background: var(--bg);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .sched-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .sched-time {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--txt2);
+        }
+
+        .sched-time input {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            color: var(--txt);
+            border-radius: 8px;
+            padding: 4px 6px;
+            width: 68px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .day-select {
+            display: flex;
+            gap: 4px;
+        }
+
+        .d-btn {
+            flex: 1;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 7px;
+            font-size: 9px;
+            font-weight: 700;
+            background: var(--border);
+            cursor: pointer;
+            color: var(--txt2);
+        }
+
+        .d-btn.act {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .sw {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .sw input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .sl {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--border);
+            transition: .2s;
+            border-radius: 20px;
+        }
+
+        .sl::before {
+            position: absolute;
+            content: '';
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background: #fff;
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked+.sl {
+            background: var(--accent);
+        }
+
+        input:checked+.sl::before {
+            transform: translateX(14px);
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(28, 28, 30, .92);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+            z-index: 5000;
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+
+        #forgotPhoneOtpBlock {
+            display: none;
+            margin-top: 10px;
+            border: 1.5px solid rgba(0, 200, 83, .3);
+            border-radius: 12px;
+            padding: 12px;
+            background: rgba(0, 200, 83, .05);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        @media(max-width:480px) {
+            .device-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="toast">Thông báo</div>
+    <div id="toast">Thông báo</div>
 
-<!-- LOGIN -->
-<div id="loginOverlay">
-  <div class="login-box" id="loginBox">
-    <div class="login-brand">
-      <div class="login-logo">🏠</div>
-      <h2 class="login-title">Smart Home</h2>
-      <p class="login-sub">Anh Trung IoT Ecosystem</p>
-    </div>
-    <button type="button" class="google-btn" onclick="performGoogleLogin()">
-      <span style="font-size:20px;font-weight:900;background:linear-gradient(45deg,#4285F4,#34A853,#FBBC05,#EA4335);-webkit-background-clip:text;background-clip:text;color:transparent;">G</span>
-      Đăng nhập bằng Google
-    </button>
-    <div class="login-divider">HOẶC</div>
-    <div id="loginError" class="login-error"></div>
-    <div class="login-field">
-      <label class="login-field-label" for="loginUser">Email hoặc tên đăng nhập</label>
-      <div class="login-input-wrap">
-        <span class="login-icon">📧</span>
-        <input type="text" id="loginUser" class="login-input" placeholder="Nhập email / username" autocomplete="username">
-      </div>
-    </div>
-    <div class="login-field">
-      <label class="login-field-label" for="loginPass">Mật khẩu</label>
-      <div class="login-input-wrap">
-        <span class="login-icon">🔒</span>
-        <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu" autocomplete="current-password">
-        <span class="login-icon">👁️</span>
-      </div>
-    </div>
-    <div class="login-help-row">
-      <button type="button" class="login-link-btn" onclick="openForgotPasswordModal()">Quên mật khẩu?</button>
-    </div>
-    <div class="login-field" id="confirmPassField" style="display:none;">
-      <label class="login-field-label" for="loginPassConfirm">Nhập lại mật khẩu</label>
-      <div class="login-input-wrap">
-        <span class="login-icon">🔐</span>
-        <input type="password" id="loginPassConfirm" class="login-input" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
-      </div>
-    </div>
-    <div id="otpRegisterBlock" class="otp-register-block">
-      <div style="font-size:12px;color:var(--accent);margin-bottom:6px;font-weight:600;">Xác minh SĐT bằng OTP</div>
-      <div class="login-input-wrap" style="min-height:44px;">
-        <span class="login-icon">🔢</span>
-        <input type="text" id="otpCodeInput" class="login-input" placeholder="Nhập mã OTP" inputmode="numeric">
-      </div>
-      <div class="otp-register-actions">
-        <button type="button" class="btn-sm blue flex-1" onclick="sendRegisterOtp()">Gửi OTP</button>
-        <button type="button" class="btn-sm green flex-1" onclick="verifyRegisterOtp()">Xác nhận OTP</button>
-      </div>
-    </div>
-    <p class="login-terms">Bằng đăng nhập, bạn đồng ý với <a href="#" style="color:var(--accent);">Điều khoản</a> và <a href="#" style="color:var(--accent);">Chính sách</a>.</p>
-    <button class="login-btn" onclick="performLogin()">ĐĂNG NHẬP</button>
-    <button class="login-btn secondary" id="registerBtn" onclick="handleRegisterAction()">ĐĂNG KÝ</button>
-  </div>
-</div>
-
-<!-- FORGOT PASSWORD -->
-<div id="forgotPasswordModal" class="forgot-modal" onclick="if(event.target.id==='forgotPasswordModal') closeForgotPasswordModal()">
-  <div class="forgot-modal-box">
-    <div style="font-size:17px;font-weight:800;color:var(--txt);margin-bottom:6px;">Đặt lại mật khẩu</div>
-    <div style="font-size:13px;color:var(--txt2);margin-bottom:12px;">Nhập email hoặc SĐT đã đăng ký</div>
-    <input id="forgotAccountInput" class="dm-input" type="text" placeholder="Email hoặc SĐT/username" style="margin-bottom:10px;">
-    <div id="forgotPhoneOtpBlock">
-      <div style="font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:600;">Khôi phục qua SĐT — nhập OTP</div>
-      <input id="forgotOtpInput" class="dm-input" type="text" placeholder="Mã OTP" inputmode="numeric" style="margin-bottom:8px;">
-      <input id="forgotNewPass" class="dm-input" type="password" placeholder="Mật khẩu mới (≥ 6 ký tự)" style="margin-bottom:8px;">
-      <input id="forgotNewPass2" class="dm-input" type="password" placeholder="Nhập lại mật khẩu mới" style="margin-bottom:8px;">
-      <div class="flex-row">
-        <button class="btn-sm blue flex-1" onclick="sendForgotPhoneOtp()">Gửi OTP SĐT</button>
-        <button class="btn-sm green flex-1" onclick="verifyForgotPhoneOtp()">Xác minh OTP</button>
-      </div>
-      <button class="btn-sm green full" onclick="submitPhonePasswordReset()" style="margin-top:8px;">Đặt lại mật khẩu</button>
-    </div>
-    <div class="forgot-actions">
-      <button class="btn-sm blue flex-1" onclick="submitForgotPassword()">Gửi link reset</button>
-      <button class="btn-sm warn flex-1" onclick="closeForgotPasswordModal()">Đóng</button>
-    </div>
-  </div>
-</div>
-<div id="recaptcha-container" style="position:fixed;bottom:8px;right:8px;z-index:13000;"></div>
-
-<!-- SCHEDULE MODAL -->
-<div id="scheduleModal" class="panel-overlay" onclick="if(event.target.id='scheduleModal') closeSchedule()">
-  <div class="modal-wrap">
-    <div class="modal-head">
-      <h3>📅 Hẹn giờ nghỉ</h3>
-      <button class="modal-close" onclick="closeSchedule()">×</button>
-    </div>
-    <div class="modal-body">
-      <p id="schedDevId" style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Thiết bị: --</p>
-      <div class="sched-list" id="schedList"></div>
-      <div class="flex-row" style="margin-top:8px;">
-        <button class="btn-sm blue flex-1" onclick="addScheduleItem()">+ Thêm mốc</button>
-        <button class="btn-sm green flex-1" onclick="saveSchedule()">💾 Lưu lịch</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div id="settingsModal" class="panel-overlay" onclick="if(event.target.id='settingsModal') closeSettings()">
-  <div class="modal-wrap" style="max-width:540px;">
-    <div class="modal-head">
-      <h3>⚙️ Cài đặt</h3>
-      <button class="modal-close" onclick="closeSettings()">×</button>
-    </div>
-    <div class="settings-tabs">
-      <button class="s-tab active" onclick="switchTab('tab-account',this)">👤 Tài khoản</button>
-      <button class="s-tab" onclick="switchTab('tab-devices',this)">🗂️ Thiết bị</button>
-      <button class="s-tab" onclick="switchTab('tab-system',this)">🛠️ Hệ thống</button>
-      <button class="s-tab" onclick="switchTab('tab-guide',this)">📘 Hướng dẫn</button>
-    </div>
-    <div class="modal-body">
-      <!-- TAB ACCOUNT -->
-      <div id="tab-account" class="tab-pane active">
-        <div class="info-box">Email: <b id="uiEmail">...</b><br>SĐT liên kết: <b id="uiPhone" style="color:var(--accent);">...</b></div>
-        <div class="form-group">
-          <label class="form-label">Liên kết SĐT</label>
-          <input id="linkedPhone" class="form-input" type="text" placeholder="Ví dụ: 0907888111">
+    <!-- LOGIN -->
+    <div id="loginOverlay">
+        <div class="login-box" id="loginBox">
+            <div class="login-brand">
+                <div class="login-logo">🏠</div>
+                <h2 class="login-title">Smart Home</h2>
+                <p class="login-sub">Anh Trung IoT Ecosystem</p>
+            </div>
+            <button type="button" class="google-btn" onclick="performGoogleLogin()">
+                <span
+                    style="font-size:20px;font-weight:900;background:linear-gradient(45deg,#4285F4,#34A853,#FBBC05,#EA4335);-webkit-background-clip:text;background-clip:text;color:transparent;">G</span>
+                Đăng nhập bằng Google
+            </button>
+            <div class="login-divider">HOẶC</div>
+            <div id="loginError" class="login-error"></div>
+            <div class="login-field">
+                <label class="login-field-label" for="loginUser">Email hoặc tên đăng nhập</label>
+                <div class="login-input-wrap">
+                    <span class="login-icon">📧</span>
+                    <input type="text" id="loginUser" class="login-input" placeholder="Nhập email / username"
+                        autocomplete="username">
+                </div>
+            </div>
+            <div class="login-field">
+                <label class="login-field-label" for="loginPass">Mật khẩu</label>
+                <div class="login-input-wrap">
+                    <span class="login-icon">🔒</span>
+                    <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu"
+                        autocomplete="current-password">
+                    <span class="login-icon">👁️</span>
+                </div>
+            </div>
+            <div class="login-help-row">
+                <button type="button" class="login-link-btn" onclick="openForgotPasswordModal()">Quên mật khẩu?</button>
+            </div>
+            <div class="login-field" id="confirmPassField" style="display:none;">
+                <label class="login-field-label" for="loginPassConfirm">Nhập lại mật khẩu</label>
+                <div class="login-input-wrap">
+                    <span class="login-icon">🔐</span>
+                    <input type="password" id="loginPassConfirm" class="login-input" placeholder="Nhập lại mật khẩu"
+                        autocomplete="new-password">
+                </div>
+            </div>
+            <div id="otpRegisterBlock" class="otp-register-block">
+                <div style="font-size:12px;color:var(--accent);margin-bottom:6px;font-weight:600;">Xác minh SĐT bằng OTP
+                </div>
+                <div class="login-input-wrap" style="min-height:44px;">
+                    <span class="login-icon">🔢</span>
+                    <input type="text" id="otpCodeInput" class="login-input" placeholder="Nhập mã OTP"
+                        inputmode="numeric">
+                </div>
+                <div class="otp-register-actions">
+                    <button type="button" class="btn-sm blue flex-1" onclick="sendRegisterOtp()">Gửi OTP</button>
+                    <button type="button" class="btn-sm green flex-1" onclick="verifyRegisterOtp()">Xác nhận
+                        OTP</button>
+                </div>
+            </div>
+            <p class="login-terms">Bằng đăng nhập, bạn đồng ý với <a href="#" style="color:var(--accent);">Điều
+                    khoản</a> và <a href="#" style="color:var(--accent);">Chính sách</a>.</p>
+            <button class="login-btn" onclick="performLogin()">ĐĂNG NHẬP</button>
+            <button class="login-btn secondary" id="registerBtn" onclick="handleRegisterAction()">ĐĂNG KÝ</button>
         </div>
-        <button class="btn-sm green full" onclick="saveLinkedPhone()" style="margin-bottom:16px;">🔗 Lưu liên kết SĐT</button>
-        <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px;font-size:12px;color:var(--txt2);">Tạo / Đổi mật khẩu</div>
-        <input id="newPassword" class="form-input" type="password" placeholder="Mật khẩu mới (≥ 6 ký tự)" style="margin-bottom:8px;">
-        <input id="confirmPassword" class="form-input" type="password" placeholder="Nhập lại mật khẩu mới" style="margin-bottom:10px;">
-        <button class="btn-sm blue full" onclick="changePasswordInApp()">🔐 Cập nhật mật khẩu</button>
-      </div>
-      <!-- TAB DEVICES -->
-      <div id="tab-devices" class="tab-pane">
-        <div style="font-size:12px;color:var(--txt2);margin-bottom:10px;">Dùng ↑ ↓ để sắp xếp vị trí hiển thị.</div>
-        <div id="dmList" class="dm-list" style="max-height:300px;overflow-y:auto;margin-bottom:12px;"></div>
-        <div class="flex-row">
-          <button class="btn-sm green flex-1" onclick="saveDeviceManagerChanges()">💾 Lưu</button>
-          <button class="btn-sm warn flex-1" onclick="resetDeviceOrder()">↺ Reset</button>
-        </div>
-      </div>
-      <!-- TAB SYSTEM -->
-      <div id="tab-system" class="tab-pane">
-        <div class="sys-card">
-          <div class="sys-card-label">Kiểm tra kết nối MQTT</div>
-          <button class="btn-sm blue full" onclick="testMqttConfig()" style="margin-bottom:8px;">🧪 Test MQTT Config</button>
-          <button class="btn-sm green full" onclick="testWsPreflight()">🌐 WS Preflight Test</button>
-          <div id="mqttTestResult" style="font-size:11px;color:var(--txt2);margin-top:8px;white-space:pre-wrap;"></div>
-        </div>
-        <div class="sys-card">
-          <div class="sys-card-label">Xóa Cache Local</div>
-          <button class="btn-sm warn full" onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻ Xóa Data &amp; Tải lại</button>
-        </div>
-        <div class="sys-card" style="border:1.5px solid rgba(255,59,48,.2);">
-          <div class="sys-card-label" style="color:var(--danger);">Khu vực nguy hiểm</div>
-          <button class="btn-sm red full" onclick="logout()">🔓 Đăng xuất (Logout)</button>
-        </div>
-      </div>
-      <!-- TAB GUIDE -->
-      <div id="tab-guide" class="tab-pane">
-        <div style="font-size:13px;color:var(--txt2);line-height:1.7;">
-          <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">1) Điều khiển thiết bị</p>
-          <ul style="margin:0 0 12px 16px;"><li>Bấm vào thẻ để mở bảng điều khiển chi tiết.</li><li>Cài thời gian nghỉ/chạy rồi bấm Lưu.</li></ul>
-          <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">2) PWA</p>
-          <ul style="margin:0 0 12px 16px;"><li>Thêm vào màn hình chính để dùng như App.</li></ul>
-          <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">3) Bảo trì</p>
-          <ul style="margin:0 16px;"><li>Mở panel → chọn thời lượng bảo trì.</li><li>Thiết bị chạy liên tục trong thời gian đó.</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CONTROL PANEL BOTTOM SHEET -->
-<div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
-  <div class="panel" id="mainPanel">
-    <div class="handle" onclick="closePanel({target:{id:'panelOverlay'}})"></div>
-    <div class="panel-head">
-      <div>
-        <h2 id="panelTitle">TIMER CONTROL</h2>
-        <p id="panelId">ID: --</p>
-      </div>
-      <div id="panelStatusBadge" class="pstatus-badge">OFFLINE</div>
     </div>
 
-    <!-- STATUS BANNERS -->
-    <div id="panelStatusBanner">
-      <div id="maintBanner"><span>🔧</span><span id="maintText">ĐANG BẢO TRÌ</span></div>
-      <div id="pauseBanner"><span>⏸️</span><span>LỊCH TRÌNH ĐANG TẠM DỪNG</span></div>
-    </div>
-
-    <!-- SENSOR DATA -->
-    <div class="sensor-grid">
-      <div class="sensor-item">
-        <div class="sensor-label">💾 RAM Free</div>
-        <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
-      </div>
-      <div class="sensor-item">
-        <div class="sensor-label">⚡ Dòng điện</div>
-        <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
-      </div>
-      <div class="sensor-item">
-        <div class="sensor-label">🌡️ Nhiệt độ</div>
-        <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
-      </div>
-      <div class="sensor-item">
-        <div class="sensor-label">🚰 Phao tràn</div>
-        <div class="sensor-val" id="pPhao" style="color:var(--txt2);">--</div>
-      </div>
-    </div>
-
-    <!-- TIMER CONTROLS -->
-    <div class="ctrl-group">
-      <div class="ctrl-item">
-        <span class="ctrl-label">Cài đặt nghỉ</span>
-        <div class="ctrl-row">
-          <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
-          <div style="display:flex;align-items:baseline;gap:2px;">
-            <input type="number" id="offMin" class="info-val-input" value="0">
-            <span class="info-unit">P</span>
-          </div>
-          <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
+    <!-- FORGOT PASSWORD -->
+    <div id="forgotPasswordModal" class="forgot-modal"
+        onclick="if(event.target.id==='forgotPasswordModal') closeForgotPasswordModal()">
+        <div class="forgot-modal-box">
+            <div style="font-size:17px;font-weight:800;color:var(--txt);margin-bottom:6px;">Đặt lại mật khẩu</div>
+            <div style="font-size:13px;color:var(--txt2);margin-bottom:12px;">Nhập email hoặc SĐT đã đăng ký</div>
+            <input id="forgotAccountInput" class="dm-input" type="text" placeholder="Email hoặc SĐT/username"
+                style="margin-bottom:10px;">
+            <div id="forgotPhoneOtpBlock">
+                <div style="font-size:12px;color:var(--accent);margin-bottom:8px;font-weight:600;">Khôi phục qua SĐT —
+                    nhập OTP</div>
+                <input id="forgotOtpInput" class="dm-input" type="text" placeholder="Mã OTP" inputmode="numeric"
+                    style="margin-bottom:8px;">
+                <input id="forgotNewPass" class="dm-input" type="password" placeholder="Mật khẩu mới (≥ 6 ký tự)"
+                    style="margin-bottom:8px;">
+                <input id="forgotNewPass2" class="dm-input" type="password" placeholder="Nhập lại mật khẩu mới"
+                    style="margin-bottom:8px;">
+                <div class="flex-row">
+                    <button class="btn-sm blue flex-1" onclick="sendForgotPhoneOtp()">Gửi OTP SĐT</button>
+                    <button class="btn-sm green flex-1" onclick="verifyForgotPhoneOtp()">Xác minh OTP</button>
+                </div>
+                <button class="btn-sm green full" onclick="submitPhonePasswordReset()" style="margin-top:8px;">Đặt lại
+                    mật khẩu</button>
+            </div>
+            <div class="forgot-actions">
+                <button class="btn-sm blue flex-1" onclick="submitForgotPassword()">Gửi link reset</button>
+                <button class="btn-sm warn flex-1" onclick="closeForgotPasswordModal()">Đóng</button>
+            </div>
         </div>
-      </div>
-      <div class="ctrl-div"></div>
-      <div class="ctrl-item">
-        <span class="ctrl-label">Cài đặt chạy</span>
-        <div class="ctrl-row">
-          <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
-          <div style="display:flex;align-items:baseline;gap:2px;">
-            <input type="number" id="onSec" class="info-val-input" value="0">
-            <span class="info-unit">S</span>
-          </div>
-          <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
+    </div>
+    <div id="recaptcha-container" style="position:fixed;bottom:8px;right:8px;z-index:13000;"></div>
+
+    <!-- SCHEDULE MODAL -->
+    <div id="scheduleModal" class="panel-overlay" onclick="if(event.target.id==='scheduleModal') closeSchedule()">
+        <div class="modal-wrap">
+            <div class="modal-head">
+                <h3>📅 Hẹn giờ nghỉ</h3>
+                <button class="modal-close" onclick="closeSchedule()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="schedDevId" style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Thiết bị: --</p>
+                <div class="sched-list" id="schedList"></div>
+                <div class="flex-row" style="margin-top:8px;">
+                    <button class="btn-sm blue flex-1" onclick="addScheduleItem()">+ Thêm mốc</button>
+                    <button class="btn-sm green flex-1" onclick="saveSchedule()">💾 Lưu lịch</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- PRESETS -->
-    <div class="preset-label">Cấu hình nhanh</div>
-    <div class="presets-grid">
-      <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
-      <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
-      <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="panel-overlay" onclick="if(event.target.id==='settingsModal') closeSettings()">
+        <div class="modal-wrap" style="max-width:540px;">
+            <div class="modal-head">
+                <h3>⚙️ Cài đặt</h3>
+                <button class="modal-close" onclick="closeSettings()">×</button>
+            </div>
+            <div class="settings-nav">
+                <button class="s-tab nav-item active" onclick="switchTab('tab-account',this)">👤 Tài khoản</button>
+                <button class="s-tab nav-item" onclick="switchTab('tab-devices',this)">🗂️ Thiết bị</button>
+                <button class="s-tab nav-item" onclick="switchTab('tab-system',this)">🛠️ Hệ thống</button>
+                <button class="s-tab nav-item" onclick="switchTab('tab-guide',this)">📘 Hướng dẫn</button>
+            </div>
+            <div class="modal-body">
+                <!-- TAB ACCOUNT -->
+                <div id="tab-account" class="tab-pane active">
+                    <div class="info-box">Email: <b id="uiEmail">...</b><br>SĐT liên kết: <b id="uiPhone"
+                            style="color:var(--accent);">...</b></div>
+                    <div class="form-group">
+                        <label class="form-label">Liên kết SĐT</label>
+                        <input id="linkedPhone" class="form-input" type="text" placeholder="Ví dụ: 0907888111">
+                    </div>
+                    <button class="btn-sm green full" onclick="saveLinkedPhone()" style="margin-bottom:16px;">🔗 Lưu
+                        liên kết SĐT</button>
+                    <div
+                        style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px;font-size:12px;color:var(--txt2);">
+                        Tạo / Đổi mật khẩu</div>
+                    <input id="newPassword" class="form-input" type="password" placeholder="Mật khẩu mới (≥ 6 ký tự)"
+                        style="margin-bottom:8px;">
+                    <input id="confirmPassword" class="form-input" type="password" placeholder="Nhập lại mật khẩu mới"
+                        style="margin-bottom:10px;">
+                    <button class="btn-sm blue full" onclick="changePasswordInApp()">🔐 Cập nhật mật khẩu</button>
+                </div>
+                <!-- TAB DEVICES -->
+                <div id="tab-devices" class="tab-pane">
+                    <div style="font-size:12px;color:var(--txt2);margin-bottom:10px;">Dùng ↑ ↓ để sắp xếp vị trí hiển
+                        thị.</div>
+                    <div id="dmList" class="dm-list" style="max-height:300px;overflow-y:auto;margin-bottom:12px;"></div>
+                    <div class="flex-row">
+                        <button class="btn-sm green flex-1" onclick="saveDeviceManagerChanges()">💾 Lưu</button>
+                        <button class="btn-sm warn flex-1" onclick="resetDeviceOrder()">↺ Reset</button>
+                    </div>
+                </div>
+                <!-- TAB SYSTEM -->
+                <div id="tab-system" class="tab-pane">
+                    <div class="sys-card">
+                        <div class="sys-card-label">Kiểm tra kết nối MQTT</div>
+                        <button class="btn-sm blue full" onclick="testMqttConfig()" style="margin-bottom:8px;">🧪 Test
+                            MQTT Config</button>
+                        <button class="btn-sm green full" onclick="testWsPreflight()">🌐 WS Preflight Test</button>
+                        <div id="mqttTestResult"
+                            style="font-size:11px;color:var(--txt2);margin-top:8px;white-space:pre-wrap;"></div>
+                    </div>
+                    <div class="sys-card">
+                        <div class="sys-card-label">Xóa Cache Local</div>
+                        <button class="btn-sm warn full"
+                            onclick="if(confirm('Xóa dữ liệu thiết bị để tải lại?')){localStorage.removeItem('iot_ecosystem_cfg');location.reload();}">↻
+                            Xóa Data &amp; Tải lại</button>
+                    </div>
+                    <div class="sys-card" style="border:1.5px solid rgba(255,59,48,.2);">
+                        <div class="sys-card-label" style="color:var(--danger);">Khu vực nguy hiểm</div>
+                        <button class="btn-sm red full" onclick="logout()">🔓 Đăng xuất (Logout)</button>
+                    </div>
+                </div>
+                <!-- TAB GUIDE -->
+                <div id="tab-guide" class="tab-pane">
+                    <div style="font-size:13px;color:var(--txt2);line-height:1.7;">
+                        <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">1) Điều khiển thiết bị</p>
+                        <ul style="margin:0 0 12px 16px;">
+                            <li>Bấm vào thẻ để mở bảng điều khiển chi tiết.</li>
+                            <li>Cài thời gian nghỉ/chạy rồi bấm Lưu.</li>
+                        </ul>
+                        <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">2) PWA</p>
+                        <ul style="margin:0 0 12px 16px;">
+                            <li>Thêm vào màn hình chính để dùng như App.</li>
+                        </ul>
+                        <p style="font-weight:700;color:var(--txt);margin-bottom:6px;">3) Bảo trì</p>
+                        <ul style="margin:0 16px;">
+                            <li>Mở panel → chọn thời lượng bảo trì.</li>
+                            <li>Thiết bị chạy liên tục trong thời gian đó.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <button class="btn-main" onclick="saveSettings()">💾 LƯU CÀI ĐẶT MỚI</button>
-    <button class="btn-outline green" onclick="openSchedule()">📅 Cài đặt lịch nghỉ (Schedule)</button>
-    <button class="btn-outline blue" onclick="forceRun()">⚡ Force Run</button>
+    <!-- CONTROL PANEL BOTTOM SHEET -->
+    <div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
+        <div class="panel" id="mainPanel">
+            <div class="handle" onclick="closePanel({target:{id:'panelOverlay'}})"></div>
+            <div class="panel-head">
+                <div>
+                    <h2 id="panelTitle">TIMER CONTROL</h2>
+                    <p id="panelId">ID: --</p>
+                </div>
+                <div id="panelStatusBadge" class="pstatus-badge">OFFLINE</div>
+            </div>
 
-    <div class="section-title-sm">🔧 Chế độ bảo trì</div>
-    <div class="maint-grid">
-      <button class="btn-m" onclick="setMaint(1)">7p</button>
-      <button class="btn-m" onclick="setMaint(2)">15p</button>
-      <button class="btn-m" onclick="setMaint(3)">30p</button>
-      <button class="btn-m" onclick="setMaint(4)">50p</button>
-      <button class="btn-m" onclick="setMaint(5)">80p</button>
-      <button class="btn-m btn-manual" onclick="setMaint(6)">∞</button>
+            <!-- STATUS BANNERS -->
+            <div id="panelStatusBanner">
+                <div id="maintBanner"><span>🔧</span><span id="maintText">ĐANG BẢO TRÌ</span></div>
+                <div id="pauseBanner"><span>⏸️</span><span>LỊCH TRÌNH ĐANG TẠM DỪNG</span></div>
+            </div>
+
+            <!-- SENSOR DATA -->
+            <div class="sensor-grid">
+                <div class="sensor-item">
+                    <div class="sensor-label">💾 RAM Free</div>
+                    <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">⚡ Dòng điện</div>
+                    <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">🌡️ Nhiệt độ</div>
+                    <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">🚰 Phao tràn</div>
+                    <div class="sensor-val" id="pPhao" style="color:var(--txt2);">--</div>
+                </div>
+            </div>
+
+            <!-- TIMER CONTROLS -->
+            <div class="ctrl-group">
+                <div class="ctrl-item">
+                    <span class="ctrl-label">Cài đặt nghỉ</span>
+                    <div class="ctrl-row">
+                        <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
+                        <div style="display:flex;align-items:baseline;gap:2px;">
+                            <input type="number" id="offMin" class="info-val-input" value="0">
+                            <span class="info-unit">P</span>
+                        </div>
+                        <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
+                    </div>
+                </div>
+                <div class="ctrl-div"></div>
+                <div class="ctrl-item">
+                    <span class="ctrl-label">Cài đặt chạy</span>
+                    <div class="ctrl-row">
+                        <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
+                        <div style="display:flex;align-items:baseline;gap:2px;">
+                            <input type="number" id="onSec" class="info-val-input" value="0">
+                            <span class="info-unit">S</span>
+                        </div>
+                        <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRESETS -->
+            <div class="preset-label">Cấu hình nhanh</div>
+            <div class="presets-grid">
+                <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
+                <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
+                <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
+            </div>
+
+            <button class="btn-main" onclick="saveSettings()">💾 LƯU CÀI ĐẶT MỚI</button>
+            <button class="btn-outline green" onclick="openSchedule()">📅 Cài đặt lịch nghỉ (Schedule)</button>
+            <button class="btn-outline blue" onclick="forceRun()">⚡ Force Run</button>
+
+            <div class="section-title-sm">🔧 Chế độ bảo trì</div>
+            <div class="maint-grid">
+                <button class="btn-m" onclick="setMaint(1)">7p</button>
+                <button class="btn-m" onclick="setMaint(2)">15p</button>
+                <button class="btn-m" onclick="setMaint(3)">30p</button>
+                <button class="btn-m" onclick="setMaint(4)">50p</button>
+                <button class="btn-m" onclick="setMaint(5)">80p</button>
+                <button class="btn-m btn-manual" onclick="setMaint(6)">∞</button>
+            </div>
+            <button class="btn-cancel" onclick="setMaint(0)">Hủy bảo trì</button>
+            <div style="height:28px;"></div>
+        </div>
     </div>
-    <button class="btn-cancel" onclick="setMaint(0)">Hủy bảo trì</button>
-    <div style="height:28px;"></div>
-  </div>
-</div>
 
-<!-- MAIN APP -->
-<div class="app-header">
-  <h1>🏠 IoT Ecosystem</h1>
-  <div class="hdr-right">
-    <button class="btn-icon" onclick="openSettings()" title="Cài đặt">⚙️</button>
-  </div>
-</div>
+    <!-- MAIN APP -->
+    <div class="app-header">
+        <h1>🏠 IoT Ecosystem</h1>
+        <div class="hdr-right">
+            <button class="btn-icon" onclick="openSettings()" title="Cài đặt">⚙️</button>
+        </div>
+    </div>
 
-<div class="container">
-  <div class="status-bar">
-    <span id="deviceCount">ĐANG CHỜ ĐĂNG NHẬP...</span>
-    <span id="mqttStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;"></span>
-  </div>
-  <div class="sec-label">Thiết bị của tôi</div>
-  <div class="device-grid" id="grid"></div>
-</div>
+    <div class="container">
+        <div class="status-bar">
+            <span id="deviceCount">ĐANG CHỜ ĐĂNG NHẬP...</span>
+            <span id="mqttStatusDot"
+                style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;"></span>
+        </div>
+        <div class="sec-label">Thiết bị của tôi</div>
+        <div class="device-grid" id="grid"></div>
+    </div>
 
-<div class="bottom-nav">
-  <button class="nav-tab active">
-    <span class="ni">🏠</span>
-    Trang chủ
-  </button>
-  <button class="nav-tab">
-    <span class="ni">🔔</span>
-    Cảnh báo
-  </button>
-  <button class="nav-tab" onclick="openSettings()">
-    <span class="ni">⚙️</span>
-    Cài đặt
-  </button>
-</div>
+    <div class="bottom-nav">
+        <button class="nav-tab active">
+            <span class="ni">🏠</span>
+            Trang chủ
+        </button>
+        <button class="nav-tab">
+            <span class="ni">🔔</span>
+            Cảnh báo
+        </button>
+        <button class="nav-tab" onclick="openSettings()">
+            <span class="ni">⚙️</span>
+            Cài đặt
+        </button>
+    </div>
 
-<script>
+    <script>
         /* ========= CONFIG ========= */
         const DEFAULT_MQTT = {
             // Fallback mặc định theo hạ tầng hiện tại (Nginx + SSL)
@@ -2484,11 +3701,12 @@
         }
     </script>
 
-<script>
-// eWeLink card renderer — ghi đè createDeviceCard để match style mới
-const _origCreate = createDeviceCard;
-// Patch createDeviceCard trực tiếp qua prototype không cần redefine vì là function declaration
-// Ta override bằng cách redefine sau khi script main đã load:
-</script>
+    <script>
+        // eWeLink card renderer — ghi đè createDeviceCard để match style mới
+        const _origCreate = createDeviceCard;
+        // Patch createDeviceCard trực tiếp qua prototype không cần redefine vì là function declaration
+        // Ta override bằng cách redefine sau khi script main đã load:
+    </script>
 </body>
+
 </html>
