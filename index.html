@@ -798,31 +798,32 @@
         }
 
         .btn-step {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
             background: #fff;
             border: 1.5px solid var(--border);
-            font-size: 18px;
+            font-size: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--txt);
             transition: .15s;
+            touch-action: manipulation;
         }
 
         .btn-step:active {
-            transform: scale(.9);
+            transform: scale(.92);
             background: var(--border);
         }
 
         .info-val-input {
-            width: 55px;
+            width: 70px;
             background: transparent;
             border: none;
             outline: none;
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 800;
             text-align: center;
             color: var(--txt);
@@ -861,63 +862,66 @@
         .btn-preset {
             background: #fff;
             border: 1.5px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 6px;
+            border-radius: 14px;
+            padding: 12px 8px;
             cursor: pointer;
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
             color: var(--txt2);
             font-weight: 600;
             transition: .2s;
             font-family: inherit;
+            touch-action: manipulation;
         }
 
         .btn-preset span {
             display: block;
             font-weight: 800;
-            font-size: 11px;
+            font-size: 12px;
             color: var(--txt);
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
         .btn-preset:active {
-            transform: scale(.97);
+            transform: scale(.96);
         }
 
         .btn-main {
             width: 100%;
-            padding: 15px;
-            border-radius: 14px;
+            padding: 18px;
+            border-radius: 16px;
             border: none;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: #fff;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             letter-spacing: .5px;
             box-shadow: 0 4px 16px rgba(0, 200, 83, .35);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             transition: .2s;
             font-family: inherit;
+            touch-action: manipulation;
         }
 
         .btn-main:active {
-            transform: scale(.98);
+            transform: scale(.97);
         }
 
         .btn-outline {
             width: 100%;
-            padding: 13px;
-            border-radius: 14px;
+            padding: 16px;
+            border-radius: 16px;
             border: 1.5px solid var(--border);
             background: transparent;
             color: var(--txt2);
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             transition: .2s;
             font-family: inherit;
+            touch-action: manipulation;
         }
 
         .btn-outline:hover {
@@ -950,14 +954,15 @@
         .btn-m {
             background: var(--bg);
             border: 1.5px solid var(--border);
-            border-radius: 11px;
-            padding: 10px;
+            border-radius: 14px;
+            padding: 14px 10px;
             color: var(--txt2);
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             transition: .2s;
             font-family: inherit;
+            touch-action: manipulation;
         }
 
         .btn-m:hover {
@@ -1637,24 +1642,32 @@
                 <div class="ctrl-item">
                     <span class="ctrl-label">Cài đặt nghỉ</span>
                     <div class="ctrl-row">
-                        <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
+                        <button class="btn-step" onmousedown="startAdjust('offMin',-1)" onmouseup="stopAdjust()"
+                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('offMin',-1)"
+                            ontouchend="stopAdjust()">−</button>
                         <div style="display:flex;align-items:baseline;gap:2px;">
                             <input type="number" id="offMin" class="info-val-input" value="0">
                             <span class="info-unit">P</span>
                         </div>
-                        <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
+                        <button class="btn-step" onmousedown="startAdjust('offMin',1)" onmouseup="stopAdjust()"
+                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('offMin',1)"
+                            ontouchend="stopAdjust()">+</button>
                     </div>
                 </div>
                 <div class="ctrl-div"></div>
                 <div class="ctrl-item">
                     <span class="ctrl-label">Cài đặt chạy</span>
                     <div class="ctrl-row">
-                        <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
+                        <button class="btn-step" onmousedown="startAdjust('onSec',-1)" onmouseup="stopAdjust()"
+                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('onSec',-1)"
+                            ontouchend="stopAdjust()">−</button>
                         <div style="display:flex;align-items:baseline;gap:2px;">
                             <input type="number" id="onSec" class="info-val-input" value="0">
                             <span class="info-unit">S</span>
                         </div>
-                        <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
+                        <button class="btn-step" onmousedown="startAdjust('onSec',1)" onmouseup="stopAdjust()"
+                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('onSec',1)"
+                            ontouchend="stopAdjust()">+</button>
                     </div>
                 </div>
             </div>
@@ -3410,6 +3423,25 @@
             if (val < 0) val = 0;
             el.value = val;
             panelManualOverrideUntil = Date.now() + 10000;
+            triggerHaptic();
+        }
+
+        function triggerHaptic(ms = 10) {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(ms);
+            }
+        }
+
+        let adjustInterval = null;
+        function startAdjust(id, d) {
+            adjustValue(id, d);
+            adjustInterval = setInterval(() => adjustValue(id, d), 150);
+        }
+        function stopAdjust() {
+            if (adjustInterval) {
+                clearInterval(adjustInterval);
+                adjustInterval = null;
+            }
         }
 
         function applyPreset(m, s) {
