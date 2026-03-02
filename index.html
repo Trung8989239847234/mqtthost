@@ -1617,26 +1617,6 @@
                 <div id="pauseBanner"><span>⏸️</span><span>LỊCH TRÌNH ĐANG TẠM DỪNG</span></div>
             </div>
 
-            <!-- SENSOR DATA -->
-            <div class="sensor-grid">
-                <div class="sensor-item">
-                    <div class="sensor-label">💾 RAM Free</div>
-                    <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">⚡ Dòng điện</div>
-                    <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">🌡️ Nhiệt độ</div>
-                    <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">🚰 Phao tràn</div>
-                    <div class="sensor-val" id="pPhao" style="color:var(--txt2);">--</div>
-                </div>
-            </div>
-
             <!-- TIMER CONTROLS -->
             <div class="ctrl-group">
                 <div class="ctrl-item">
@@ -1672,17 +1652,7 @@
                 </div>
             </div>
 
-            <!-- PRESETS -->
-            <div class="preset-label">Cấu hình nhanh</div>
-            <div class="presets-grid">
-                <button class="btn-preset" onclick="applyPreset(5,10)"><span>TƯỚI CÂY</span>5m Tắt / 10s Bật</button>
-                <button class="btn-preset" onclick="applyPreset(30,5)"><span>BƠM NƯỚC</span>30m Tắt / 5s Bật</button>
-                <button class="btn-preset" onclick="applyPreset(1,2)"><span>TEST NHANH</span>1m Tắt / 2s Bật</button>
-            </div>
-
             <button class="btn-main" onclick="saveSettings()">💾 LƯU CÀI ĐẶT MỚI</button>
-            <button class="btn-outline green" onclick="openSchedule()">📅 Cài đặt lịch nghỉ (Schedule)</button>
-            <button class="btn-outline blue" onclick="forceRun()">⚡ Force Run</button>
 
             <div class="section-title-sm">🔧 Chế độ bảo trì</div>
             <div class="maint-grid">
@@ -1693,7 +1663,30 @@
                 <button class="btn-m" onclick="setMaint(5)">80p</button>
                 <button class="btn-m btn-manual" onclick="setMaint(6)">∞</button>
             </div>
-            <button class="btn-cancel" onclick="setMaint(0)">Hủy bảo trì</button>
+            <button class="btn-cancel" onclick="setMaint(0)" style="margin-bottom: 12px;">Hủy bảo trì</button>
+
+            <button class="btn-outline green" onclick="openSchedule()">📅 Cài đặt lịch nghỉ (Schedule)</button>
+            <button class="btn-outline blue" onclick="forceRun()">⚡ Force Run</button>
+
+            <!-- SENSOR DATA -->
+            <div class="sensor-grid" style="margin-top: 14px;">
+                <div class="sensor-item">
+                    <div class="sensor-label">💾 RAM Free</div>
+                    <div class="sensor-val"><span id="pHeap">--</span><span class="sensor-unit">KB</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">⚡ Dòng điện</div>
+                    <div class="sensor-val"><span id="pAmps">--</span><span class="sensor-unit">A</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">🌡️ Nhiệt độ</div>
+                    <div class="sensor-val"><span id="pTemp">--</span><span class="sensor-unit">°C</span></div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">🚰 Phao tràn</div>
+                    <div class="sensor-val" id="pPhao" style="color:var(--txt2);">--</div>
+                </div>
+            </div>
             <div style="height:28px;"></div>
         </div>
     </div>
