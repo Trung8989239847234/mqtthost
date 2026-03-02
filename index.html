@@ -301,10 +301,10 @@
 
         .card-footer {
             border-top: 1px solid var(--border);
-            padding-top: 8px;
+            padding-top: 10px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             margin-top: auto;
         }
 
@@ -316,9 +316,9 @@
 
         .stat-chip {
             background: var(--bg);
-            border-radius: 7px;
-            padding: 3px 7px;
-            font-size: 10px;
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--txt2);
         }
@@ -988,13 +988,72 @@
             font-family: inherit;
         }
 
-        /* MODALS */
-        #scheduleModal,
-        #settingsModal {
+        /* COLOR PICKER MODAL */
+        .cp-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .4);
+            z-index: 2000;
             display: none;
-            z-index: 1200;
             align-items: center;
             justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(2px);
+        }
+
+        .cp-box {
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            animation: cpPop .3s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        @keyframes cpPop {
+            from {
+                transform: scale(0.85);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .cp-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--txt);
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .cp-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .cp-dot {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: .2s;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .cp-dot:active {
+            transform: scale(0.8);
+        }
+
+        .cp-dot.act {
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3);
         }
 
         .modal-wrap {
@@ -1599,6 +1658,16 @@
         </div>
     </div>
 
+    <!-- COLOR PICKER POPUP -->
+    <div id="cpOverlay" class="cp-overlay" onclick="if(event.target===this)closeColorPicker()">
+        <div class="cp-box">
+            <div class="cp-title">CHỌN MÀU NỀN</div>
+            <div class="cp-grid" id="cpGrid"></div>
+            <button class="btn-main" onclick="closeColorPicker()"
+                style="margin-top:20px; margin-bottom:0; padding:12px; font-size:14px;">XONG</button>
+        </div>
+    </div>
+
     <!-- CONTROL PANEL BOTTOM SHEET -->
     <div id="panelOverlay" class="panel-overlay" onclick="closePanel(event)">
         <div class="panel" id="mainPanel">
@@ -1620,34 +1689,24 @@
             <!-- TIMER CONTROLS -->
             <div class="ctrl-group">
                 <div class="ctrl-item">
-                    <span class="ctrl-label">Cài đặt nghỉ</span>
+                    <span class="ctrl-label">CÀI ĐẶT NGHỈ ( PHÚT )</span>
                     <div class="ctrl-row">
-                        <button class="btn-step" onmousedown="startAdjust('offMin',-1)" onmouseup="stopAdjust()"
-                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('offMin',-1)"
-                            ontouchend="stopAdjust()">−</button>
+                        <button class="btn-step" onclick="adjustValue('offMin',-1)">−</button>
                         <div style="display:flex;align-items:baseline;gap:2px;">
                             <input type="number" id="offMin" class="info-val-input" value="0">
-                            <span class="info-unit">P</span>
                         </div>
-                        <button class="btn-step" onmousedown="startAdjust('offMin',1)" onmouseup="stopAdjust()"
-                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('offMin',1)"
-                            ontouchend="stopAdjust()">+</button>
+                        <button class="btn-step" onclick="adjustValue('offMin',1)">+</button>
                     </div>
                 </div>
                 <div class="ctrl-div"></div>
                 <div class="ctrl-item">
-                    <span class="ctrl-label">Cài đặt chạy</span>
+                    <span class="ctrl-label">CÀI ĐẶT CHẠY ( GIÂY )</span>
                     <div class="ctrl-row">
-                        <button class="btn-step" onmousedown="startAdjust('onSec',-1)" onmouseup="stopAdjust()"
-                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('onSec',-1)"
-                            ontouchend="stopAdjust()">−</button>
+                        <button class="btn-step" onclick="adjustValue('onSec',-1)">−</button>
                         <div style="display:flex;align-items:baseline;gap:2px;">
                             <input type="number" id="onSec" class="info-val-input" value="0">
-                            <span class="info-unit">S</span>
                         </div>
-                        <button class="btn-step" onmousedown="startAdjust('onSec',1)" onmouseup="stopAdjust()"
-                            onmouseleave="stopAdjust()" ontouchstart="startAdjust('onSec',1)"
-                            ontouchend="stopAdjust()">+</button>
+                        <button class="btn-step" onclick="adjustValue('onSec',1)">+</button>
                     </div>
                 </div>
             </div>
@@ -1764,10 +1823,12 @@
         let fbReady = false;
         let deviceAliases = {};
         let deviceOrders = {};
+        let deviceColors = {};
         let linkedPhone = "";
         let linkedPhoneOwnerUid = "";
         let loginProvider = "password";
         let mqttTopicRoot = "";
+        let pickerTargetId = null;
         let isManualLoginFlow = false;
         let autoLoginHandled = false;
         let isRegisterMode = false;
@@ -2166,6 +2227,17 @@
             }
         }
 
+        async function loadDeviceColors() {
+            if (!fbReady || !fbDb) return;
+            try {
+                const snap = await fbDb.ref(`iot/${getOwnerKey()}/device_colors`).once('value');
+                deviceColors = snap.val() || {};
+            } catch (e) {
+                console.warn('Không tải được device colors', e);
+                deviceColors = {};
+            }
+        }
+
         async function loadAccountProfile() {
             if (!fbReady || !fbDb) return;
             try {
@@ -2236,6 +2308,13 @@
             if (card) card.style.order = String(getOrderOf(id));
         }
 
+        const SOFT_PALETTE = [
+            '#ffffff', '#f8fafc', '#f1f5f9', '#f0f9ff', '#e0f2fe',
+            '#e0e7ff', '#ede9fe', '#f5f3ff', '#fae8ff', '#fdf2f8',
+            '#fff1f2', '#fee2e2', '#ffedd5', '#fef9c3', '#ecfccb',
+            '#dcfce7', '#ccfbf1', '#cffafe', '#f5f5f5', '#fff7ed'
+        ];
+
         function renderDeviceManager() {
             const box = document.getElementById('dmList');
             if (!box) return;
@@ -2244,14 +2323,63 @@
                 box.innerHTML = `<div style="color:#64748b; text-align:center; padding:16px">Chưa có thiết bị để quản lý</div>`;
                 return;
             }
-            box.innerHTML = sorted.map((id, idx) => `
-      <div class="dm-item">
-        <input class="dm-input" data-dev="${id}" value="${(deviceAliases[aliasKey(id)] || '').replace(/"/g, '&quot;')}" placeholder="Tên hiển thị cho ${id}">
-        <button class="dm-btn" onclick="moveDeviceOrder('${id}', -1)">↑</button>
-        <button class="dm-btn" onclick="moveDeviceOrder('${id}', 1)">↓</button>
+            box.innerHTML = sorted.map((id, idx) => {
+                const aliasKeyStr = aliasKey(id);
+                const activeColor = deviceColors[aliasKeyStr] || '#ffffff';
+
+                return `
+      <div class="dm-item" style="margin-bottom:10px; background:var(--bg); padding:10px; border-radius:18px; border:1px solid var(--border); display:flex; align-items:center; gap:12px;">
+        <div id="cp-prev-${id}" class="cp-trigger" 
+             style="background:${activeColor}; width:42px; height:42px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,0.1); cursor:pointer; flex-shrink:0;" 
+             onclick="openColorPicker('${id}')"></div>
+        <input class="dm-input" data-dev="${id}" value="${(deviceAliases[aliasKeyStr] || '').replace(/"/g, '&quot;')}" placeholder="Tên cho ${id}" style="flex:1;">
+        <div style="display:flex; gap:4px;">
+            <button class="dm-btn" onclick="moveDeviceOrder('${id}', -1)" style="width:34px; height:34px;">↑</button>
+            <button class="dm-btn" onclick="moveDeviceOrder('${id}', 1)" style="width:34px; height:34px;">↓</button>
+        </div>
+        <input type="hidden" class="dm-color-hidden" data-dev="${id}" value="${activeColor}">
       </div>
-    `).join('');
+    `;
+            }).join('');
         }
+
+        function openColorPicker(id) {
+            pickerTargetId = id;
+            triggerHaptic(10);
+            const grid = document.getElementById('cpGrid');
+            const currentColor = document.querySelector(`.dm-color-hidden[data-dev="${id}"]`).value.toLowerCase();
+
+            grid.innerHTML = SOFT_PALETTE.map(c => `
+                <div class="cp-dot ${c.toLowerCase() === currentColor ? 'act' : ''}" 
+                     style="background:${c};" 
+                     onclick="selectPickerColor('${c}')"></div>
+            `).join('');
+
+            document.getElementById('cpOverlay').style.display = 'flex';
+        }
+
+        function selectPickerColor(color) {
+            triggerHaptic(5);
+            if (!pickerTargetId) return;
+
+            const hidden = document.querySelector(`.dm-color-hidden[data-dev="${pickerTargetId}"]`);
+            if (hidden) hidden.value = color;
+
+            const prev = document.getElementById(`cp-prev-${pickerTargetId}`);
+            if (prev) prev.style.backgroundColor = color;
+
+            document.querySelectorAll('.cp-dot').forEach(dot => {
+                dot.classList.remove('act');
+            });
+            event.currentTarget.classList.add('act');
+        }
+
+        function closeColorPicker() {
+            document.getElementById('cpOverlay').style.display = 'none';
+            pickerTargetId = null;
+        }
+
+        function selectDeviceColor(id, color) { /* Deprecated */ }
 
         function openDeviceManager() {
             document.getElementById('deviceManagerModal').style.display = 'flex';
@@ -2285,26 +2413,47 @@
 
         async function saveDeviceManagerChanges() {
             if (!fbReady || !fbDb) return;
-            const inputs = document.querySelectorAll('#dmList input[data-dev]');
+            const aliasInputs = document.querySelectorAll('#dmList .dm-input[data-dev]');
+            const colorInputs = document.querySelectorAll('#dmList .dm-color-hidden[data-dev]');
+
             const aliasesNext = {};
-            inputs.forEach(el => {
+            const colorsNext = {};
+
+            aliasInputs.forEach(el => {
                 const dev = el.getAttribute('data-dev');
                 const name = (el.value || '').trim();
                 if (name) aliasesNext[aliasKey(dev)] = name;
             });
+
+            colorInputs.forEach(el => {
+                const dev = el.getAttribute('data-dev');
+                const color = el.value;
+                if (color && color.toLowerCase() !== '#ffffff') colorsNext[aliasKey(dev)] = color;
+            });
+
             deviceAliases = aliasesNext;
+            deviceColors = colorsNext;
             ensureDefaultOrders();
+
             try {
                 const base = `iot/${getOwnerKey()}`;
                 await Promise.all([
                     fbDb.ref(base + '/device_aliases').set(deviceAliases),
-                    fbDb.ref(base + '/device_orders').set(deviceOrders)
+                    fbDb.ref(base + '/device_orders').set(deviceOrders),
+                    fbDb.ref(base + '/device_colors').set(deviceColors)
                 ]);
-                Object.keys(window.devices || {}).forEach(id => { updateDeviceCard(id); applyCardOrder(id); });
-                if (currentSelectedId) document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
-                showToast('Đã lưu tên & vị trí thiết bị');
+                Object.keys(window.devices || {}).forEach(id => {
+                    updateDeviceCard(id);
+                    applyCardOrder(id);
+                });
+                if (currentSelectedId) {
+                    document.getElementById("panelTitle").innerText = getDisplayName(currentSelectedId);
+                    updatePanelDOM(currentSelectedId);
+                }
+                showToast('Đã lưu tên, màu & vị trí thiết bị');
                 closeDeviceManager();
             } catch (e) {
+                console.error('Save settings error:', e);
                 showToast('Lưu thất bại');
             }
         }
@@ -2635,6 +2784,7 @@
 
             await loadDeviceAliases();
             await loadDeviceOrders();
+            await loadDeviceColors();
             await loadAccountProfile();
             await loadKnownDevices(); // [New] Load offline devices
 
@@ -2765,6 +2915,7 @@
                 localStorage.removeItem("current_user");
                 deviceAliases = {};
                 deviceOrders = {};
+                deviceColors = {};
                 mqttTopicRoot = "";
                 location.reload();
             });
@@ -3214,8 +3365,8 @@
       </div>
       <div class="card-footer">
         <div class="card-stats">
-          <div class="stat-chip">💤 <b id="val-off-${id}">--</b>P</div>
-          <div class="stat-chip">⚡ <b id="val-on-${id}">--</b>S</div>
+          <div class="stat-chip"><b id="val-off-${id}">--</b>P</div>
+          <div class="stat-chip"><b id="val-on-${id}">--</b>S</div>
         </div>
       </div>
     `;
@@ -3256,6 +3407,18 @@
             if (dot) {
                 if (isOnline) dot.classList.add('on');
                 else dot.classList.remove('on');
+            }
+
+            // Apply custom color
+            const customColor = deviceColors[aliasKey(id)];
+            if (card) {
+                if (customColor) {
+                    card.style.backgroundColor = customColor;
+                    card.classList.add('has-custom-color');
+                } else {
+                    card.style.backgroundColor = '';
+                    card.classList.remove('has-custom-color');
+                }
             }
 
             if (valOff) valOff.textContent = dev.off_min !== undefined ? dev.off_min : '--';
@@ -3320,6 +3483,13 @@
             if (badge) {
                 badge.innerText = isOnline ? "ONLINE" : "OFFLINE";
                 badge.style.background = isOnline ? "var(--success)" : "#334155";
+            }
+
+            // Sync Color
+            const pBox = document.getElementById("mainPanel");
+            const customColor = deviceColors[aliasKey(id)];
+            if (pBox) {
+                pBox.style.backgroundColor = customColor || '#ffffff';
             }
 
             // --- STATUS BANNERS LOGIC ---
@@ -3425,17 +3595,6 @@
             }
         }
 
-        let adjustInterval = null;
-        function startAdjust(id, d) {
-            adjustValue(id, d);
-            adjustInterval = setInterval(() => adjustValue(id, d), 150);
-        }
-        function stopAdjust() {
-            if (adjustInterval) {
-                clearInterval(adjustInterval);
-                adjustInterval = null;
-            }
-        }
 
         function applyPreset(m, s) {
             document.getElementById("offMin").value = m;
